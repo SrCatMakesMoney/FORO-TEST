@@ -1,14 +1,16 @@
 {
   "name": "nodejs",
   "version": "1.0.0",
-  "description": "",
+  "description": "Foro Ubre",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "engines": {
+    "node": "24.x"
+  },
   "dependencies": {
     "@types/node": "^22.13.11",
     "axios": "^1.9.0",
