@@ -252,6 +252,31 @@
             <input type="color" id="bannerColor2" value="#1a3a14"/>
           </div>
         </div>
+
+        <div class="banner-upload-card">
+          <div class="banner-upload-preview" id="bannerUploadPreview">
+            <div class="banner-upload-empty" id="bannerUploadEmpty">
+              <i class="ri-image-add-line"></i>
+              <span>PNG o GIF</span>
+              <small>Máx. 8MB</small>
+            </div>
+            <img id="bannerUploadImg" class="hidden" alt="Vista previa del banner"/>
+          </div>
+          <div class="banner-upload-copy">
+            <strong>Tu propio banner</strong>
+            <span>Sube una imagen PNG, JPG, WEBP o GIF. Los GIF animados se conservan.</span>
+            <div class="banner-upload-actions">
+              <button type="button" class="btn-pick-avatar banner-pick-btn" id="btnPickBanner">
+                <i class="ri-upload-cloud-2-line"></i> Elegir banner
+              </button>
+              <button type="button" class="banner-clear-btn hidden" id="btnClearBanner">
+                <i class="ri-close-circle-line"></i> Cancelar
+              </button>
+            </div>
+            <input type="file" id="bannerEditInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden/>
+            <small class="banner-upload-status" id="bannerUploadStatus"></small>
+          </div>
+        </div>
       </div>
 
       <!-- ESTILO PROFUNDO / LIQUID GLASS -->
@@ -455,6 +480,7 @@ const handle = new URLSearchParams(location.search).get("handle") || yo.handle;
 let perfilData     = null;
 let postsCache     = [];
 let avatarEditFile = null;
+let bannerEditFile = null;
 
 // ── Nav links ──
 document.getElementById("navPerfil").href = `profile.html?handle=${yo.handle}`;
@@ -598,6 +624,7 @@ function renderPerfil(u) {
   const p           = u.personalizacion || {};
   const bannerStyle = getBannerStyle(p);
   const marcoStyle  = getMarcoStyle(p);
+  const hasUploadedBanner = !!p.banner;
 
   const visual = p.bannerEstilo || "normal";
   const avatarStyle = p.avatarEstilo || (visual === "water" ? "water" : "normal");
@@ -644,8 +671,9 @@ function renderPerfil(u) {
 
       <div class="profile-ambient-layer" aria-hidden="true"></div>
 
-      <div class="profile-banner ${visual === "vitrina" ? "banner-vitrina" : ""}"
+      <div class="profile-banner ${visual === "vitrina" ? "banner-vitrina" : ""} ${hasUploadedBanner ? "has-banner-media" : ""}"
            style="background:${bannerStyle}">
+        ${hasUploadedBanner ? `<img class="profile-banner-media" src="${escHtml(p.banner)}" alt="Banner de ${escHtml(u.nombre)}"/>` : ""}
         ${drops}
         <div class="profile-banner-highlight" aria-hidden="true"></div>
       </div>
@@ -1059,6 +1087,27 @@ function abrirModalEditar() {
   if (p.bannerColor1) document.getElementById("bannerColor1").value = p.bannerColor1;
   if (p.bannerColor2) document.getElementById("bannerColor2").value = p.bannerColor2;
 
+  bannerEditFile = null;
+  const bannerInput = document.getElementById("bannerEditInput");
+  if (bannerInput) bannerInput.value = "";
+  const bannerImg = document.getElementById("bannerUploadImg");
+  const bannerEmpty = document.getElementById("bannerUploadEmpty");
+  const bannerStatus = document.getElementById("bannerUploadStatus");
+  const clearBanner = document.getElementById("btnClearBanner");
+  if (bannerStatus) bannerStatus.textContent = p.banner ? "Banner actual guardado. Elige otro para reemplazarlo." : "";
+  if (bannerImg && bannerEmpty) {
+    if (p.banner) {
+      bannerImg.src = p.banner;
+      bannerImg.classList.remove("hidden");
+      bannerEmpty.classList.add("hidden");
+      clearBanner?.classList.add("hidden");
+    } else {
+      bannerImg.removeAttribute("src");
+      bannerImg.classList.add("hidden");
+      bannerEmpty.classList.remove("hidden");
+    }
+  }
+
   const visualValue = p.bannerEstilo || "normal";
   document.querySelectorAll("#visualStyleOptions .visual-style-card").forEach(b =>
     b.classList.toggle("active", b.dataset.visual === visualValue)
@@ -1109,6 +1158,7 @@ function abrirModalEditar() {
 function cerrarModalEditar() {
   document.getElementById("modalEditarPerfil").classList.add("hidden");
   avatarEditFile = null;
+  bannerEditFile = null;
 }
 
 // ── Modal tabs ──
@@ -1259,6 +1309,56 @@ document.getElementById("editAvatarInput")?.addEventListener("change", function(
   }
 });
 
+// ── Banner personalizado ──
+document.getElementById("btnPickBanner")?.addEventListener("click", () => {
+  document.getElementById("bannerEditInput")?.click();
+});
+
+document.getElementById("bannerEditInput")?.addEventListener("change", function() {
+  const file = this.files?.[0];
+  if (!file) return;
+
+  const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+  if (!allowed.includes(file.type)) {
+    alert("El banner debe ser PNG, JPG, WEBP o GIF.");
+    this.value = "";
+    return;
+  }
+  if (file.size > 8 * 1024 * 1024) {
+    alert("El banner puede pesar máximo 8MB.");
+    this.value = "";
+    return;
+  }
+
+  bannerEditFile = file;
+  const url = URL.createObjectURL(file);
+  const img = document.getElementById("bannerUploadImg");
+  const empty = document.getElementById("bannerUploadEmpty");
+  const status = document.getElementById("bannerUploadStatus");
+  const clear = document.getElementById("btnClearBanner");
+
+  img.src = url;
+  img.classList.remove("hidden");
+  empty.classList.add("hidden");
+  clear?.classList.remove("hidden");
+  if (status) status.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB`;
+});
+
+document.getElementById("btnClearBanner")?.addEventListener("click", () => {
+  bannerEditFile = null;
+  const input = document.getElementById("bannerEditInput");
+  if (input) input.value = "";
+  const img = document.getElementById("bannerUploadImg");
+  const empty = document.getElementById("bannerUploadEmpty");
+  const status = document.getElementById("bannerUploadStatus");
+  const clear = document.getElementById("btnClearBanner");
+  img?.removeAttribute("src");
+  img?.classList.add("hidden");
+  empty?.classList.remove("hidden");
+  clear?.classList.add("hidden");
+  if (status) status.textContent = "Selección cancelada. El banner actual no se modifica.";
+});
+
 // ── Guardar info ──
 document.getElementById("btnGuardarInfo")?.addEventListener("click", async () => {
   const btn     = document.getElementById("btnGuardarInfo");
@@ -1302,15 +1402,34 @@ document.getElementById("btnGuardarApariencia")?.addEventListener("click", async
     brillo: document.getElementById("profileGlowToggle")?.checked !== false
   };
   try {
+    let uploadedBanner = null;
+
+    if (bannerEditFile) {
+      const fd = new FormData();
+      fd.append("banner", bannerEditFile);
+      const uploadRes = await fetch(`${API}/auth/perfil`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd
+      });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) throw new Error(uploadData.mensaje || "No se pudo subir el banner");
+      uploadedBanner = uploadData.usuario?.banner || null;
+    }
+
     const res = await fetch(`${API}/auth/personalizacion`, {
       method: "PUT", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify(body)
     });
-    if (!res.ok) throw new Error("Error");
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.mensaje || "Error al guardar apariencia");
+
     const stored = JSON.parse(localStorage.getItem("fu_usuario") || "{}");
     stored.personalizacion = { ...(stored.personalizacion || {}), ...body };
+    if (uploadedBanner) stored.banner = uploadedBanner;
     localStorage.setItem("fu_usuario", JSON.stringify(stored));
-    cerrarModalEditar(); cargarPerfil();
+    cerrarModalEditar();
+    cargarPerfil();
   } catch(e) { alert(e.message); }
   finally { btn.innerHTML = '<i class="ri-save-line"></i> Guardar apariencia'; btn.disabled = false; }
 });
@@ -1429,6 +1548,73 @@ cargarPerfil();
     opacity: .75;
   }
 
+  .banner-upload-card {
+    display:grid;
+    grid-template-columns:150px minmax(0,1fr);
+    gap:14px;
+    margin-top:12px;
+    padding:12px;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;
+    background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.055);
+  }
+  .banner-upload-preview {
+    position:relative;
+    min-height:88px;
+    border-radius:14px;
+    overflow:hidden;
+    background:linear-gradient(135deg,#0d2010,#1a3a14);
+    border:1px solid rgba(255,255,255,.08);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .banner-upload-preview::after {
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:linear-gradient(120deg,rgba(255,255,255,.12),transparent 38%,rgba(0,0,0,.16));
+  }
+  .banner-upload-preview img {
+    width:100%;
+    height:100%;
+    min-height:88px;
+    object-fit:cover;
+    display:block;
+  }
+  .banner-upload-empty {
+    position:relative;
+    z-index:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    color:var(--text-2);
+    text-align:center;
+  }
+  .banner-upload-empty i { font-size:1.55rem; color:var(--green); }
+  .banner-upload-empty span { font-size:.72rem; font-weight:800; }
+  .banner-upload-empty small { font-size:.62rem; color:var(--text-3); }
+  .banner-upload-copy { min-width:0; display:flex; flex-direction:column; justify-content:center; gap:4px; }
+  .banner-upload-copy > strong { font-size:.86rem; }
+  .banner-upload-copy > span { font-size:.71rem; line-height:1.45; color:var(--text-3); }
+  .banner-upload-actions { display:flex; gap:7px; align-items:center; flex-wrap:wrap; margin-top:5px; }
+  .banner-pick-btn { width:max-content; }
+  .banner-clear-btn {
+    border:1px solid rgba(255,255,255,.08);
+    background:rgba(255,255,255,.045);
+    color:var(--text-2);
+    border-radius:10px;
+    padding:8px 10px;
+    cursor:pointer;
+    font:inherit;
+    font-size:.72rem;
+  }
+  .banner-clear-btn:hover { background:rgba(255,255,255,.08); color:var(--text); }
+  .banner-upload-status { min-height:13px; font-size:.62rem; color:var(--text-3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
   .profile-premium-shell .profile-banner {
     position: relative;
     min-height: 190px;
@@ -1436,6 +1622,28 @@ cargarPerfil();
     border-radius: 27px 27px 12px 12px;
     border: 1px solid rgba(255,255,255,.08);
     box-shadow: 0 18px 45px rgba(0,0,0,.28);
+  }
+
+  .profile-premium-shell .profile-banner-media {
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    z-index:1;
+  }
+
+  .profile-premium-shell .profile-banner.has-banner-media::before {
+    z-index:2;
+  }
+
+  .profile-premium-shell .profile-banner.has-banner-media .profile-banner-highlight {
+    z-index:3;
+  }
+
+  .profile-premium-shell .profile-banner.has-banner-media .profile-liquid-drops {
+    z-index:4;
   }
 
   .profile-premium-shell .profile-banner::before {
@@ -1678,6 +1886,9 @@ cargarPerfil();
 
   @media(max-width:600px) {
     .profile-premium-shell .profile-banner { min-height:150px; border-radius:22px 22px 10px 10px; }
+    .banner-upload-card { grid-template-columns:1fr; }
+    .banner-upload-preview { min-height:110px; }
+    .banner-upload-preview img { min-height:110px; }
     .profile-premium-shell .profile-info { margin:-32px 5px 0; padding:46px 15px 18px; border-radius:20px; }
     .visual-style-grid { grid-template-columns:1fr; }
   }
