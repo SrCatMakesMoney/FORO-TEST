@@ -3,496 +3,160 @@ const Conversation = require("../models/Conversation");
 const Message      = require("../models/Message");
 const User         = require("../models/User");
 const auth         = require("../middleware/authMiddleware");
-
-const {
-  crearNotificacion
-} = require("../utils/notifications");
+const { crearNotificacion } = require("../utils/notifications");
 
 const router = express.Router();
 
-
-// ============================================================
-// GET /api/messages
-// ============================================================
-
+// 鈹€鈹€ GET /api/messages 鈹€鈹€ Listar conversaciones
 router.get("/", auth, async (req, res) => {
-
   try {
-
-    const convs =
-      await Conversation.find({
-        participantes:
-          req.usuario._id
-      })
-
-      .sort({
-        ultimaActividad:
-          -1
-      })
-
-      .populate(
-        "participantes",
-        "nombre handle avatar avatarTipo"
-      )
-
+    const convs = await Conversation.find({
+      participantes: req.usuario._id
+    })
+      .sort({ ultimaActividad: -1 })
+      .populate("participantes", "nombre handle avatar avatarTipo")
       .populate({
-        path:
-          "ultimoMensaje",
-
-        populate: {
-          path:
-            "remitente",
-
-          select:
-            "nombre handle"
-        }
+        path:     "ultimoMensaje",
+        populate: { path: "remitente", select: "nombre handle" }
       })
-
       .lean();
 
-
-    const resultado =
-      await Promise.all(
-
-        convs.map(
-          async c => {
-
-            const noLeidos =
-              await Message.countDocuments({
-
-                conversacion:
-                  c._id,
-
-                remitente: {
-                  $ne:
-                    req.usuario._id
-                },
-
-                leido:
-                  false
-
-              });
-
-
-            return {
-              ...c,
-              noLeidos
-            };
-
-          }
-        )
-
-      );
-
-
-    res.json(
-      resultado
+    // A帽adir cantidad de mensajes no le铆dos
+    const resultado = await Promise.all(
+      convs.map(async (c) => {
+        const noLeidos = await Message.countDocuments({
+          conversacion: c._id,
+          remitente:    { $ne: req.usuario._id },
+          leido:        false
+        });
+        return { ...c, noLeidos };
+      })
     );
 
+    res.json(resultado);
   } catch (err) {
-
     console.error(err);
-
-    res.status(500).json({
-      mensaje:
-        "Error al listar conversaciones"
-    });
-
+    res.status(500).json({ mensaje: "Error al listar conversaciones" });
   }
-
 });
 
-
-// ============================================================
-// POST /api/messages
-// ============================================================
-
+// 鈹€鈹€ POST /api/messages 鈹€鈹€ Crear o abrir conversaci贸n con un usuario
 router.post("/", auth, async (req, res) => {
-
   try {
+    const { usuarioId } = req.body;
 
-    const {
-      usuarioId
-    } = req.body;
+    if (!usuarioId)
+      return res.status(400).json({ mensaje: "usuarioId requerido" });
 
+    if (usuarioId === req.usuario._id.toString())
+      return res.status(400).json({ mensaje: "No puedes chatear contigo mismo" });
 
-    if (!usuarioId) {
+    const otroUsuario = await User.findById(usuarioId).select("nombre handle avatar avatarTipo");
+    if (!otroUsuario)
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
 
-      return res.status(400).json({
-        mensaje:
-          "usuarioId requerido"
-      });
-
-    }
-
-
-    if (
-      usuarioId ===
-      req.usuario._id.toString()
-    ) {
-
-      return res.status(400).json({
-        mensaje:
-          "No puedes chatear contigo mismo"
-      });
-
-    }
-
-
-    const otroUsuario =
-      await User.findById(
-        usuarioId
-      )
-      .select(
-        "nombre handle avatar avatarTipo"
-      );
-
-
-    if (!otroUsuario) {
-
-      return res.status(404).json({
-        mensaje:
-          "Usuario no encontrado"
-      });
-
-    }
-
-
-    let conv =
-      await Conversation.findOne({
-
-        participantes: {
-          $all: [
-            req.usuario._id,
-            usuarioId
-          ],
-
-          $size:
-            2
-        }
-
-      })
-      .populate(
-        "participantes",
-        "nombre handle avatar avatarTipo"
-      );
-
+    // Buscar si ya existe una conversaci贸n
+    let conv = await Conversation.findOne({
+      participantes: { $all: [req.usuario._id, usuarioId], $size: 2 }
+    }).populate("participantes", "nombre handle avatar avatarTipo");
 
     if (!conv) {
-
-      conv =
-        await Conversation.create({
-
-          participantes: [
-            req.usuario._id,
-            usuarioId
-          ]
-
-        });
-
-
-      conv =
-        await conv.populate(
-          "participantes",
-          "nombre handle avatar avatarTipo"
-        );
-
+      conv = await Conversation.create({
+        participantes: [req.usuario._id, usuarioId]
+      });
+      conv = await conv.populate("participantes", "nombre handle avatar avatarTipo");
     }
 
-
-    res.json(
-      conv
-    );
-
+    res.json(conv);
   } catch (err) {
-
     console.error(err);
-
-    res.status(500).json({
-      mensaje:
-        "Error al crear conversación"
-    });
-
+    res.status(500).json({ mensaje: "Error al crear conversaci贸n" });
   }
-
 });
 
+// 鈹€鈹€ GET /api/messages/:convId 鈹€鈹€ Obtener mensajes de una conversaci贸n
+router.get("/:convId", auth, async (req, res) => {
+  try {
+    const conv = await Conversation.findById(req.params.convId);
+    if (!conv)
+      return res.status(404).json({ mensaje: "Conversaci贸n no encontrada" });
 
-// ============================================================
-// GET /api/messages/:convId
-// ============================================================
+    if (!conv.participantes.includes(req.usuario._id))
+      return res.status(403).json({ mensaje: "No tienes acceso a esta conversaci贸n" });
 
-router.get(
-  "/:convId",
-  auth,
-  async (req, res) => {
+    const mensajes = await Message.find({ conversacion: req.params.convId })
+      .sort({ createdAt: 1 })
+      .populate("remitente", "nombre handle avatar avatarTipo")
+      .lean();
 
-    try {
+    // Marcar como le铆dos los mensajes del otro
+    await Message.updateMany(
+      { conversacion: req.params.convId, remitente: { $ne: req.usuario._id }, leido: false },
+      { $set: { leido: true } }
+    );
 
-      const conv =
-        await Conversation.findById(
-          req.params.convId
-        );
-
-
-      if (!conv) {
-
-        return res.status(404).json({
-          mensaje:
-            "Conversación no encontrada"
-        });
-
-      }
-
-
-      if (
-        !conv.participantes
-          .map(String)
-          .includes(
-            req.usuario._id.toString()
-          )
-      ) {
-
-        return res.status(403).json({
-          mensaje:
-            "No tienes acceso a esta conversación"
-        });
-
-      }
-
-
-      const mensajes =
-        await Message.find({
-          conversacion:
-            req.params.convId
-        })
-
-        .sort({
-          createdAt: 1
-        })
-
-        .populate(
-          "remitente",
-          "nombre handle avatar avatarTipo"
-        )
-
-        .lean();
-
-
-      await Message.updateMany(
-
-        {
-          conversacion:
-            req.params.convId,
-
-          remitente: {
-            $ne:
-              req.usuario._id
-          },
-
-          leido:
-            false
-        },
-
-        {
-          $set: {
-            leido:
-              true
-          }
-        }
-
-      );
-
-
-      res.json(
-        mensajes
-      );
-
-    } catch (err) {
-
-      console.error(err);
-
-      res.status(500).json({
-        mensaje:
-          "Error al obtener mensajes"
-      });
-
-    }
-
+    res.json(mensajes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ mensaje: "Error al obtener mensajes" });
   }
-);
+});
 
+// 鈹€鈹€ POST /api/messages/:convId/send 鈹€鈹€ Enviar mensaje
+router.post("/:convId/send", auth, async (req, res) => {
+  try {
+    const { contenido } = req.body;
+    if (!contenido?.trim())
+      return res.status(400).json({ mensaje: "El mensaje no puede estar vac铆o" });
 
-// ============================================================
-// POST /api/messages/:convId/send
-// ============================================================
+    if (contenido.length > 1000)
+      return res.status(400).json({ mensaje: "M谩ximo 1000 caracteres" });
 
-router.post(
-  "/:convId/send",
-  auth,
-  async (req, res) => {
+    const conv = await Conversation.findById(req.params.convId);
+    if (!conv)
+      return res.status(404).json({ mensaje: "Conversaci贸n no encontrada" });
 
-    try {
+    if (!conv.participantes.map(String).includes(req.usuario._id.toString()))
+      return res.status(403).json({ mensaje: "No tienes acceso" });
 
-      const {
-        contenido
-      } = req.body;
+    const mensaje = await Message.create({
+      conversacion: req.params.convId,
+      remitente:    req.usuario._id,
+      contenido:    contenido.trim()
+    });
 
+    await Conversation.findByIdAndUpdate(req.params.convId, {
+      ultimoMensaje:   mensaje._id,
+      ultimaActividad: new Date()
+    });
 
-      if (!contenido?.trim()) {
+    const populated = await mensaje.populate("remitente", "nombre handle avatar avatarTipo");
 
-        return res.status(400).json({
-          mensaje:
-            "El mensaje no puede estar vacío"
-        });
+    const destinatarioId = conv.participantes
+      .map(String)
+      .find(id => id !== req.usuario._id.toString());
 
-      }
-
-
-      if (
-        contenido.length >
-        1000
-      ) {
-
-        return res.status(400).json({
-          mensaje:
-            "Máximo 1000 caracteres"
-        });
-
-      }
-
-
-      const conv =
-        await Conversation.findById(
-          req.params.convId
-        );
-
-
-      if (!conv) {
-
-        return res.status(404).json({
-          mensaje:
-            "Conversación no encontrada"
-        });
-
-      }
-
-
-      if (
-        !conv.participantes
-          .map(String)
-          .includes(
-            req.usuario._id.toString()
-          )
-      ) {
-
-        return res.status(403).json({
-          mensaje:
-            "No tienes acceso"
-        });
-
-      }
-
-
-      const mensaje =
-        await Message.create({
-
-          conversacion:
-            req.params.convId,
-
-          remitente:
-            req.usuario._id,
-
-          contenido:
-            contenido.trim()
-
-        });
-
-
-      await Conversation.findByIdAndUpdate(
-        req.params.convId,
-        {
-
-          ultimoMensaje:
-            mensaje._id,
-
-          ultimaActividad:
-            new Date()
-
-        }
-      );
-
-
-      const populated =
-        await mensaje.populate(
-          "remitente",
-          "nombre handle avatar avatarTipo"
-        );
-
-
-      // ======================================================
-      // ENCONTRAR DESTINATARIO
-      // ======================================================
-
-      const destinatario =
-        conv.participantes.find(
-          id =>
-            id.toString() !==
-            req.usuario._id.toString()
-        );
-
-
-      // ======================================================
-      // NOTIFICACIÓN
-      // ======================================================
-
-      if (destinatario) {
-
+    if (destinatarioId) {
+      try {
         await crearNotificacion({
-
-          io:
-            req.app.get("io"),
-
-          receptor:
-            destinatario,
-
-          emisor:
-            req.usuario._id,
-
-          tipo:
-            "mensaje",
-
-          conversacion:
-            conv._id,
-
-          texto:
-            "te envió un mensaje",
-
-          url:
-            `/messages.html?conv=${conv._id}`
-
+          io: req.app.get("io"),
+          receptor: destinatarioId,
+          emisor: req.usuario._id,
+          tipo: "mensaje",
+          conversacion: conv._id,
+          texto: contenido.trim().slice(0, 160),
+          url: `/messages.html?conv=${encodeURIComponent(String(conv._id))}`
         });
-
+      } catch (notifyError) {
+        console.error("鈿狅笍 Error creando notificaci贸n de mensaje:", notifyError);
       }
-
-
-      res.status(201).json(
-        populated
-      );
-
-    } catch (err) {
-
-      console.error(err);
-
-      res.status(500).json({
-        mensaje:
-          "Error al enviar mensaje"
-      });
-
     }
 
+    res.status(201).json(populated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ mensaje: "Error al enviar mensaje" });
   }
-);
-
+});
 
 module.exports = router;
