@@ -1,8 +1,8 @@
 const Notification = require("../models/Notification");
 
 /**
- * Crea una notificación y la manda inmediatamente
- * por Socket.IO al usuario receptor.
+ * Crear una notificación y emitirla por Socket.IO
+ * al usuario receptor si está conectado.
  */
 async function crearNotificacion({
   io,
