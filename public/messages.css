@@ -1726,6 +1726,40 @@ a {
 }
 
 
+.chat-back {
+  display: none;
+
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+
+  place-items: center;
+
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 12px;
+
+  color: var(--text-2);
+  background: rgba(255,255,255,.035);
+
+  cursor: pointer;
+  font-size: 19px;
+
+  transition:
+    color .18s ease,
+    background .18s ease,
+    transform .18s ease;
+}
+
+.chat-back:active {
+  transform: scale(.94);
+}
+
+.chat-back:hover {
+  color: var(--text);
+  background: rgba(255,255,255,.06);
+}
+
+
 .chat-person {
   min-width: 0;
 
@@ -2503,6 +2537,12 @@ a {
   }
 
 
+  body.chat-open {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+
   body.chat-open .chat-panel {
     display: flex;
   }
@@ -2512,7 +2552,20 @@ a {
     height: 67px;
 
     padding:
-      9px 13px;
+      9px 11px;
+
+    gap: 8px;
+  }
+
+
+  .chat-back {
+    display: grid;
+  }
+
+
+  .chat-person {
+    flex: 1;
+    min-width: 0;
   }
 
 
