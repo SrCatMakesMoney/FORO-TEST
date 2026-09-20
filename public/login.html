@@ -1,647 +1,245 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="theme-color" content="#050505"/>
-  <title>Foro Ubre — Iniciar sesión</title>
+    <meta charset="UTF-8"/>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
 
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet"/>
-  <link rel="stylesheet" href="style.css"/>
+    <meta name="theme-color" content="#050606"/>
 
-  <style>
-    /* ==========================================================
-       FORO UBRE — AUTH / LOGIN
-       Solo presentación. La lógica original se conserva.
-       ========================================================== */
+    <title>Foro Ubre — Iniciar sesión</title>
 
-    .auth-page {
-      min-height: 100dvh;
-      margin: 0;
-      padding:
-        24px
-        18px
-        calc(24px + env(safe-area-inset-bottom));
+    <link
+        href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css"
+        rel="stylesheet"
+    />
 
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      background:
-        radial-gradient(
-          circle at 50% 0%,
-          rgba(255,255,255,.075),
-          transparent 34%
-        ),
-        radial-gradient(
-          circle at 15% 75%,
-          rgba(255,255,255,.025),
-          transparent 30%
-        ),
-        #050505;
-
-      overflow-x: hidden;
-    }
-
-    .auth-page::before {
-      opacity: .11;
-    }
-
-    .auth-container {
-      position: relative;
-      width: min(100%, 430px);
-
-      padding: 34px;
-
-      border-radius: 30px;
-
-      background:
-        linear-gradient(
-          145deg,
-          rgba(30,30,32,.84),
-          rgba(12,12,13,.91)
-        );
-
-      border:
-        1px solid rgba(255,255,255,.085);
-
-      box-shadow:
-        0 35px 100px rgba(0,0,0,.55),
-        inset 0 1px 0 rgba(255,255,255,.065);
-
-      backdrop-filter:
-        blur(32px)
-        saturate(140%);
-
-      -webkit-backdrop-filter:
-        blur(32px)
-        saturate(140%);
-
-      animation: authEnter .65s cubic-bezier(.22,1,.36,1);
-    }
-
-    .auth-container::before {
-      content: "";
-
-      position: absolute;
-      inset: 1px;
-
-      border-radius: inherit;
-
-      pointer-events: none;
-
-      background:
-        linear-gradient(
-          125deg,
-          rgba(255,255,255,.065),
-          transparent 28%,
-          transparent 72%,
-          rgba(255,255,255,.012)
-        );
-    }
-
-    .auth-container::after {
-      content: "";
-
-      position: absolute;
-
-      width: 260px;
-      height: 180px;
-
-      top: -130px;
-      left: 50%;
-
-      transform: translateX(-50%);
-
-      pointer-events: none;
-
-      background:
-        radial-gradient(
-          circle,
-          rgba(255,255,255,.055),
-          transparent 70%
-        );
-
-      filter: blur(18px);
-    }
-
-    @keyframes authEnter {
-      from {
-        opacity: 0;
-        transform:
-          translateY(18px)
-          scale(.975);
-      }
-
-      to {
-        opacity: 1;
-        transform:
-          translateY(0)
-          scale(1);
-      }
-    }
-
-    .auth-logo {
-      position: relative;
-      z-index: 1;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 9px;
-
-      margin-bottom: 27px;
-
-      color: #f5f5f7;
-
-      font-size: 1.05rem;
-      font-weight: 800;
-
-      letter-spacing: -.025em;
-    }
-
-    .auth-logo i {
-      display: grid;
-      place-items: center;
-
-      width: 34px;
-      height: 34px;
-
-      border-radius: 11px;
-
-      color: #050505 !important;
-
-      background:
-        linear-gradient(
-          145deg,
-          #f5f5f7,
-          #bdbdc2
-        );
-
-      box-shadow:
-        0 7px 20px rgba(0,0,0,.28),
-        inset 0 1px 0 rgba(255,255,255,.65);
-    }
-
-    .auth-container h2 {
-      position: relative;
-      z-index: 1;
-
-      margin: 0 0 26px;
-
-      color: #f5f5f7;
-
-      text-align: center;
-
-      font-size: clamp(1.65rem, 5vw, 2rem);
-      line-height: 1.1;
-
-      letter-spacing: -.045em;
-    }
-
-    .auth-container form {
-      position: relative;
-      z-index: 1;
-    }
-
-    .form-group {
-      position: relative;
-      margin-bottom: 17px;
-    }
-
-    .form-group label {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-
-      margin: 0 0 8px 3px;
-
-      color: #b8b8bd;
-
-      font-size: .83rem;
-      font-weight: 650;
-    }
-
-    .form-group label i {
-      color: #858589;
-      font-size: .95rem;
-    }
-
-    .form-group input {
-      width: 100%;
-      height: 51px;
-
-      padding:
-        0 15px;
-
-      color: #f5f5f7;
-
-      font-size: .95rem;
-
-      background:
-        rgba(255,255,255,.045);
-
-      border:
-        1px solid rgba(255,255,255,.075);
-
-      border-radius: 15px;
-
-      outline: none;
-
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.025);
-
-      transition:
-        border-color .25s ease,
-        background .25s ease,
-        box-shadow .3s ease,
-        transform .3s cubic-bezier(.22,1,.36,1);
-    }
-
-    .form-group input:hover {
-      background:
-        rgba(255,255,255,.06);
-
-      border-color:
-        rgba(255,255,255,.11);
-    }
-
-    .form-group input:focus {
-      background:
-        rgba(255,255,255,.065);
-
-      border-color:
-        rgba(255,255,255,.24);
-
-      box-shadow:
-        0 0 0 3px rgba(255,255,255,.035),
-        inset 0 1px 0 rgba(255,255,255,.04);
-    }
-
-    .form-group input::placeholder {
-      color: #55555a;
-    }
-
-    .input-password-wrap {
-      position: relative;
-    }
-
-    .input-password-wrap input {
-      padding-right: 50px;
-    }
-
-    .btn-toggle-pass {
-      position: absolute;
-
-      right: 9px;
-      top: 50%;
-
-      width: 34px;
-      height: 34px;
-
-      transform: translateY(-50%);
-
-      display: grid;
-      place-items: center;
-
-      padding: 0;
-
-      color: #77777c;
-
-      background:
-        transparent;
-
-      border: 0;
-
-      border-radius: 10px;
-
-      cursor: pointer;
-
-      transition:
-        color .2s ease,
-        background .2s ease,
-        transform .2s ease;
-    }
-
-    .btn-toggle-pass:hover {
-      color: #f5f5f7;
-
-      background:
-        rgba(255,255,255,.06);
-
-      transform:
-        translateY(-50%)
-        scale(1.04);
-    }
-
-    .btn-toggle-pass:active {
-      transform:
-        translateY(-50%)
-        scale(.94);
-    }
-
-    .error-msg {
-      position: relative;
-      z-index: 1;
-
-      display: flex;
-      align-items: flex-start;
-      gap: 9px;
-
-      margin:
-        4px 0 14px;
-
-      padding:
-        11px 13px;
-
-      color: #ff9da9;
-
-      font-size: .82rem;
-      line-height: 1.35;
-
-      background:
-        rgba(255,70,90,.065);
-
-      border:
-        1px solid rgba(255,70,90,.13);
-
-      border-radius: 13px;
-    }
-
-    .error-msg i {
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    .btn-auth {
-      position: relative;
-      z-index: 1;
-
-      width: 100%;
-      height: 52px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-
-      margin-top: 7px;
-
-      color: #050505;
-
-      font-size: .94rem;
-      font-weight: 800;
-
-      background:
-        linear-gradient(
-          180deg,
-          #f5f5f7,
-          #cfcfd3
-        );
-
-      border:
-        1px solid rgba(255,255,255,.3);
-
-      border-radius: 15px;
-
-      cursor: pointer;
-
-      box-shadow:
-        0 10px 28px rgba(0,0,0,.28),
-        inset 0 1px 0 rgba(255,255,255,.7);
-
-      transition:
-        transform .25s cubic-bezier(.22,1,.36,1),
-        box-shadow .25s ease,
-        filter .25s ease;
-    }
-
-    .btn-auth:hover {
-      filter: brightness(1.04);
-
-      transform:
-        translateY(-1px);
-
-      box-shadow:
-        0 14px 35px rgba(0,0,0,.35),
-        inset 0 1px 0 rgba(255,255,255,.8);
-    }
-
-    .btn-auth:active {
-      transform:
-        translateY(1px)
-        scale(.985);
-    }
-
-    .btn-auth:disabled {
-      opacity: .58;
-      cursor: wait;
-
-      transform: none;
-    }
-
-    .auth-switch {
-      position: relative;
-      z-index: 1;
-
-      margin:
-        22px 0 0;
-
-      color: #707075;
-
-      text-align: center;
-
-      font-size: .83rem;
-    }
-
-    .auth-switch a {
-      color: #f0f0f2;
-
-      font-weight: 700;
-
-      text-decoration: none;
-    }
-
-    .auth-switch a:hover {
-      color: #fff;
-    }
-
-    .spin {
-      display: inline-block;
-
-      animation:
-        spin .8s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    @media (max-width: 480px) {
-      .auth-page {
-        align-items: flex-start;
-
-        padding:
-          18px 12px
-          calc(18px + env(safe-area-inset-bottom));
-      }
-
-      .auth-container {
-        margin-top: 7vh;
-
-        padding: 27px 20px;
-
-        border-radius: 25px;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .auth-container,
-      .spin {
-        animation: none;
-      }
-    }
-  </style>
+    <link rel="stylesheet" href="auth.css"/>
 </head>
 
 <body class="auth-page">
 
-  <main class="auth-container">
+    <main class="auth-container">
 
-    <div class="auth-logo">
-      <i class="ri-leaf-fill"></i>
-      <span>Foro Ubre</span>
-    </div>
-
-    <h2>Bienvenido de vuelta</h2>
-
-    <form id="loginForm" novalidate>
-
-      <div class="form-group">
-        <label>
-          <i class="ri-mail-line"></i>
-          Email
-        </label>
-
-        <input
-          type="email"
-          id="email"
-          placeholder="tu@email.com"
-          required
-          autocomplete="email"
-        />
-      </div>
-
-      <div class="form-group">
-        <label>
-          <i class="ri-lock-line"></i>
-          Contraseña
-        </label>
-
-        <div class="input-password-wrap">
-          <input
-            type="password"
-            id="password"
-            placeholder="••••••••"
-            required
-            autocomplete="current-password"
-          />
-
-          <button
-            type="button"
-            class="btn-toggle-pass"
-            id="btnTogglePass"
-            tabindex="-1"
-            aria-label="Mostrar contraseña"
-          >
-            <i class="ri-eye-line" id="eyeIcon"></i>
-          </button>
+        <div class="auth-logo">
+            <i class="ri-leaf-fill"></i>
+            <span>Foro Ubre</span>
         </div>
-      </div>
 
-      <div id="errorMsg" class="error-msg hidden">
-        <i class="ri-error-warning-line"></i>
-        <span id="errorText"></span>
-      </div>
+        <h2>Bienvenido de vuelta</h2>
 
-      <button type="submit" class="btn-auth" id="btnLogin">
-        <i class="ri-login-box-line"></i>
-        <span>Iniciar sesión</span>
-      </button>
+        <form id="loginForm" novalidate>
 
-    </form>
+            <div class="form-group">
 
-    <p class="auth-switch">
-      ¿No tienes cuenta?
-      <a href="register.html">Regístrate aquí</a>
-    </p>
+                <label>
+                    <i class="ri-mail-line"></i>
+                    Email
+                </label>
 
-  </main>
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="tu@email.com"
+                    required
+                    autocomplete="email"
+                />
 
-  <script>
-    if (localStorage.getItem("fu_token")) window.location.href = "/";
+            </div>
 
-    document.getElementById("btnTogglePass").addEventListener("click", () => {
-      const inp  = document.getElementById("password");
-      const icon = document.getElementById("eyeIcon");
+            <div class="form-group">
 
-      if (inp.type === "password") {
-        inp.type = "text";
-        icon.className = "ri-eye-off-line";
-      } else {
-        inp.type = "password";
-        icon.className = "ri-eye-line";
-      }
-    });
+                <label>
+                    <i class="ri-lock-line"></i>
+                    Contraseña
+                </label>
 
-    document.getElementById("loginForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
+                <div class="input-password-wrap">
 
-      const btn     = document.getElementById("btnLogin");
-      const errBox  = document.getElementById("errorMsg");
-      const errText = document.getElementById("errorText");
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="••••••••"
+                        required
+                        autocomplete="current-password"
+                    />
 
-      errBox.classList.add("hidden");
+                    <button
+                        type="button"
+                        class="btn-toggle-pass"
+                        id="btnTogglePass"
+                        tabindex="-1"
+                        aria-label="Mostrar contraseña"
+                    >
+                        <i
+                            class="ri-eye-line"
+                            id="eyeIcon"
+                        ></i>
+                    </button>
 
-      btn.innerHTML =
-        '<i class="ri-loader-4-line spin"></i><span>Entrando...</span>';
+                </div>
 
-      btn.disabled = true;
+            </div>
 
-      try {
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            email: document.getElementById("email").value.trim(),
-            password: document.getElementById("password").value
-          })
-        });
+            <div
+                id="errorMsg"
+                class="error-msg hidden"
+                role="alert"
+            >
+                <i class="ri-error-warning-line"></i>
+                <span id="errorText"></span>
+            </div>
 
-        const data = await res.json();
+            <button
+                type="submit"
+                class="btn-auth"
+                id="btnLogin"
+            >
+                <i class="ri-login-box-line"></i>
+                <span>Iniciar sesión</span>
+            </button>
 
-        if (!res.ok) throw new Error(data.mensaje);
+        </form>
 
-        localStorage.setItem("fu_token", data.token);
-        localStorage.setItem("fu_usuario", JSON.stringify(data.usuario));
+        <p class="auth-switch">
+            ¿No tienes cuenta?
+            <a href="register.html">Regístrate aquí</a>
+        </p>
 
-        window.location.href = "/";
+    </main>
 
-      } catch (err) {
-        errText.textContent = err.message;
-        errBox.classList.remove("hidden");
+    <script>
+        /* =====================================================
+           AUTH REDIRECT
+           ===================================================== */
 
-        btn.innerHTML =
-          '<i class="ri-login-box-line"></i><span>Iniciar sesión</span>';
+        if (localStorage.getItem("fu_token")) {
+            window.location.href = "/";
+        }
 
-        btn.disabled = false;
-      }
-    });
-  </script>
+
+        /* =====================================================
+           TOGGLE PASSWORD
+           ===================================================== */
+
+        document
+            .getElementById("btnTogglePass")
+            .addEventListener("click", () => {
+
+                const input =
+                    document.getElementById("password");
+
+                const icon =
+                    document.getElementById("eyeIcon");
+
+                if (input.type === "password") {
+
+                    input.type = "text";
+
+                    icon.className =
+                        "ri-eye-off-line";
+
+                } else {
+
+                    input.type = "password";
+
+                    icon.className =
+                        "ri-eye-line";
+                }
+            });
+
+
+        /* =====================================================
+           LOGIN
+           ===================================================== */
+
+        document
+            .getElementById("loginForm")
+            .addEventListener("submit", async (e) => {
+
+                e.preventDefault();
+
+                const btn =
+                    document.getElementById("btnLogin");
+
+                const errorBox =
+                    document.getElementById("errorMsg");
+
+                const errorText =
+                    document.getElementById("errorText");
+
+                errorBox.classList.add("hidden");
+
+                btn.innerHTML =
+                    '<i class="ri-loader-4-line spin"></i><span>Entrando...</span>';
+
+                btn.disabled = true;
+
+                try {
+
+                    const res = await fetch(
+                        "/api/auth/login",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                email:
+                                    document
+                                        .getElementById("email")
+                                        .value
+                                        .trim(),
+
+                                password:
+                                    document
+                                        .getElementById("password")
+                                        .value
+                            })
+                        }
+                    );
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        throw new Error(
+                            data.mensaje ||
+                            "No se pudo iniciar sesión."
+                        );
+                    }
+
+                    localStorage.setItem(
+                        "fu_token",
+                        data.token
+                    );
+
+                    localStorage.setItem(
+                        "fu_usuario",
+                        JSON.stringify(data.usuario)
+                    );
+
+                    window.location.href = "/";
+
+                } catch (err) {
+
+                    errorText.textContent =
+                        err.message ||
+                        "Ocurrió un error.";
+
+                    errorBox.classList.remove("hidden");
+
+                    btn.innerHTML =
+                        '<i class="ri-login-box-line"></i><span>Iniciar sesión</span>';
+
+                    btn.disabled = false;
+                }
+            });
+    </script>
 
 </body>
 </html>
