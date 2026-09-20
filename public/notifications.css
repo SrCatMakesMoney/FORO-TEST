@@ -1,0 +1,552 @@
+/* ============================================================
+   FORO UBRE — NOTIFICACIONES
+   Liquid Black Glass / iOS-style
+============================================================ */
+
+.notification-nav {
+  position: relative;
+}
+
+.notification-nav .nav-icon {
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+
+  background: var(--red, #ff4e68);
+  color: #fff;
+
+  border: 2px solid #080909;
+
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+
+  box-shadow:
+    0 4px 14px rgba(255, 78, 104, .35);
+
+  animation: notificationBadgeIn .25s ease;
+}
+
+.notification-badge.hidden {
+  display: none;
+}
+
+@keyframes notificationBadgeIn {
+  from {
+    opacity: 0;
+    transform: scale(.45);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+/* ============================================================
+   PANEL
+============================================================ */
+
+.notifications-panel {
+  position: fixed;
+
+  top: 76px;
+  right: 24px;
+
+  width: 390px;
+  max-width: calc(100vw - 32px);
+
+  max-height: min(620px, calc(100vh - 100px));
+
+  z-index: 99999;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border:
+    1px solid rgba(255, 255, 255, .09);
+
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(24, 27, 25, .97),
+      rgba(7, 9, 8, .985)
+    );
+
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, .68),
+    inset 0 1px rgba(255, 255, 255, .06);
+
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+
+  opacity: 0;
+  visibility: hidden;
+
+  transform:
+    translateY(-10px)
+    scale(.97);
+
+  transform-origin: top right;
+
+  transition:
+    opacity .2s ease,
+    transform .25s cubic-bezier(.22, .75, .25, 1),
+    visibility .2s ease;
+}
+
+.notifications-panel.open {
+  opacity: 1;
+  visibility: visible;
+
+  transform:
+    translateY(0)
+    scale(1);
+}
+
+
+/* ============================================================
+   HEADER
+============================================================ */
+
+.notifications-header {
+  min-height: 66px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 18px;
+
+  border-bottom:
+    1px solid rgba(255, 255, 255, .07);
+}
+
+.notifications-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  color: #f4f6f4;
+
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.notifications-title i {
+  color: var(--green, #72f28b);
+  font-size: 1.15rem;
+}
+
+.notifications-readall {
+  border: 0;
+
+  background: transparent;
+
+  color: var(--green, #72f28b);
+
+  font-size: .72rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  padding: 7px 8px;
+
+  border-radius: 9px;
+
+  transition:
+    background .18s ease,
+    transform .18s ease;
+}
+
+.notifications-readall:hover {
+  background:
+    rgba(114, 242, 139, .08);
+}
+
+.notifications-readall:active {
+  transform: scale(.96);
+}
+
+
+/* ============================================================
+   LIST
+============================================================ */
+
+.notifications-list {
+  overflow-y: auto;
+
+  overscroll-behavior: contain;
+
+  scrollbar-width: thin;
+  scrollbar-color:
+    rgba(255, 255, 255, .12)
+    transparent;
+}
+
+.notifications-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.notifications-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notifications-list::-webkit-scrollbar-thumb {
+  background:
+    rgba(255, 255, 255, .12);
+
+  border-radius: 999px;
+}
+
+
+/* ============================================================
+   ITEM
+============================================================ */
+
+.notification-item {
+  position: relative;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 12px;
+
+  padding: 14px 16px;
+
+  cursor: pointer;
+
+  border-bottom:
+    1px solid rgba(255, 255, 255, .045);
+
+  transition:
+    background .18s ease,
+    transform .18s ease;
+}
+
+.notification-item:hover {
+  background:
+    rgba(255, 255, 255, .045);
+}
+
+.notification-item:active {
+  transform: scale(.995);
+}
+
+.notification-item.unread {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(114, 242, 139, .075),
+      transparent
+    );
+}
+
+.notification-item.unread::before {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  top: 13px;
+  bottom: 13px;
+
+  width: 3px;
+
+  border-radius:
+    0 4px 4px 0;
+
+  background:
+    var(--green, #72f28b);
+
+  box-shadow:
+    0 0 12px
+    rgba(114, 242, 139, .25);
+}
+
+
+/* ============================================================
+   AVATAR
+============================================================ */
+
+.notification-avatar {
+  width: 42px;
+  height: 42px;
+
+  flex: 0 0 42px;
+
+  object-fit: cover;
+
+  border-radius: 50%;
+
+  background:
+    #111;
+
+  border:
+    1px solid rgba(255, 255, 255, .08);
+}
+
+
+/* ============================================================
+   CONTENT
+============================================================ */
+
+.notification-content {
+  min-width: 0;
+
+  flex: 1;
+}
+
+.notification-text {
+  margin: 1px 0 5px;
+
+  color: #e9ecea;
+
+  font-size: .84rem;
+  line-height: 1.4;
+}
+
+.notification-text strong {
+  color: #fff;
+
+  font-weight: 800;
+}
+
+.notification-time {
+  color: #686e6a;
+
+  font-size: .7rem;
+}
+
+
+/* ============================================================
+   TYPE ICON
+============================================================ */
+
+.notification-icon {
+  width: 30px;
+  height: 30px;
+
+  flex: 0 0 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background:
+    rgba(114, 242, 139, .09);
+
+  color:
+    var(--green, #72f28b);
+
+  font-size: 15px;
+}
+
+
+/* ============================================================
+   EMPTY
+============================================================ */
+
+.notifications-empty {
+  padding: 55px 20px;
+
+  text-align: center;
+
+  color: #686e6a;
+}
+
+.notifications-empty i {
+  display: block;
+
+  margin-bottom: 10px;
+
+  font-size: 2.4rem;
+
+  opacity: .55;
+}
+
+.notifications-empty strong {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #a5aaa6;
+
+  font-size: .9rem;
+}
+
+.notifications-empty span {
+  font-size: .76rem;
+}
+
+
+/* ============================================================
+   TOAST
+============================================================ */
+
+.notification-toast {
+  position: fixed;
+
+  right: 22px;
+  bottom: 22px;
+
+  z-index: 100000;
+
+  width:
+    min(370px, calc(100vw - 32px));
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 12px;
+
+  border:
+    1px solid rgba(255, 255, 255, .09);
+
+  border-radius: 18px;
+
+  background:
+    rgba(14, 16, 15, .94);
+
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, .55),
+    inset 0 1px rgba(255, 255, 255, .05);
+
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+
+  cursor: pointer;
+
+  transform:
+    translateY(20px)
+    scale(.97);
+
+  opacity: 0;
+
+  transition:
+    .28s cubic-bezier(.22, .75, .25, 1);
+}
+
+.notification-toast.show {
+  transform:
+    translateY(0)
+    scale(1);
+
+  opacity: 1;
+}
+
+.notification-toast-avatar {
+  width: 38px;
+  height: 38px;
+
+  flex: 0 0 38px;
+
+  border-radius: 50%;
+
+  object-fit: cover;
+}
+
+.notification-toast-body {
+  min-width: 0;
+}
+
+.notification-toast-title {
+  color: #fff;
+
+  font-size: .82rem;
+  font-weight: 800;
+}
+
+.notification-toast-text {
+  margin-top: 2px;
+
+  color: #9da39f;
+
+  font-size: .74rem;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+@media (max-width: 600px) {
+
+  .notifications-panel {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+
+    width: auto;
+    max-width: none;
+
+    max-height:
+      calc(100dvh - 20px);
+
+    border-radius: 24px;
+  }
+
+  .notifications-header {
+    min-height: 64px;
+  }
+
+  .notifications-readall {
+    font-size: .68rem;
+  }
+
+  .notification-item {
+    padding: 15px;
+  }
+
+  .notification-toast {
+    right: 12px;
+    bottom: 76px;
+    left: 12px;
+
+    width: auto;
+  }
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .notification-badge,
+  .notifications-panel,
+  .notification-toast,
+  .notification-item,
+  .notifications-readall {
+    animation: none !important;
+    transition: none !important;
+  }
+}
