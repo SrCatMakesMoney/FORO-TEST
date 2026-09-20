@@ -1,1331 +1,2546 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
+  />
+
   <title>Foro Ubre — Videos</title>
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --green:      #5cdb6f;
-      --radius:     14px;
-      --radius-full:9999px;
-    }
+  <link
+    href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css"
+    rel="stylesheet"
+  >
 
-    body {
-      background:  #000;
-      color:       #fff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      overflow:    hidden;
-      height:      100dvh;
-    }
-
-    /* ═══ TOP BAR ═══ */
-    .vf-top {
-      position:        fixed;
-      top:             0; left: 0; right: 0;
-      z-index:         50;
-      display:         flex;
-      align-items:     center;
-      justify-content: space-between;
-      padding:         14px 16px;
-      background:      linear-gradient(to bottom, rgba(0,0,0,.6), transparent);
-    }
-    .vf-top button {
-      background:   none;
-      border:       none;
-      color:        #fff;
-      font-size:    1.4rem;
-      cursor:       pointer;
-      width:        40px; height: 40px;
-      display:      flex;
-      align-items:  center;
-      justify-content: center;
-      border-radius: var(--radius-full);
-      transition:   background .15s;
-    }
-    .vf-top button:hover { background: rgba(255,255,255,.12); }
-    .vf-top h2 {
-      font-size:   1rem;
-      font-weight: 800;
-      letter-spacing: .5px;
-    }
-
-    /* ═══ FEED ═══ */
-    .vf-feed {
-      height:           100dvh;
-      overflow-y:       scroll;
-      scroll-snap-type: y mandatory;
-      scrollbar-width:  none;
-    }
-    .vf-feed::-webkit-scrollbar { display: none; }
-
-    /* ═══ ITEM ═══ */
-    .vf-item {
-      height:          100dvh;
-      scroll-snap-align: start;
-      position:        relative;
-      display:         flex;
-      align-items:     center;
-      justify-content: center;
-      background:      #000;
-      overflow:        hidden;
-    }
-
-    .vf-video {
-      position:    absolute;
-      inset:       0;
-      width:       100%;
-      height:      100%;
-      object-fit:  contain;
-      background:  #000;
-    }
-
-    /* ═══ OVERLAYS ═══ */
-    .vf-overlay-top {
-      position:   absolute;
-      top: 0; left: 0; right: 0;
-      height:     120px;
-      background: linear-gradient(to bottom, rgba(0,0,0,.5), transparent);
-      z-index:    10;
-      pointer-events: none;
-    }
-
-    .vf-overlay-bottom {
-      position:   absolute;
-      bottom: 0; left: 0; right: 0;
-      padding:    24px 76px 36px 16px;
-      background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 100%);
-      z-index:    10;
-    }
-
-    .vf-user-row {
-      display:     flex;
-      align-items: center;
-      gap:         10px;
-      margin-bottom: 10px;
-      cursor:      pointer;
-    }
-    .vf-user-row img,
-    .vf-user-row video {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid rgba(255,255,255,.4);
-    }
-    .vf-autor-nombre { font-weight: 800; font-size: .95rem; }
-    .vf-autor-handle { font-size: .8rem; color: rgba(255,255,255,.7); }
-
-    .vf-desc {
-      font-size:   .9rem;
-      line-height: 1.5;
-      color:       rgba(255,255,255,.9);
-      display:     -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow:    hidden;
-      max-width:   calc(100% - 20px);
-    }
-
-    .vf-vistas {
-      font-size:  .75rem;
-      color:      rgba(255,255,255,.5);
-      margin-top: 6px;
-      display:    flex;
-      align-items: center;
-      gap:        4px;
-    }
-
-    /* ═══ PROGRESS BAR ═══ */
-    .vf-progress {
-      position:   absolute;
-      bottom:     0; left: 0; right: 0;
-      height:     3px;
-      background: rgba(255,255,255,.2);
-      z-index:    11;
-    }
-    .vf-progress-bar {
-      height:     100%;
-      background: var(--green);
-      width:      0%;
-      transition: none;
-    }
-
-    /* ═══ ACCIONES LATERALES ═══ */
-    .vf-actions {
-      position:        absolute;
-      right:           12px;
-      bottom:          80px;
-      display:         flex;
-      flex-direction:  column;
-      align-items:     center;
-      gap:             22px;
-      z-index:         10;
-    }
-
-    .vf-btn {
-      display:         flex;
-      flex-direction:  column;
-      align-items:     center;
-      gap:             4px;
-      background:      none;
-      border:          none;
-      color:           #fff;
-      font-size:       1.85rem;
-      cursor:          pointer;
-      filter:          drop-shadow(0 2px 6px rgba(0,0,0,.6));
-      transition:      transform .15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .vf-btn:active { transform: scale(.85); }
-    .vf-btn span {
-      font-size:  .73rem;
-      font-weight:800;
-      letter-spacing: .3px;
-    }
-    .vf-btn.liked i    { color: #ff4466; }
-    .vf-btn.shared i   { color: var(--green); }
-
-    .vf-avatar-btn {
-      width:         46px;
-      height:        46px;
-      border-radius: 50%;
-      overflow:      hidden;
-      border:        2px solid #fff;
-      cursor:        pointer;
-    }
-    .vf-avatar-btn img,
-    .vf-avatar-btn video {
-      width: 100%; height: 100%; object-fit: cover;
-    }
-
-    /* ═══ PLAY/PAUSE TAP ═══ */
-    .vf-tap-area {
-      position:   absolute;
-      inset:      0;
-      z-index:    9;
-      cursor:     pointer;
-    }
-
-    .vf-play-icon {
-      position:   absolute;
-      top:        50%;
-      left:       50%;
-      transform:  translate(-50%,-50%) scale(0);
-      font-size:  5rem;
-      color:      rgba(255,255,255,.8);
-      pointer-events: none;
-      z-index:    15;
-      transition: transform .1s, opacity .3s;
-      opacity:    0;
-    }
-    .vf-play-icon.show {
-      transform: translate(-50%,-50%) scale(1);
-      opacity:   1;
-    }
-
-    /* Doble tap corazón */
-    .vf-heart-anim {
-      position:       absolute;
-      top:            50%;
-      left:           50%;
-      transform:      translate(-50%,-50%) scale(0);
-      font-size:      6rem;
-      color:          #ff4466;
-      pointer-events: none;
-      z-index:        16;
-      opacity:        0;
-      transition:     all .1s;
-    }
-    .vf-heart-anim.pop {
-      transform: translate(-50%,-50%) scale(1.2);
-      opacity:   1;
-    }
-    .vf-heart-anim.fade {
-      transform: translate(-50%,-70%) scale(1);
-      opacity:   0;
-      transition: all .4s ease-out;
-    }
-
-    /* ═══ PANEL COMENTARIOS ═══ */
-    .vf-comments-panel {
-      position:      fixed;
-      bottom:        0; left: 0; right: 0;
-      height:        72vh;
-      background:    #111;
-      border-radius: 24px 24px 0 0;
-      z-index:       200;
-      transform:     translateY(100%);
-      transition:    transform .3s cubic-bezier(.4,0,.2,1);
-      display:       flex;
-      flex-direction: column;
-      max-width:     600px;
-      margin:        0 auto;
-    }
-    .vf-comments-panel.open { transform: translateY(0); }
-
-    .vf-comments-handle {
-      width:         40px; height: 4px;
-      background:    rgba(255,255,255,.2);
-      border-radius: var(--radius-full);
-      margin:        12px auto 0;
-      flex-shrink:   0;
-    }
-
-    .vf-comments-header {
-      display:         flex;
-      align-items:     center;
-      justify-content: space-between;
-      padding:         12px 20px;
-      border-bottom:   1px solid rgba(255,255,255,.08);
-      flex-shrink:     0;
-    }
-    .vf-comments-header strong { font-size: .95rem; }
-    .vf-comments-header button {
-      background: none; border: none;
-      color: rgba(255,255,255,.6); font-size: 1.3rem;
-      cursor: pointer;
-    }
-
-    .vf-comments-list {
-      flex:      1;
-      overflow-y:auto;
-      padding:   12px 16px;
-      display:   flex;
-      flex-direction: column;
-      gap:       16px;
-    }
-    .vf-comments-list::-webkit-scrollbar { display: none; }
-
-    .vf-comment-item {
-      display:     flex;
-      gap:         10px;
-      align-items: flex-start;
-    }
-    .vf-comment-item img,
-    .vf-comment-item video {
-      width: 34px; height: 34px;
-      border-radius: 50%; object-fit: cover; flex-shrink: 0;
-    }
-    .vf-comment-body { flex: 1; min-width: 0; }
-    .vf-comment-author {
-      display:     flex;
-      align-items: center;
-      gap:         6px;
-      margin-bottom: 3px;
-    }
-    .vf-comment-author strong { font-size: .83rem; }
-    .vf-comment-author small  { color: rgba(255,255,255,.4); font-size: .73rem; }
-    .vf-comment-texto {
-      font-size:   .88rem;
-      line-height: 1.5;
-      color:       rgba(255,255,255,.85);
-      word-break:  break-word;
-    }
-    .vf-comment-like {
-      background:  none;
-      border:      none;
-      color:       rgba(255,255,255,.5);
-      font-size:   .75rem;
-      cursor:      pointer;
-      margin-top:  5px;
-      display:     flex;
-      align-items: center;
-      gap:         4px;
-      transition:  color .15s;
-    }
-    .vf-comment-like:hover { color: #ff4466; }
-    .vf-comment-like.liked { color: #ff4466; }
-
-    .vf-comment-empty {
-      text-align: center;
-      color:      rgba(255,255,255,.3);
-      font-size:  .88rem;
-      padding:    32px 0;
-    }
-
-    .vf-comment-input-wrap {
-      display:      flex;
-      align-items:  center;
-      gap:          10px;
-      padding:      12px 16px;
-      border-top:   1px solid rgba(255,255,255,.08);
-      flex-shrink:  0;
-      padding-bottom: env(safe-area-inset-bottom, 12px);
-    }
-    .vf-comment-input-wrap img,
-    .vf-comment-input-wrap video {
-      width: 32px; height: 32px;
-      border-radius: 50%; object-fit: cover; flex-shrink: 0;
-    }
-    .vf-comment-input {
-      flex:        1;
-      background:  rgba(255,255,255,.08);
-      border:      1px solid rgba(255,255,255,.12);
-      border-radius: var(--radius-full);
-      color:       #fff;
-      padding:     8px 16px;
-      font-size:   .9rem;
-      outline:     none;
-    }
-    .vf-comment-input::placeholder { color: rgba(255,255,255,.3); }
-    .vf-comment-submit {
-      background: var(--green);
-      border:     none;
-      color:      #050505;
-      width:      36px; height: 36px;
-      border-radius: 50%;
-      font-size:  1rem;
-      cursor:     pointer;
-      display:    flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: background .15s;
-    }
-    .vf-comment-submit:hover { background: #4ec261; }
-
-    /* ═══ BACKDROP ═══ */
-    .vf-backdrop {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,.6);
-      z-index: 199;
-      backdrop-filter: blur(2px);
-    }
-    .hidden { display: none !important; }
-
-    /* ═══ SHARE SHEET ═══ */
-    .vf-share-sheet {
-      position:      fixed;
-      bottom:        0; left: 0; right: 0;
-      background:    #1a1a1a;
-      border-radius: 24px 24px 0 0;
-      z-index:       200;
-      padding:       24px 20px;
-      padding-bottom: env(safe-area-inset-bottom, 24px);
-      transform:     translateY(100%);
-      transition:    transform .3s cubic-bezier(.4,0,.2,1);
-      max-width:     600px;
-      margin:        0 auto;
-    }
-    .vf-share-sheet.open { transform: translateY(0); }
-    .vf-share-sheet h3 {
-      text-align: center;
-      font-size:  .95rem;
-      margin-bottom: 20px;
-      color:      rgba(255,255,255,.7);
-    }
-    .vf-share-options {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .vf-share-opt {
-      display:     flex;
-      align-items: center;
-      gap:         14px;
-      padding:     14px 16px;
-      border-radius: 14px;
-      background:  none;
-      border:      none;
-      color:       #fff;
-      font-size:   .92rem;
-      cursor:      pointer;
-      width:       100%;
-      text-align:  left;
-      transition:  background .15s;
-    }
-    .vf-share-opt:hover { background: rgba(255,255,255,.08); }
-    .vf-share-opt i { font-size: 1.4rem; color: var(--green); width: 28px; }
-    .vf-share-cancel {
-      margin-top:  12px;
-      width:       100%;
-      background:  rgba(255,255,255,.08);
-      border:      none;
-      color:       #fff;
-      padding:     13px;
-      border-radius: 14px;
-      font-size:   .92rem;
-      font-weight: 600;
-      cursor:      pointer;
-    }
-
-    /* ═══ UPLOAD MODAL ═══ */
-    .vf-modal-overlay {
-      position:    fixed;
-      inset:       0;
-      background:  rgba(0,0,0,.85);
-      z-index:     300;
-      display:     flex;
-      align-items: flex-end;
-      backdrop-filter: blur(8px);
-    }
-    .vf-modal-box {
-      background:    #111;
-      border-radius: 24px 24px 0 0;
-      padding:       24px 20px;
-      padding-bottom: env(safe-area-inset-bottom, 24px);
-      width:         100%;
-      max-width:     600px;
-      margin:        0 auto;
-      max-height:    92dvh;
-      overflow-y:    auto;
-    }
-    .vf-modal-header {
-      display:         flex;
-      align-items:     center;
-      justify-content: space-between;
-      margin-bottom:   20px;
-    }
-    .vf-modal-header h3 { font-size: 1.05rem; font-weight: 800; }
-    .vf-modal-header button {
-      background: rgba(255,255,255,.1);
-      border:     none;
-      color:      #fff;
-      width:      34px; height: 34px;
-      border-radius: 50%;
-      font-size:  1.1rem;
-      cursor:     pointer;
-      display:    flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .vf-upload-area {
-      border:        2px dashed rgba(255,255,255,.2);
-      border-radius: 16px;
-      padding:       40px 20px;
-      text-align:    center;
-      cursor:        pointer;
-      transition:    all .2s;
-      display:       flex;
-      flex-direction:column;
-      align-items:   center;
-      gap:           10px;
-      margin-bottom: 16px;
-    }
-    .vf-upload-area:hover {
-      border-color: var(--green);
-      background:   rgba(92,219,111,.06);
-    }
-    .vf-upload-area i { font-size: 3rem; color: var(--green); }
-    .vf-upload-area p { font-size: .9rem; color: rgba(255,255,255,.7); }
-    .vf-upload-area small { font-size: .78rem; color: rgba(255,255,255,.35); }
-
-    .vf-video-preview {
-      width:         100%;
-      max-height:    280px;
-      border-radius: 12px;
-      margin-bottom: 14px;
-      background:    #000;
-    }
-
-    .vf-form-group { margin-bottom: 14px; }
-    .vf-form-group label {
-      display:       block;
-      font-size:     .8rem;
-      color:         rgba(255,255,255,.5);
-      margin-bottom: 6px;
-      font-weight:   700;
-      letter-spacing:.3px;
-    }
-    .vf-form-group textarea {
-      width:        100%;
-      background:   rgba(255,255,255,.06);
-      border:       1px solid rgba(255,255,255,.12);
-      border-radius:12px;
-      color:        #fff;
-      padding:      12px 14px;
-      font-size:    .9rem;
-      resize:       none;
-      outline:      none;
-      line-height:  1.5;
-    }
-    .vf-form-group textarea::placeholder { color: rgba(255,255,255,.25); }
-
-    .vf-btn-auth {
-      width:         100%;
-      background:    var(--green);
-      color:         #050505;
-      border:        none;
-      border-radius: var(--radius-full);
-      padding:       14px;
-      font-size:     .95rem;
-      font-weight:   800;
-      cursor:        pointer;
-      display:       flex;
-      align-items:   center;
-      justify-content: center;
-      gap:           8px;
-      transition:    background .15s;
-    }
-    .vf-btn-auth:hover    { background: #4ec261; }
-    .vf-btn-auth:disabled { opacity: .5; cursor: not-allowed; }
-
-    /* ═══ LOADING ═══ */
-    .vf-loading {
-      height:          100dvh;
-      display:         flex;
-      flex-direction:  column;
-      align-items:     center;
-      justify-content: center;
-      gap:             12px;
-      color:           rgba(255,255,255,.5);
-      font-size:       .9rem;
-    }
-    .spin { display: inline-block; animation: spin .8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ═══ EMPTY ═══ */
-    .vf-empty {
-      height:         100dvh;
-      display:        flex;
-      flex-direction: column;
-      align-items:    center;
-      justify-content:center;
-      gap:            16px;
-      color:          rgba(255,255,255,.4);
-      text-align:     center;
-      padding:        24px;
-    }
-    .vf-empty i { font-size: 4rem; }
-    .vf-empty p { font-size: .9rem; line-height: 1.6; }
-
-    /* ═══ TOAST ═══ */
-    .vf-toast {
-      position:      fixed;
-      bottom:        100px;
-      left:          50%;
-      transform:     translateX(-50%) translateY(20px);
-      background:    rgba(255,255,255,.15);
-      backdrop-filter: blur(12px);
-      border:        1px solid rgba(255,255,255,.15);
-      color:         #fff;
-      padding:       10px 20px;
-      border-radius: var(--radius-full);
-      font-size:     .85rem;
-      font-weight:   600;
-      z-index:       400;
-      opacity:       0;
-      transition:    all .3s;
-      white-space:   nowrap;
-    }
-    .vf-toast.show {
-      opacity:   1;
-      transform: translateX(-50%) translateY(0);
-    }
-  </style>
+  <link rel="stylesheet" href="videos.css">
 </head>
+
 <body>
 
-<!-- ══ TOP BAR ══ -->
-<div class="vf-top">
-  <button onclick="window.location.href='/'">
-    <i class="ri-arrow-left-line"></i>
-  </button>
-  <h2><i class="ri-video-line" style="vertical-align:middle;margin-right:4px"></i>Videos</h2>
-  <button onclick="abrirUpload()" title="Subir video">
-    <i class="ri-add-circle-line"></i>
-  </button>
-</div>
+  <!-- =========================================================
+       BACKGROUND
+  ========================================================== -->
 
-<!-- ══ FEED ══ -->
-<div class="vf-feed" id="vfFeed">
-  <div class="vf-loading">
-    <i class="ri-loader-4-line spin" style="font-size:2rem;color:var(--green)"></i>
-    Cargando videos...
-  </div>
-</div>
+  <div class="carbon-bg"></div>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
 
-<!-- ══ PANEL COMENTARIOS ══ -->
-<div class="vf-backdrop hidden" id="backdrop" onclick="cerrarPaneles()"></div>
 
-<div class="vf-comments-panel" id="commentsPanel">
-  <div class="vf-comments-handle"></div>
-  <div class="vf-comments-header">
-    <strong id="commentsPanelTitle">Comentarios</strong>
-    <button onclick="cerrarPaneles()"><i class="ri-close-line"></i></button>
-  </div>
-  <div class="vf-comments-list" id="commentsList"></div>
-  <div class="vf-comment-input-wrap">
-    <div id="commentAvatar"></div>
-    <input type="text" class="vf-comment-input" id="commentInput"
-           placeholder="Escribe un comentario..." maxlength="280"
-           onkeydown="if(event.key==='Enter') enviarComentario()"/>
-    <button class="vf-comment-submit" onclick="enviarComentario()">
-      <i class="ri-send-plane-fill"></i>
+  <!-- =========================================================
+       TOP BAR
+  ========================================================== -->
+
+  <header class="vf-top">
+
+    <button
+      class="vf-top-btn"
+      onclick="window.location.href='/'"
+      aria-label="Volver"
+    >
+      <i class="ri-arrow-left-line"></i>
     </button>
-  </div>
-</div>
 
-<!-- ══ SHARE SHEET ══ -->
-<div class="vf-share-sheet" id="shareSheet">
-  <h3>Compartir video</h3>
-  <div class="vf-share-options">
-    <button class="vf-share-opt" onclick="compartirEnForo()">
-      <i class="ri-share-forward-fill"></i>
-      <div>
-        <strong style="display:block">Compartir en Foro Ubre</strong>
-        <small style="color:rgba(255,255,255,.4);font-size:.78rem">Aparece en tus compartidos del perfil</small>
+
+    <div class="vf-top-title">
+
+      <span class="vf-top-eyebrow">
+        <span class="vf-live-dot"></span>
+        FORO UBRE
+      </span>
+
+      <h2>
+        <i class="ri-video-line"></i>
+        Videos
+      </h2>
+
+    </div>
+
+
+    <button
+      class="vf-top-btn vf-upload-top-btn"
+      onclick="abrirUpload()"
+      title="Subir video"
+      aria-label="Subir video"
+    >
+      <i class="ri-add-line"></i>
+    </button>
+
+  </header>
+
+
+
+  <!-- =========================================================
+       VIDEO FEED
+  ========================================================== -->
+
+  <main
+    class="vf-feed"
+    id="vfFeed"
+  >
+
+    <div class="vf-loading">
+
+      <div class="vf-loading-icon">
+        <i class="ri-loader-4-line spin"></i>
       </div>
-    </button>
-    <button class="vf-share-opt" onclick="copiarEnlace()">
-      <i class="ri-link"></i>
-      <span>Copiar enlace</span>
-    </button>
-    <button class="vf-share-opt" id="btnNativeShare" onclick="shareNativo()">
-      <i class="ri-share-box-line"></i>
-      <span>Más opciones</span>
-    </button>
-  </div>
-  <button class="vf-share-cancel" onclick="cerrarPaneles()">Cancelar</button>
-</div>
 
-<!-- ══ UPLOAD MODAL ══ -->
-<div class="vf-modal-overlay hidden" id="uploadModal">
-  <div class="vf-modal-box">
-    <div class="vf-modal-header">
-      <h3><i class="ri-video-add-line" style="color:var(--green);margin-right:6px"></i>Subir video</h3>
-      <button onclick="cerrarUpload()"><i class="ri-close-line"></i></button>
-    </div>
-
-    <div class="vf-upload-area" id="uploadArea" onclick="document.getElementById('videoInput').click()">
-      <i class="ri-video-add-line"></i>
-      <p>Toca para seleccionar un video</p>
-      <small>MP4 o WebM · Máx. 100MB</small>
-    </div>
-    <input type="file" id="videoInput" accept="video/mp4,video/webm,video/quicktime" hidden/>
-
-    <video id="videoPreviewEl" class="vf-video-preview hidden" controls playsinline></video>
-
-    <div class="vf-form-group">
-      <label><i class="ri-text"></i> DESCRIPCIÓN</label>
-      <textarea id="videoDesc" rows="3" maxlength="300"
-                placeholder="Describe tu video... #hashtags @menciones"></textarea>
-      <div style="text-align:right;font-size:.73rem;color:rgba(255,255,255,.3);margin-top:4px">
-        <span id="descCount">300</span> restantes
-      </div>
-    </div>
-
-    <div id="uploadProgress" class="hidden" style="margin-bottom:14px">
-      <div style="background:rgba(255,255,255,.1);border-radius:var(--radius-full);height:6px;overflow:hidden">
-        <div id="progressBar" style="height:100%;background:var(--green);width:0%;transition:width .3s"></div>
-      </div>
-      <p style="font-size:.78rem;color:rgba(255,255,255,.5);margin-top:6px;text-align:center" id="progressText">Subiendo...</p>
-    </div>
-
-    <button class="vf-btn-auth" id="btnSubirVideo" onclick="subirVideo()" disabled>
-      <i class="ri-upload-cloud-line"></i>
-      Publicar video
-    </button>
-  </div>
-</div>
-
-<!-- ══ TOAST ══ -->
-<div class="vf-toast" id="toast"></div>
-
-<script>
-const API   = "/api";
-const token = localStorage.getItem("fu_token");
-const yo    = JSON.parse(localStorage.getItem("fu_usuario") || "null");
-if (!token || !yo) window.location.href = "/login.html";
-
-// ══ ESTADO ══
-let videos       = [];
-let pagina       = 1;
-let cargando     = false;
-let hayMas       = true;
-let videoActivo  = null; // id del video en comentarios/share
-let videoFile    = null;
-let lastTap      = 0;
-let viewedIds    = new Set();
-
-// ══════════════════════════
-// CARGAR VIDEOS
-// ══════════════════════════
-async function cargarVideos(reset = true) {
-  if (cargando) return;
-  cargando = true;
-
-  if (reset) {
-    pagina = 1; hayMas = true; videos = [];
-    document.getElementById("vfFeed").innerHTML = `
-      <div class="vf-loading">
-        <i class="ri-loader-4-line spin" style="font-size:2rem;color:var(--green)"></i>
+      <strong>
         Cargando videos...
+      </strong>
+
+      <span>
+        Preparando tu feed
+      </span>
+
+    </div>
+
+  </main>
+
+
+
+  <!-- =========================================================
+       BACKDROP
+  ========================================================== -->
+
+  <div
+    class="vf-backdrop hidden"
+    id="backdrop"
+    onclick="cerrarPaneles()"
+  ></div>
+
+
+
+  <!-- =========================================================
+       COMMENTS PANEL
+  ========================================================== -->
+
+  <section
+    class="vf-comments-panel"
+    id="commentsPanel"
+  >
+
+    <div class="vf-comments-handle"></div>
+
+
+    <div class="vf-comments-header">
+
+      <div class="vf-panel-title">
+
+        <span class="vf-panel-title-icon">
+          <i class="ri-chat-3-line"></i>
+        </span>
+
+        <strong id="commentsPanelTitle">
+          Comentarios
+        </strong>
+
       </div>
-    `;
-  }
 
-  try {
-    const res  = await fetch(`${API}/videos?pagina=${pagina}&limite=10`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.mensaje);
 
-    if (reset) document.getElementById("vfFeed").innerHTML = "";
+      <button
+        class="vf-panel-close"
+        onclick="cerrarPaneles()"
+        aria-label="Cerrar"
+      >
+        <i class="ri-close-line"></i>
+      </button>
 
-    if (!data.length && reset) {
-      document.getElementById("vfFeed").innerHTML = `
-        <div class="vf-empty">
-          <i class="ri-video-line"></i>
-          <p>No hay videos todavía.<br/>¡Sé el primero en subir uno!</p>
-          <button onclick="abrirUpload()" style="background:var(--green);color:#050505;border:none;border-radius:999px;padding:12px 24px;font-weight:800;cursor:pointer;font-size:.9rem;margin-top:8px">
-            <i class="ri-add-line"></i> Subir video
-          </button>
-        </div>
-      `;
-      return;
-    }
+    </div>
 
-    videos.push(...data);
-    data.forEach(v => renderVideo(v));
 
-    if (data.length < 10) hayMas = false;
-    setupObserver();
+    <div
+      class="vf-comments-list"
+      id="commentsList"
+    ></div>
 
-  } catch (err) {
-    document.getElementById("vfFeed").innerHTML = `
-      <div class="vf-empty">
-        <i class="ri-error-warning-line" style="color:#ff4466"></i>
-        <p>Error al cargar videos</p>
+
+    <div class="vf-comment-input-wrap">
+
+      <div
+        class="vf-comment-avatar"
+        id="commentAvatar"
+      ></div>
+
+
+      <input
+        type="text"
+        class="vf-comment-input"
+        id="commentInput"
+        placeholder="Escribe un comentario..."
+        maxlength="280"
+        onkeydown="if(event.key==='Enter') enviarComentario()"
+      >
+
+
+      <button
+        class="vf-comment-submit"
+        onclick="enviarComentario()"
+        aria-label="Enviar comentario"
+      >
+        <i class="ri-send-plane-fill"></i>
+      </button>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =========================================================
+       SHARE SHEET
+  ========================================================== -->
+
+  <section
+    class="vf-share-sheet"
+    id="shareSheet"
+  >
+
+    <div class="vf-sheet-handle"></div>
+
+
+    <div class="vf-share-header">
+
+      <div>
+        <span class="vf-sheet-eyebrow">
+          ACCIÓN
+        </span>
+
+        <h3>
+          Compartir video
+        </h3>
       </div>
-    `;
-  } finally { cargando = false; }
-}
 
-// ══════════════════════════
-// RENDER VIDEO
-// ══════════════════════════
-function renderVideo(v) {
-  const feed = document.getElementById("vfFeed");
-  const esMio = v.autor._id === yo._id;
+      <span class="vf-share-header-icon">
+        <i class="ri-share-forward-line"></i>
+      </span>
 
-  const avEl = v.autor.avatarTipo === "video"
-    ? `<video src="${v.autor.avatar}" autoplay loop muted playsinline></video>`
-    : `<img src="${v.autor.avatar}" alt=""/>`;
+    </div>
 
-  const item = document.createElement("div");
-  item.className = "vf-item";
-  item.dataset.id = v._id;
-  item.innerHTML = `
-    <!-- Video -->
-    <video class="vf-video"
-           src="${v.url}"
-           loop
-           playsinline
-           preload="metadata"
-           data-id="${v._id}"></video>
 
-    <!-- Tap área -->
-    <div class="vf-tap-area" id="tap-${v._id}"></div>
+    <div class="vf-share-options">
 
-    <!-- Play icon -->
-    <i class="ri-pause-fill vf-play-icon" id="playIcon-${v._id}"></i>
+      <button
+        class="vf-share-opt"
+        onclick="compartirEnForo()"
+      >
 
-    <!-- Corazón doble tap -->
-    <i class="ri-heart-fill vf-heart-anim" id="heartAnim-${v._id}"></i>
+        <span class="vf-share-opt-icon">
+          <i class="ri-share-forward-fill"></i>
+        </span>
 
-    <!-- Gradient top -->
-    <div class="vf-overlay-top"></div>
-
-    <!-- Info bottom -->
-    <div class="vf-overlay-bottom">
-      <div class="vf-user-row" onclick="window.location.href='profile.html?handle=${escHtml(v.autor.handle)}'">
-        <div class="vf-avatar-btn">${avEl}</div>
         <div>
-          <div class="vf-autor-nombre">${escHtml(v.autor.nombre)}</div>
-          <div class="vf-autor-handle">@${escHtml(v.autor.handle)}</div>
+          <strong>
+            Compartir en Foro Ubre
+          </strong>
+
+          <small>
+            Aparece en tus compartidos del perfil
+          </small>
         </div>
-      </div>
-      ${v.descripcion ? `<p class="vf-desc">${escHtml(v.descripcion)}</p>` : ""}
-      <div class="vf-vistas">
-        <i class="ri-eye-line"></i> ${formatNum(v.reproducciones)} reproducciones
-      </div>
+
+        <i class="ri-arrow-right-s-line vf-share-arrow"></i>
+
+      </button>
+
+
+      <button
+        class="vf-share-opt"
+        onclick="copiarEnlace()"
+      >
+
+        <span class="vf-share-opt-icon">
+          <i class="ri-link"></i>
+        </span>
+
+        <div>
+          <strong>
+            Copiar enlace
+          </strong>
+
+          <small>
+            Copia el enlace del contenido
+          </small>
+        </div>
+
+        <i class="ri-arrow-right-s-line vf-share-arrow"></i>
+
+      </button>
+
+
+      <button
+        class="vf-share-opt"
+        id="btnNativeShare"
+        onclick="shareNativo()"
+      >
+
+        <span class="vf-share-opt-icon">
+          <i class="ri-share-box-line"></i>
+        </span>
+
+        <div>
+          <strong>
+            Más opciones
+          </strong>
+
+          <small>
+            Compartir usando tu dispositivo
+          </small>
+        </div>
+
+        <i class="ri-arrow-right-s-line vf-share-arrow"></i>
+
+      </button>
+
     </div>
 
-    <!-- Acciones laterales -->
-    <div class="vf-actions">
-      <!-- Avatar -->
-      <div class="vf-avatar-btn" onclick="window.location.href='profile.html?handle=${escHtml(v.autor.handle)}'"
-           style="width:46px;height:46px;margin-bottom:4px">
-        ${avEl}
-      </div>
 
-      <!-- Like -->
-      <button class="vf-btn ${v.yaLike ? 'liked' : ''}"
-              id="likeBtn-${v._id}"
-              onclick="toggleLike('${v._id}')">
-        <i class="${v.yaLike ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
-        <span id="likeCount-${v._id}">${formatNum(v.totalLikes)}</span>
-      </button>
+    <button
+      class="vf-share-cancel"
+      onclick="cerrarPaneles()"
+    >
+      Cancelar
+    </button>
 
-      <!-- Comentarios -->
-      <button class="vf-btn" onclick="abrirComentarios('${v._id}')">
-        <i class="ri-chat-1-line"></i>
-        <span id="commentCount-${v._id}">${formatNum(v.totalComments)}</span>
-      </button>
+  </section>
 
-      <!-- Compartir -->
-      <button class="vf-btn ${v.yaCompartio ? 'shared' : ''}"
-              id="shareBtn-${v._id}"
-              onclick="abrirShare('${v._id}')">
-        <i class="${v.yaCompartio ? 'ri-share-forward-fill' : 'ri-share-forward-line'}"></i>
-        <span id="shareCount-${v._id}">${formatNum(v.totalCompartidos)}</span>
-      </button>
 
-      <!-- Borrar (solo si es mío) -->
-      ${esMio ? `
-        <button class="vf-btn" onclick="eliminarVideo('${v._id}')" style="color:rgba(255,100,100,.8)">
-          <i class="ri-delete-bin-6-line"></i>
-          <span>Borrar</span>
+
+  <!-- =========================================================
+       UPLOAD MODAL
+  ========================================================== -->
+
+  <div
+    class="vf-modal-overlay hidden"
+    id="uploadModal"
+  >
+
+    <div class="vf-modal-box">
+
+      <div class="vf-modal-header">
+
+        <div>
+
+          <span class="vf-modal-eyebrow">
+            CREAR CONTENIDO
+          </span>
+
+          <h3>
+            <span class="vf-modal-title-icon">
+              <i class="ri-video-add-line"></i>
+            </span>
+
+            Subir video
+          </h3>
+
+        </div>
+
+
+        <button
+          class="vf-modal-close"
+          onclick="cerrarUpload()"
+          aria-label="Cerrar"
+        >
+          <i class="ri-close-line"></i>
         </button>
-      ` : ""}
+
+      </div>
+
+
+
+      <!-- Upload area -->
+
+      <div
+        class="vf-upload-area"
+        id="uploadArea"
+        onclick="document.getElementById('videoInput').click()"
+      >
+
+        <div class="vf-upload-icon">
+          <i class="ri-video-add-line"></i>
+        </div>
+
+        <strong>
+          Selecciona un video
+        </strong>
+
+        <p>
+          Toca aquí para elegir un archivo desde tu dispositivo.
+        </p>
+
+        <small>
+          MP4 o WebM · Máx. 100MB
+        </small>
+
+      </div>
+
+
+      <input
+        type="file"
+        id="videoInput"
+        accept="video/mp4,video/webm,video/quicktime"
+        hidden
+      >
+
+
+
+      <!-- Preview -->
+
+      <div class="vf-preview-wrap">
+
+        <video
+          id="videoPreviewEl"
+          class="vf-video-preview hidden"
+          controls
+          playsinline
+        ></video>
+
+      </div>
+
+
+
+      <!-- Description -->
+
+      <div class="vf-form-group">
+
+        <div class="vf-form-label">
+
+          <label for="videoDesc">
+            <i class="ri-text"></i>
+            DESCRIPCIÓN
+          </label>
+
+          <span>
+            <span id="descCount">300</span>
+          </span>
+
+        </div>
+
+
+        <textarea
+          id="videoDesc"
+          rows="3"
+          maxlength="300"
+          placeholder="Describe tu video... #hashtags @menciones"
+        ></textarea>
+
+      </div>
+
+
+
+      <!-- Progress -->
+
+      <div
+        id="uploadProgress"
+        class="vf-upload-progress hidden"
+      >
+
+        <div class="vf-progress-track">
+
+          <div
+            id="progressBar"
+            class="vf-progress-fill"
+          ></div>
+
+        </div>
+
+
+        <div class="vf-progress-info">
+
+          <span>
+            Subiendo video
+          </span>
+
+          <strong id="progressText">
+            Subiendo... 0%
+          </strong>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- Submit -->
+
+      <button
+        class="vf-btn-auth"
+        id="btnSubirVideo"
+        onclick="subirVideo()"
+        disabled
+      >
+
+        <i class="ri-upload-cloud-line"></i>
+
+        <span>
+          Publicar video
+        </span>
+
+      </button>
+
     </div>
 
-    <!-- Barra de progreso -->
-    <div class="vf-progress">
-      <div class="vf-progress-bar" id="prog-${v._id}"></div>
-    </div>
-  `;
+  </div>
 
-  feed.appendChild(item);
-  setupTap(item, v._id);
-}
 
-// ══════════════════════════
-// TAP (pause/play + doble tap like)
-// ══════════════════════════
-function setupTap(item, videoId) {
-  const tapArea = item.querySelector(".vf-tap-area");
 
-  tapArea.addEventListener("click", (e) => {
-    const now = Date.now();
-    const gap = now - lastTap;
-    lastTap   = now;
+  <!-- =========================================================
+       TOAST
+  ========================================================== -->
 
-    if (gap < 300) {
-      // Doble tap → like
-      likeConAnimacion(videoId, item);
-    } else {
-      // Simple tap → pause/play
-      setTimeout(() => {
-        if (Date.now() - lastTap < 300) return; // era doble
-        const video = item.querySelector(".vf-video");
-        const icon  = document.getElementById(`playIcon-${videoId}`);
-        if (video.paused) {
-          video.play();
-          icon.className = "ri-pause-fill vf-play-icon";
-        } else {
-          video.pause();
-          icon.className = "ri-play-fill vf-play-icon show";
-          setTimeout(() => icon.classList.remove("show"), 800);
-        }
-      }, 300);
+  <div
+    class="vf-toast"
+    id="toast"
+  ></div>
+
+
+
+  <!-- =========================================================
+       ORIGINAL JAVASCRIPT
+       NO SE CAMBIA LA LÓGICA
+  ========================================================== -->
+
+  <script>
+
+    const API   = "/api";
+    const token = localStorage.getItem("fu_token");
+    const yo    = JSON.parse(localStorage.getItem("fu_usuario") || "null");
+
+    if (!token || !yo) {
+      window.location.href = "/login.html";
     }
-  });
-}
 
-function likeConAnimacion(videoId, item) {
-  const heart = document.getElementById(`heartAnim-${videoId}`);
-  heart.classList.add("pop");
-  setTimeout(() => heart.classList.add("fade"), 300);
-  setTimeout(() => { heart.classList.remove("pop","fade"); }, 700);
 
-  // Like si no está likeado
-  const btn = document.getElementById(`likeBtn-${videoId}`);
-  if (!btn?.classList.contains("liked")) toggleLike(videoId);
-}
+    // ══════════════════════════
+    // ESTADO
+    // ══════════════════════════
 
-// ══════════════════════════
-// INTERSECTION OBSERVER (autoplay)
-// ══════════════════════════
-function setupObserver() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const video  = entry.target.querySelector(".vf-video");
-      const id     = entry.target.dataset.id;
-      if (!video) return;
+    let videos       = [];
+    let pagina       = 1;
+    let cargando     = false;
+    let hayMas       = true;
+    let videoActivo  = null;
+    let videoFile    = null;
+    let lastTap      = 0;
+    let viewedIds    = new Set();
 
-      if (entry.isIntersecting) {
-        video.play().catch(() => {});
-        // Registrar vista (una vez por video por sesión)
-        if (!viewedIds.has(id)) {
-          viewedIds.add(id);
-          fetch(`${API}/videos/${id}/view`, {
-            method:  "POST",
-            headers: { Authorization: `Bearer ${token}` }
-          });
-        }
-        // Barra de progreso
-        video.addEventListener("timeupdate", () => {
-          const pct = (video.currentTime / video.duration) * 100 || 0;
-          const bar = document.getElementById(`prog-${id}`);
-          if (bar) bar.style.width = pct + "%";
-        });
-        // Cargar más al llegar al final
-        const items = document.querySelectorAll(".vf-item");
-        if (entry.target === items[items.length - 1] && !cargando && hayMas) {
-          pagina++;
-          cargarVideos(false);
-        }
-      } else {
-        video.pause();
+
+
+    // ══════════════════════════
+    // CARGAR VIDEOS
+    // ══════════════════════════
+
+    async function cargarVideos(reset = true) {
+
+      if (cargando) return;
+
+      cargando = true;
+
+
+      if (reset) {
+
+        pagina = 1;
+        hayMas = true;
+        videos = [];
+
+
+        document.getElementById("vfFeed").innerHTML = `
+
+          <div class="vf-loading">
+
+            <div class="vf-loading-icon">
+              <i class="ri-loader-4-line spin"></i>
+            </div>
+
+            <strong>
+              Cargando videos...
+            </strong>
+
+            <span>
+              Preparando tu feed
+            </span>
+
+          </div>
+
+        `;
+
       }
-    });
-  }, { threshold: 0.75 });
 
-  document.querySelectorAll(".vf-item").forEach(el => observer.observe(el));
-}
 
-// ══════════════════════════
-// LIKE
-// ══════════════════════════
-async function toggleLike(videoId) {
-  const btn   = document.getElementById(`likeBtn-${videoId}`);
-  const count = document.getElementById(`likeCount-${videoId}`);
-  const liked = btn?.classList.contains("liked");
+      try {
 
-  // Optimistic UI
-  if (btn) {
-    btn.classList.toggle("liked");
-    btn.querySelector("i").className = liked ? "ri-heart-line" : "ri-heart-fill";
-  }
+        const res = await fetch(
+          `${API}/videos?pagina=${pagina}&limite=10`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
 
-  try {
-    const res  = await fetch(`${API}/videos/${videoId}/like`, {
-      method: "POST", headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (count) count.textContent = formatNum(data.totalLikes);
-    if (btn)   btn.classList.toggle("liked", data.yaLike);
-    if (btn)   btn.querySelector("i").className = data.yaLike ? "ri-heart-fill" : "ri-heart-line";
-  } catch (_) {
-    // Revert
-    if (btn) btn.classList.toggle("liked");
-  }
-}
 
-// ══════════════════════════
-// COMENTARIOS
-// ══════════════════════════
-async function abrirComentarios(videoId) {
-  videoActivo = videoId;
-  document.getElementById("commentsList").innerHTML = `
-    <div style="text-align:center;padding:32px 0;color:rgba(255,255,255,.3)">
-      <i class="ri-loader-4-line spin" style="font-size:1.5rem"></i>
-    </div>
-  `;
+        const data = await res.json();
 
-  // Avatar del usuario
-  const avHTML = yo.avatarTipo === "video"
-    ? `<video src="${yo.avatar}" autoplay loop muted playsinline style="width:32px;height:32px;border-radius:50%;object-fit:cover"></video>`
-    : `<img src="${yo.avatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover" alt=""/>`;
-  document.getElementById("commentAvatar").innerHTML = avHTML;
 
-  document.getElementById("backdrop").classList.remove("hidden");
-  document.getElementById("commentsPanel").classList.add("open");
-  document.getElementById("commentInput").focus();
-
-  try {
-    const res  = await fetch(`${API}/videos/${videoId}/comments`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await res.json();
-    const list = document.getElementById("commentsList");
-
-    document.getElementById("commentsPanelTitle").textContent =
-      `Comentarios · ${data.length}`;
-
-    if (!data.length) {
-      list.innerHTML = `<div class="vf-comment-empty"><i class="ri-chat-3-line" style="font-size:2rem;display:block;margin-bottom:8px"></i>Sin comentarios aún</div>`;
-    } else {
-      list.innerHTML = data.map(c => renderComentarioHTML(c)).join("");
-      list.scrollTop = list.scrollHeight;
-    }
-  } catch (_) {}
-}
-
-function renderComentarioHTML(c) {
-  const avEl = c.autor.avatarTipo === "video"
-    ? `<video src="${c.autor.avatar}" autoplay loop muted playsinline></video>`
-    : `<img src="${c.autor.avatar}" alt=""/>`;
-  return `
-    <div class="vf-comment-item" id="vc-${c._id}">
-      ${avEl}
-      <div class="vf-comment-body">
-        <div class="vf-comment-author">
-          <strong>${escHtml(c.autor.nombre)}</strong>
-          <small>· ${tiempoRelativo(c.createdAt)}</small>
-        </div>
-        <p class="vf-comment-texto">${escHtml(c.texto)}</p>
-        <button class="vf-comment-like ${c.yaLike ? 'liked' : ''}"
-                onclick="likeComentario('${c._id}', this)">
-          <i class="${c.yaLike ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
-          <span>${c.totalLikes}</span>
-        </button>
-      </div>
-    </div>
-  `;
-}
-
-async function enviarComentario() {
-  const inp   = document.getElementById("commentInput");
-  const texto = inp?.value.trim();
-  if (!texto || !videoActivo) return;
-  inp.value    = "";
-  inp.disabled = true;
-
-  try {
-    const res  = await fetch(`${API}/videos/${videoActivo}/comments`, {
-      method:  "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body:    JSON.stringify({ texto })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.mensaje);
-
-    const list = document.getElementById("commentsList");
-    const empty = list.querySelector(".vf-comment-empty");
-    if (empty) list.innerHTML = "";
-    list.insertAdjacentHTML("beforeend", renderComentarioHTML(data));
-    list.scrollTop = list.scrollHeight;
-
-    const cnt = document.getElementById(`commentCount-${videoActivo}`);
-    if (cnt) cnt.textContent = formatNum(parseInt(cnt.textContent.replace(/[^0-9]/g,"")) + 1);
-
-    // Actualizar título
-    const title = document.getElementById("commentsPanelTitle");
-    if (title) {
-      const n = list.querySelectorAll(".vf-comment-item").length;
-      title.textContent = `Comentarios · ${n}`;
-    }
-  } catch (e) { toast("Error: " + e.message); }
-  finally { if (inp) { inp.disabled = false; inp.focus(); } }
-}
-
-async function likeComentario(id, btn) {
-  try {
-    const res  = await fetch(`${API}/videos/comments/${id}/like`, {
-      method: "POST", headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await res.json();
-    btn.classList.toggle("liked", data.yaLike);
-    btn.innerHTML = `<i class="${data.yaLike ? 'ri-heart-fill' : 'ri-heart-line'}"></i><span>${data.totalLikes}</span>`;
-  } catch (_) {}
-}
-
-// ══════════════════════════
-// COMPARTIR
-// ══════════════════════════
-function abrirShare(videoId) {
-  videoActivo = videoId;
-  document.getElementById("backdrop").classList.remove("hidden");
-  document.getElementById("shareSheet").classList.add("open");
-}
-
-async function compartirEnForo() {
-  if (!videoActivo) return;
-  try {
-    const res  = await fetch(`${API}/videos/${videoActivo}/share`, {
-      method: "POST", headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await res.json();
-
-    const btn   = document.getElementById(`shareBtn-${videoActivo}`);
-    const count = document.getElementById(`shareCount-${videoActivo}`);
-    if (btn)   { btn.classList.add("shared"); btn.querySelector("i").className = "ri-share-forward-fill"; }
-    if (count) count.textContent = formatNum(data.totalCompartidos);
-
-    cerrarPaneles();
-    toast("✅ Compartido en tu perfil");
-  } catch (_) { toast("Error al compartir"); }
-}
-
-function copiarEnlace() {
-  const url = `${location.origin}/videos.html`;
-  navigator.clipboard.writeText(url).then(() => {
-    cerrarPaneles();
-    toast("🔗 Enlace copiado");
-  });
-}
-
-async function shareNativo() {
-  if (!navigator.share) { copiarEnlace(); return; }
-  try {
-    await navigator.share({
-      title: "Foro Ubre — Video",
-      url:   `${location.origin}/videos.html`
-    });
-    cerrarPaneles();
-  } catch (_) {}
-}
-
-// ══════════════════════════
-// ELIMINAR
-// ══════════════════════════
-async function eliminarVideo(videoId) {
-  if (!confirm("¿Eliminar este video?")) return;
-  try {
-    const res = await fetch(`${API}/videos/${videoId}`, {
-      method: "DELETE", headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error();
-    const item = document.querySelector(`.vf-item[data-id="${videoId}"]`);
-    if (item) {
-      item.style.transition = "opacity .3s";
-      item.style.opacity    = "0";
-      setTimeout(() => item.remove(), 300);
-    }
-    toast("🗑️ Video eliminado");
-  } catch (_) { toast("Error al eliminar"); }
-}
-
-// ══════════════════════════
-// UPLOAD
-// ══════════════════════════
-function abrirUpload() {
-  document.getElementById("uploadModal").classList.remove("hidden");
-}
-function cerrarUpload() {
-  document.getElementById("uploadModal").classList.add("hidden");
-  document.getElementById("videoInput").value = "";
-  document.getElementById("videoPreviewEl").classList.add("hidden");
-  document.getElementById("videoPreviewEl").src = "";
-  document.getElementById("uploadArea").classList.remove("hidden");
-  document.getElementById("videoDesc").value = "";
-  document.getElementById("descCount").textContent = "300";
-  document.getElementById("btnSubirVideo").disabled = true;
-  document.getElementById("uploadProgress").classList.add("hidden");
-  videoFile = null;
-}
-
-document.getElementById("videoInput").addEventListener("change", function() {
-  const file = this.files[0];
-  if (!file) return;
-  if (file.size > 100 * 1024 * 1024) { toast("Máximo 100MB"); this.value = ""; return; }
-  videoFile = file;
-  const url = URL.createObjectURL(file);
-  document.getElementById("uploadArea").classList.add("hidden");
-  const prev = document.getElementById("videoPreviewEl");
-  prev.src   = url;
-  prev.classList.remove("hidden");
-  document.getElementById("btnSubirVideo").disabled = false;
-});
-
-document.getElementById("videoDesc").addEventListener("input", function() {
-  document.getElementById("descCount").textContent = 300 - this.value.length;
-});
-
-async function subirVideo() {
-  if (!videoFile) return;
-  const btn  = document.getElementById("btnSubirVideo");
-  const prog = document.getElementById("uploadProgress");
-  const bar  = document.getElementById("progressBar");
-  const text = document.getElementById("progressText");
-
-  btn.innerHTML = '<i class="ri-loader-4-line spin"></i> Subiendo...';
-  btn.disabled  = true;
-  prog.classList.remove("hidden");
-
-  try {
-    // XHR para progress real
-    await new Promise((resolve, reject) => {
-      const formData = new FormData();
-      formData.append("video",       videoFile);
-      formData.append("descripcion", document.getElementById("videoDesc").value.trim());
-
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", `${API}/videos`);
-      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-
-      xhr.upload.addEventListener("progress", e => {
-        if (e.lengthComputable) {
-          const pct = Math.round((e.loaded / e.total) * 100);
-          bar.style.width   = pct + "%";
-          text.textContent  = `Subiendo... ${pct}%`;
+        if (!res.ok) {
+          throw new Error(data.mensaje);
         }
-      });
 
-      xhr.addEventListener("load", () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          const data = JSON.parse(xhr.responseText);
-          cerrarUpload();
-          toast("✅ Video publicado");
-          // Prepend al feed
+
+        if (reset) {
           document.getElementById("vfFeed").innerHTML = "";
-          videos.unshift(data);
-          renderVideo(data);
-          videos.forEach(v => { if (v._id !== data._id) renderVideo(v); });
-          setupObserver();
-          resolve();
-        } else {
-          const data = JSON.parse(xhr.responseText);
-          reject(new Error(data.mensaje || "Error al subir"));
         }
+
+
+        if (!data.length && reset) {
+
+          document.getElementById("vfFeed").innerHTML = `
+
+            <div class="vf-empty">
+
+              <div class="vf-empty-icon">
+                <i class="ri-video-line"></i>
+              </div>
+
+              <h2>
+                Todavía no hay videos
+              </h2>
+
+              <p>
+                Sé el primero en subir algo a Foro Ubre.
+              </p>
+
+              <button
+                class="vf-empty-button"
+                onclick="abrirUpload()"
+              >
+                <i class="ri-add-line"></i>
+                Subir video
+              </button>
+
+            </div>
+
+          `;
+
+          return;
+        }
+
+
+        videos.push(...data);
+
+
+        data.forEach(v => {
+          renderVideo(v);
+        });
+
+
+        if (data.length < 10) {
+          hayMas = false;
+        }
+
+
+        setupObserver();
+
+      }
+
+
+      catch (err) {
+
+        document.getElementById("vfFeed").innerHTML = `
+
+          <div class="vf-empty">
+
+            <div class="vf-empty-icon vf-error-icon">
+              <i class="ri-error-warning-line"></i>
+            </div>
+
+            <h2>
+              No se pudieron cargar los videos
+            </h2>
+
+            <p>
+              Comprueba tu conexión e inténtalo nuevamente.
+            </p>
+
+            <button
+              class="vf-empty-button"
+              onclick="cargarVideos()"
+            >
+              <i class="ri-refresh-line"></i>
+              Reintentar
+            </button>
+
+          </div>
+
+        `;
+
+      }
+
+
+      finally {
+        cargando = false;
+      }
+
+    }
+
+
+
+    // ══════════════════════════
+    // RENDER VIDEO
+    // ══════════════════════════
+
+    function renderVideo(v) {
+
+      const feed = document.getElementById("vfFeed");
+
+      const esMio = v.autor._id === yo._id;
+
+
+      const avEl = v.autor.avatarTipo === "video"
+
+        ? `
+          <video
+            src="${v.autor.avatar}"
+            autoplay
+            loop
+            muted
+            playsinline
+          ></video>
+        `
+
+        : `
+          <img
+            src="${v.autor.avatar}"
+            alt=""
+          />
+        `;
+
+
+      const item = document.createElement("div");
+
+      item.className = "vf-item";
+
+      item.dataset.id = v._id;
+
+
+      item.innerHTML = `
+
+        <!-- VIDEO -->
+
+        <video
+          class="vf-video"
+          src="${v.url}"
+          loop
+          playsinline
+          preload="metadata"
+          data-id="${v._id}"
+        ></video>
+
+
+
+        <!-- TAP -->
+
+        <div
+          class="vf-tap-area"
+          id="tap-${v._id}"
+        ></div>
+
+
+
+        <!-- PLAY -->
+
+        <div
+          class="vf-play-icon"
+          id="playIcon-${v._id}"
+        >
+          <i class="ri-pause-fill"></i>
+        </div>
+
+
+
+        <!-- HEART -->
+
+        <div
+          class="vf-heart-anim"
+          id="heartAnim-${v._id}"
+        >
+          <i class="ri-heart-fill"></i>
+        </div>
+
+
+
+        <!-- TOP GRADIENT -->
+
+        <div class="vf-overlay-top"></div>
+
+
+
+        <!-- VIDEO TOP META -->
+
+        <div class="vf-video-badge">
+
+          <span>
+            <i class="ri-play-circle-line"></i>
+            FORO UBRE
+          </span>
+
+        </div>
+
+
+
+        <!-- BOTTOM INFO -->
+
+        <div class="vf-overlay-bottom">
+
+          <div
+            class="vf-user-row"
+            onclick="window.location.href='profile.html?handle=${escHtml(v.autor.handle)}'"
+          >
+
+            <div class="vf-avatar-btn">
+              ${avEl}
+            </div>
+
+            <div class="vf-user-copy">
+
+              <div class="vf-autor-nombre">
+                ${escHtml(v.autor.nombre)}
+              </div>
+
+              <div class="vf-autor-handle">
+                @${escHtml(v.autor.handle)}
+              </div>
+
+            </div>
+
+          </div>
+
+
+          ${
+            v.descripcion
+              ? `
+                <p class="vf-desc">
+                  ${escHtml(v.descripcion)}
+                </p>
+              `
+              : ""
+          }
+
+
+          <div class="vf-vistas">
+
+            <i class="ri-eye-line"></i>
+
+            <span>
+              ${formatNum(v.reproducciones)}
+            </span>
+
+            reproducciones
+
+          </div>
+
+        </div>
+
+
+
+        <!-- ACTIONS -->
+
+        <div class="vf-actions">
+
+
+          <!-- PROFILE -->
+
+          <button
+            class="vf-action-profile"
+            onclick="window.location.href='profile.html?handle=${escHtml(v.autor.handle)}'"
+            aria-label="Ver perfil"
+          >
+
+            ${avEl}
+
+          </button>
+
+
+
+          <!-- LIKE -->
+
+          <button
+            class="vf-btn ${v.yaLike ? 'liked' : ''}"
+            id="likeBtn-${v._id}"
+            onclick="toggleLike('${v._id}')"
+            aria-label="Me gusta"
+          >
+
+            <span class="vf-action-icon">
+
+              <i class="${v.yaLike ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
+
+            </span>
+
+            <span id="likeCount-${v._id}">
+              ${formatNum(v.totalLikes)}
+            </span>
+
+          </button>
+
+
+
+          <!-- COMMENTS -->
+
+          <button
+            class="vf-btn"
+            onclick="abrirComentarios('${v._id}')"
+            aria-label="Comentarios"
+          >
+
+            <span class="vf-action-icon">
+              <i class="ri-chat-1-line"></i>
+            </span>
+
+            <span id="commentCount-${v._id}">
+              ${formatNum(v.totalComments)}
+            </span>
+
+          </button>
+
+
+
+          <!-- SHARE -->
+
+          <button
+            class="vf-btn ${v.yaCompartio ? 'shared' : ''}"
+            id="shareBtn-${v._id}"
+            onclick="abrirShare('${v._id}')"
+            aria-label="Compartir"
+          >
+
+            <span class="vf-action-icon">
+
+              <i class="${v.yaCompartio ? 'ri-share-forward-fill' : 'ri-share-forward-line'}"></i>
+
+            </span>
+
+            <span id="shareCount-${v._id}">
+              ${formatNum(v.totalCompartidos)}
+            </span>
+
+          </button>
+
+
+
+          ${
+            esMio
+
+              ? `
+
+                <button
+                  class="vf-btn vf-delete-btn"
+                  onclick="eliminarVideo('${v._id}')"
+                  aria-label="Borrar video"
+                >
+
+                  <span class="vf-action-icon">
+                    <i class="ri-delete-bin-6-line"></i>
+                  </span>
+
+                  <span>
+                    Borrar
+                  </span>
+
+                </button>
+
+              `
+
+              : ""
+          }
+
+        </div>
+
+
+
+        <!-- PROGRESS -->
+
+        <div class="vf-progress">
+
+          <div
+            class="vf-progress-bar"
+            id="prog-${v._id}"
+          ></div>
+
+        </div>
+
+      `;
+
+
+      feed.appendChild(item);
+
+      setupTap(item, v._id);
+
+    }
+
+
+
+    // ══════════════════════════
+    // TAP
+    // ══════════════════════════
+
+    function setupTap(item, videoId) {
+
+      const tapArea =
+        item.querySelector(".vf-tap-area");
+
+
+      tapArea.addEventListener("click", (e) => {
+
+        const now = Date.now();
+
+        const gap = now - lastTap;
+
+        lastTap = now;
+
+
+        if (gap < 300) {
+
+          likeConAnimacion(
+            videoId,
+            item
+          );
+
+        }
+
+
+        else {
+
+          setTimeout(() => {
+
+            if (Date.now() - lastTap < 300) {
+              return;
+            }
+
+
+            const video =
+              item.querySelector(".vf-video");
+
+
+            const icon =
+              document.getElementById(
+                `playIcon-${videoId}`
+              );
+
+
+            if (video.paused) {
+
+              video.play();
+
+              icon.innerHTML =
+                '<i class="ri-pause-fill"></i>';
+
+            }
+
+
+            else {
+
+              video.pause();
+
+              icon.innerHTML =
+                '<i class="ri-play-fill"></i>';
+
+              icon.classList.add("show");
+
+
+              setTimeout(() => {
+                icon.classList.remove("show");
+              }, 800);
+
+            }
+
+          }, 300);
+
+        }
+
       });
-      xhr.addEventListener("error", () => reject(new Error("Error de red")));
-      xhr.send(formData);
-    });
 
-  } catch (err) {
-    toast("❌ " + err.message);
-    btn.innerHTML = '<i class="ri-upload-cloud-line"></i> Publicar video';
-    btn.disabled  = false;
-    bar.style.width = "0%";
-  }
-}
+    }
 
-// ══════════════════════════
-// CERRAR PANELES
-// ══════════════════════════
-function cerrarPaneles() {
-  document.getElementById("backdrop").classList.add("hidden");
-  document.getElementById("commentsPanel").classList.remove("open");
-  document.getElementById("shareSheet").classList.remove("open");
-}
 
-// ══════════════════════════
-// TOAST
-// ══════════════════════════
-let toastTimer;
-function toast(msg) {
-  const el = document.getElementById("toast");
-  el.textContent = msg;
-  el.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove("show"), 2500);
-}
 
-// ══════════════════════════
-// UTILS
-// ══════════════════════════
-function escHtml(s = "") {
-  return String(s)
-    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-function tiempoRelativo(f) {
-  const d = (Date.now()-new Date(f))/1000;
-  if(d<60)    return "ahora";
-  if(d<3600)  return `${Math.floor(d/60)}m`;
-  if(d<86400) return `${Math.floor(d/3600)}h`;
-  return `${Math.floor(d/86400)}d`;
-}
-function formatNum(n = 0) {
-  if (n >= 1000000) return (n/1000000).toFixed(1) + "M";
-  if (n >= 1000)    return (n/1000).toFixed(1) + "K";
-  return String(n);
-}
+    function likeConAnimacion(videoId, item) {
 
-// ══════════════════════════
-// INIT
-// ══════════════════════════
-cargarVideos();
-</script>
+      const heart =
+        document.getElementById(
+          `heartAnim-${videoId}`
+        );
+
+
+      heart.classList.add("pop");
+
+
+      setTimeout(() => {
+        heart.classList.add("fade");
+      }, 300);
+
+
+      setTimeout(() => {
+
+        heart.classList.remove(
+          "pop",
+          "fade"
+        );
+
+      }, 700);
+
+
+      const btn =
+        document.getElementById(
+          `likeBtn-${videoId}`
+        );
+
+
+      if (!btn?.classList.contains("liked")) {
+        toggleLike(videoId);
+      }
+
+    }
+
+
+
+    // ══════════════════════════
+    // INTERSECTION OBSERVER
+    // ══════════════════════════
+
+    function setupObserver() {
+
+      const observer =
+        new IntersectionObserver(
+          (entries) => {
+
+            entries.forEach(entry => {
+
+              const video =
+                entry.target.querySelector(
+                  ".vf-video"
+                );
+
+
+              const id =
+                entry.target.dataset.id;
+
+
+              if (!video) return;
+
+
+              if (entry.isIntersecting) {
+
+                video.play().catch(() => {});
+
+
+                if (!viewedIds.has(id)) {
+
+                  viewedIds.add(id);
+
+
+                  fetch(
+                    `${API}/videos/${id}/view`,
+                    {
+                      method: "POST",
+                      headers: {
+                        Authorization:
+                          `Bearer ${token}`
+                      }
+                    }
+                  );
+
+                }
+
+
+                video.addEventListener(
+                  "timeupdate",
+                  () => {
+
+                    const pct =
+                      (video.currentTime /
+                      video.duration) * 100 || 0;
+
+
+                    const bar =
+                      document.getElementById(
+                        `prog-${id}`
+                      );
+
+
+                    if (bar) {
+                      bar.style.width =
+                        pct + "%";
+                    }
+
+                  }
+                );
+
+
+                const items =
+                  document.querySelectorAll(
+                    ".vf-item"
+                  );
+
+
+                if (
+                  entry.target ===
+                  items[items.length - 1] &&
+                  !cargando &&
+                  hayMas
+                ) {
+
+                  pagina++;
+
+                  cargarVideos(false);
+
+                }
+
+              }
+
+
+              else {
+
+                video.pause();
+
+              }
+
+            });
+
+          },
+
+          {
+            threshold: 0.75
+          }
+
+        );
+
+
+      document
+        .querySelectorAll(".vf-item")
+        .forEach(el => observer.observe(el));
+
+    }
+
+
+
+    // ══════════════════════════
+    // LIKE
+    // ══════════════════════════
+
+    async function toggleLike(videoId) {
+
+      const btn =
+        document.getElementById(
+          `likeBtn-${videoId}`
+        );
+
+
+      const count =
+        document.getElementById(
+          `likeCount-${videoId}`
+        );
+
+
+      const liked =
+        btn?.classList.contains("liked");
+
+
+      if (btn) {
+
+        btn.classList.toggle(
+          "liked"
+        );
+
+
+        btn.querySelector("i").className =
+          liked
+            ? "ri-heart-line"
+            : "ri-heart-fill";
+
+      }
+
+
+      try {
+
+        const res =
+          await fetch(
+            `${API}/videos/${videoId}/like`,
+            {
+              method: "POST",
+              headers: {
+                Authorization:
+                  `Bearer ${token}`
+              }
+            }
+          );
+
+
+        const data =
+          await res.json();
+
+
+        if (count) {
+          count.textContent =
+            formatNum(data.totalLikes);
+        }
+
+
+        if (btn) {
+
+          btn.classList.toggle(
+            "liked",
+            data.yaLike
+          );
+
+
+          btn.querySelector("i").className =
+            data.yaLike
+              ? "ri-heart-fill"
+              : "ri-heart-line";
+
+        }
+
+      }
+
+
+      catch (_) {
+
+        if (btn) {
+          btn.classList.toggle("liked");
+        }
+
+      }
+
+    }
+
+
+
+    // ══════════════════════════
+    // COMENTARIOS
+    // ══════════════════════════
+
+    async function abrirComentarios(videoId) {
+
+      videoActivo = videoId;
+
+
+      document.getElementById(
+        "commentsList"
+      ).innerHTML = `
+
+        <div class="vf-comments-loading">
+
+          <i class="ri-loader-4-line spin"></i>
+
+          <span>
+            Cargando comentarios...
+          </span>
+
+        </div>
+
+      `;
+
+
+      const avHTML =
+        yo.avatarTipo === "video"
+
+          ? `
+            <video
+              src="${yo.avatar}"
+              autoplay
+              loop
+              muted
+              playsinline
+            ></video>
+          `
+
+          : `
+            <img
+              src="${yo.avatar}"
+              alt=""
+            />
+          `;
+
+
+      document.getElementById(
+        "commentAvatar"
+      ).innerHTML = avHTML;
+
+
+      document
+        .getElementById("backdrop")
+        .classList.remove("hidden");
+
+
+      document
+        .getElementById("commentsPanel")
+        .classList.add("open");
+
+
+      document
+        .getElementById("commentInput")
+        .focus();
+
+
+      try {
+
+        const res =
+          await fetch(
+            `${API}/videos/${videoId}/comments`,
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`
+              }
+            }
+          );
+
+
+        const data =
+          await res.json();
+
+
+        const list =
+          document.getElementById(
+            "commentsList"
+          );
+
+
+        document.getElementById(
+          "commentsPanelTitle"
+        ).textContent =
+          `Comentarios · ${data.length}`;
+
+
+        if (!data.length) {
+
+          list.innerHTML = `
+
+            <div class="vf-comment-empty">
+
+              <div class="vf-comment-empty-icon">
+                <i class="ri-chat-3-line"></i>
+              </div>
+
+              <strong>
+                Sin comentarios todavía
+              </strong>
+
+              <span>
+                Sé el primero en comentar.
+              </span>
+
+            </div>
+
+          `;
+
+        }
+
+
+        else {
+
+          list.innerHTML =
+            data
+              .map(c =>
+                renderComentarioHTML(c)
+              )
+              .join("");
+
+
+          list.scrollTop =
+            list.scrollHeight;
+
+        }
+
+      }
+
+      catch (_) {}
+
+    }
+
+
+
+    function renderComentarioHTML(c) {
+
+      const avEl =
+        c.autor.avatarTipo === "video"
+
+          ? `
+            <video
+              src="${c.autor.avatar}"
+              autoplay
+              loop
+              muted
+              playsinline
+            ></video>
+          `
+
+          : `
+            <img
+              src="${c.autor.avatar}"
+              alt=""
+            />
+          `;
+
+
+      return `
+
+        <div
+          class="vf-comment-item"
+          id="vc-${c._id}"
+        >
+
+          <div class="vf-comment-avatar-small">
+            ${avEl}
+          </div>
+
+
+          <div class="vf-comment-body">
+
+            <div class="vf-comment-author">
+
+              <strong>
+                ${escHtml(c.autor.nombre)}
+              </strong>
+
+              <small>
+                · ${tiempoRelativo(c.createdAt)}
+              </small>
+
+            </div>
+
+
+            <p class="vf-comment-texto">
+              ${escHtml(c.texto)}
+            </p>
+
+
+            <button
+              class="vf-comment-like ${c.yaLike ? 'liked' : ''}"
+              onclick="likeComentario('${c._id}', this)"
+            >
+
+              <i class="${c.yaLike ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
+
+              <span>
+                ${c.totalLikes}
+              </span>
+
+            </button>
+
+          </div>
+
+        </div>
+
+      `;
+
+    }
+
+
+
+    async function enviarComentario() {
+
+      const inp =
+        document.getElementById(
+          "commentInput"
+        );
+
+
+      const texto =
+        inp?.value.trim();
+
+
+      if (!texto || !videoActivo) {
+        return;
+      }
+
+
+      inp.value = "";
+
+      inp.disabled = true;
+
+
+      try {
+
+        const res =
+          await fetch(
+            `${API}/videos/${videoActivo}/comments`,
+            {
+              method: "POST",
+
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+                  texto
+                })
+            }
+          );
+
+
+        const data =
+          await res.json();
+
+
+        if (!res.ok) {
+          throw new Error(
+            data.mensaje
+          );
+        }
+
+
+        const list =
+          document.getElementById(
+            "commentsList"
+          );
+
+
+        const empty =
+          list.querySelector(
+            ".vf-comment-empty"
+          );
+
+
+        if (empty) {
+          list.innerHTML = "";
+        }
+
+
+        list.insertAdjacentHTML(
+          "beforeend",
+          renderComentarioHTML(data)
+        );
+
+
+        list.scrollTop =
+          list.scrollHeight;
+
+
+        const cnt =
+          document.getElementById(
+            `commentCount-${videoActivo}`
+          );
+
+
+        if (cnt) {
+
+          cnt.textContent =
+            formatNum(
+              parseInt(
+                cnt.textContent
+                  .replace(/[^0-9]/g, "")
+              ) + 1
+            );
+
+        }
+
+
+        const title =
+          document.getElementById(
+            "commentsPanelTitle"
+          );
+
+
+        if (title) {
+
+          const n =
+            list.querySelectorAll(
+              ".vf-comment-item"
+            ).length;
+
+
+          title.textContent =
+            `Comentarios · ${n}`;
+
+        }
+
+      }
+
+
+      catch (e) {
+
+        toast(
+          "Error: " + e.message
+        );
+
+      }
+
+
+      finally {
+
+        if (inp) {
+
+          inp.disabled = false;
+
+          inp.focus();
+
+        }
+
+      }
+
+    }
+
+
+
+    async function likeComentario(
+      id,
+      btn
+    ) {
+
+      try {
+
+        const res =
+          await fetch(
+            `${API}/videos/comments/${id}/like`,
+            {
+              method: "POST",
+
+              headers: {
+                Authorization:
+                  `Bearer ${token}`
+              }
+            }
+          );
+
+
+        const data =
+          await res.json();
+
+
+        btn.classList.toggle(
+          "liked",
+          data.yaLike
+        );
+
+
+        btn.innerHTML = `
+
+          <i class="${
+            data.yaLike
+              ? "ri-heart-fill"
+              : "ri-heart-line"
+          }"></i>
+
+          <span>
+            ${data.totalLikes}
+          </span>
+
+        `;
+
+      }
+
+      catch (_) {}
+
+    }
+
+
+
+    // ══════════════════════════
+    // COMPARTIR
+    // ══════════════════════════
+
+    function abrirShare(videoId) {
+
+      videoActivo = videoId;
+
+
+      document
+        .getElementById("backdrop")
+        .classList.remove("hidden");
+
+
+      document
+        .getElementById("shareSheet")
+        .classList.add("open");
+
+    }
+
+
+
+    async function compartirEnForo() {
+
+      if (!videoActivo) {
+        return;
+      }
+
+
+      try {
+
+        const res =
+          await fetch(
+            `${API}/videos/${videoActivo}/share`,
+            {
+              method: "POST",
+
+              headers: {
+                Authorization:
+                  `Bearer ${token}`
+              }
+            }
+          );
+
+
+        const data =
+          await res.json();
+
+
+        const btn =
+          document.getElementById(
+            `shareBtn-${videoActivo}`
+          );
+
+
+        const count =
+          document.getElementById(
+            `shareCount-${videoActivo}`
+          );
+
+
+        if (btn) {
+
+          btn.classList.add(
+            "shared"
+          );
+
+
+          btn.querySelector(
+            "i"
+          ).className =
+            "ri-share-forward-fill";
+
+        }
+
+
+        if (count) {
+
+          count.textContent =
+            formatNum(
+              data.totalCompartidos
+            );
+
+        }
+
+
+        cerrarPaneles();
+
+        toast(
+          "Compartido en tu perfil"
+        );
+
+      }
+
+
+      catch (_) {
+
+        toast(
+          "Error al compartir"
+        );
+
+      }
+
+    }
+
+
+
+    function copiarEnlace() {
+
+      const url =
+        `${location.origin}/videos.html`;
+
+
+      navigator.clipboard
+        .writeText(url)
+        .then(() => {
+
+          cerrarPaneles();
+
+          toast(
+            "Enlace copiado"
+          );
+
+        });
+
+    }
+
+
+
+    async function shareNativo() {
+
+      if (!navigator.share) {
+
+        copiarEnlace();
+
+        return;
+
+      }
+
+
+      try {
+
+        await navigator.share({
+
+          title:
+            "Foro Ubre — Video",
+
+          url:
+            `${location.origin}/videos.html`
+
+        });
+
+
+        cerrarPaneles();
+
+      }
+
+      catch (_) {}
+
+    }
+
+
+
+    // ══════════════════════════
+    // ELIMINAR
+    // ══════════════════════════
+
+    async function eliminarVideo(videoId) {
+
+      if (!confirm("¿Eliminar este video?")) {
+        return;
+      }
+
+
+      try {
+
+        const res =
+          await fetch(
+            `${API}/videos/${videoId}`,
+            {
+              method: "DELETE",
+
+              headers: {
+                Authorization:
+                  `Bearer ${token}`
+              }
+            }
+          );
+
+
+        if (!res.ok) {
+          throw new Error();
+        }
+
+
+        const item =
+          document.querySelector(
+            `.vf-item[data-id="${videoId}"]`
+          );
+
+
+        if (item) {
+
+          item.classList.add(
+            "removing"
+          );
+
+
+          setTimeout(() => {
+            item.remove();
+          }, 350);
+
+        }
+
+
+        toast(
+          "Video eliminado"
+        );
+
+      }
+
+
+      catch (_) {
+
+        toast(
+          "Error al eliminar"
+        );
+
+      }
+
+    }
+
+
+
+    // ══════════════════════════
+    // UPLOAD
+    // ══════════════════════════
+
+    function abrirUpload() {
+
+      document
+        .getElementById("uploadModal")
+        .classList.remove("hidden");
+
+    }
+
+
+
+    function cerrarUpload() {
+
+      document
+        .getElementById("uploadModal")
+        .classList.add("hidden");
+
+
+      document.getElementById(
+        "videoInput"
+      ).value = "";
+
+
+      document.getElementById(
+        "videoPreviewEl"
+      ).classList.add("hidden");
+
+
+      document.getElementById(
+        "videoPreviewEl"
+      ).src = "";
+
+
+      document.getElementById(
+        "uploadArea"
+      ).classList.remove("hidden");
+
+
+      document.getElementById(
+        "videoDesc"
+      ).value = "";
+
+
+      document.getElementById(
+        "descCount"
+      ).textContent = "300";
+
+
+      document.getElementById(
+        "btnSubirVideo"
+      ).disabled = true;
+
+
+      document.getElementById(
+        "uploadProgress"
+      ).classList.add("hidden");
+
+
+      videoFile = null;
+
+    }
+
+
+
+    document
+      .getElementById("videoInput")
+      .addEventListener(
+        "change",
+        function() {
+
+          const file =
+            this.files[0];
+
+
+          if (!file) {
+            return;
+          }
+
+
+          if (
+            file.size >
+            100 * 1024 * 1024
+          ) {
+
+            toast(
+              "Máximo 100MB"
+            );
+
+            this.value = "";
+
+            return;
+
+          }
+
+
+          videoFile = file;
+
+
+          const url =
+            URL.createObjectURL(
+              file
+            );
+
+
+          document
+            .getElementById(
+              "uploadArea"
+            )
+            .classList.add(
+              "hidden"
+            );
+
+
+          const prev =
+            document.getElementById(
+              "videoPreviewEl"
+            );
+
+
+          prev.src = url;
+
+
+          prev.classList.remove(
+            "hidden"
+          );
+
+
+          document.getElementById(
+            "btnSubirVideo"
+          ).disabled = false;
+
+        }
+      );
+
+
+
+    document
+      .getElementById("videoDesc")
+      .addEventListener(
+        "input",
+        function() {
+
+          document.getElementById(
+            "descCount"
+          ).textContent =
+            300 - this.value.length;
+
+        }
+      );
+
+
+
+    async function subirVideo() {
+
+      if (!videoFile) {
+        return;
+      }
+
+
+      const btn =
+        document.getElementById(
+          "btnSubirVideo"
+        );
+
+
+      const prog =
+        document.getElementById(
+          "uploadProgress"
+        );
+
+
+      const bar =
+        document.getElementById(
+          "progressBar"
+        );
+
+
+      const text =
+        document.getElementById(
+          "progressText"
+        );
+
+
+      btn.innerHTML = `
+
+        <i class="ri-loader-4-line spin"></i>
+
+        <span>
+          Subiendo...
+        </span>
+
+      `;
+
+
+      btn.disabled = true;
+
+
+      prog.classList.remove(
+        "hidden"
+      );
+
+
+      try {
+
+        await new Promise(
+          (resolve, reject) => {
+
+            const formData =
+              new FormData();
+
+
+            formData.append(
+              "video",
+              videoFile
+            );
+
+
+            formData.append(
+              "descripcion",
+              document
+                .getElementById(
+                  "videoDesc"
+                )
+                .value
+                .trim()
+            );
+
+
+            const xhr =
+              new XMLHttpRequest();
+
+
+            xhr.open(
+              "POST",
+              `${API}/videos`
+            );
+
+
+            xhr.setRequestHeader(
+              "Authorization",
+              `Bearer ${token}`
+            );
+
+
+            xhr.upload.addEventListener(
+              "progress",
+              e => {
+
+                if (e.lengthComputable) {
+
+                  const pct =
+                    Math.round(
+                      (e.loaded /
+                       e.total) * 100
+                    );
+
+
+                  bar.style.width =
+                    pct + "%";
+
+
+                  text.textContent =
+                    `Subiendo... ${pct}%`;
+
+                }
+
+              }
+            );
+
+
+            xhr.addEventListener(
+              "load",
+              () => {
+
+                if (
+                  xhr.status >= 200 &&
+                  xhr.status < 300
+                ) {
+
+                  const data =
+                    JSON.parse(
+                      xhr.responseText
+                    );
+
+
+                  cerrarUpload();
+
+
+                  toast(
+                    "Video publicado"
+                  );
+
+
+                  document.getElementById(
+                    "vfFeed"
+                  ).innerHTML = "";
+
+
+                  videos.unshift(
+                    data
+                  );
+
+
+                  renderVideo(
+                    data
+                  );
+
+
+                  videos.forEach(v => {
+
+                    if (
+                      v._id !==
+                      data._id
+                    ) {
+
+                      renderVideo(v);
+
+                    }
+
+                  });
+
+
+                  setupObserver();
+
+
+                  resolve();
+
+                }
+
+
+                else {
+
+                  const data =
+                    JSON.parse(
+                      xhr.responseText
+                    );
+
+
+                  reject(
+                    new Error(
+                      data.mensaje ||
+                      "Error al subir"
+                    )
+                  );
+
+                }
+
+              }
+            );
+
+
+            xhr.addEventListener(
+              "error",
+              () => {
+
+                reject(
+                  new Error(
+                    "Error de red"
+                  )
+                );
+
+              }
+            );
+
+
+            xhr.send(
+              formData
+            );
+
+          }
+        );
+
+      }
+
+
+      catch (err) {
+
+        toast(
+          err.message
+        );
+
+
+        btn.innerHTML = `
+
+          <i class="ri-upload-cloud-line"></i>
+
+          <span>
+            Publicar video
+          </span>
+
+        `;
+
+
+        btn.disabled = false;
+
+        bar.style.width = "0%";
+
+      }
+
+    }
+
+
+
+    // ══════════════════════════
+    // CERRAR PANELES
+    // ══════════════════════════
+
+    function cerrarPaneles() {
+
+      document
+        .getElementById("backdrop")
+        .classList.add("hidden");
+
+
+      document
+        .getElementById("commentsPanel")
+        .classList.remove("open");
+
+
+      document
+        .getElementById("shareSheet")
+        .classList.remove("open");
+
+    }
+
+
+
+    // ══════════════════════════
+    // TOAST
+    // ══════════════════════════
+
+    let toastTimer;
+
+
+    function toast(msg) {
+
+      const el =
+        document.getElementById(
+          "toast"
+        );
+
+
+      el.textContent = msg;
+
+
+      el.classList.add(
+        "show"
+      );
+
+
+      clearTimeout(
+        toastTimer
+      );
+
+
+      toastTimer =
+        setTimeout(() => {
+
+          el.classList.remove(
+            "show"
+          );
+
+        }, 2500);
+
+    }
+
+
+
+    // ══════════════════════════
+    // UTILS
+    // ══════════════════════════
+
+    function escHtml(s = "") {
+
+      return String(s)
+        .replace(
+          /&/g,
+          "&amp;"
+        )
+        .replace(
+          /</g,
+          "&lt;"
+        )
+        .replace(
+          />/g,
+          "&gt;"
+        )
+        .replace(
+          /"/g,
+          "&quot;"
+        );
+
+    }
+
+
+
+    function tiempoRelativo(f) {
+
+      const d =
+        (Date.now() -
+        new Date(f)) / 1000;
+
+
+      if (d < 60) {
+        return "ahora";
+      }
+
+
+      if (d < 3600) {
+        return `${Math.floor(d / 60)}m`;
+      }
+
+
+      if (d < 86400) {
+        return `${Math.floor(d / 3600)}h`;
+      }
+
+
+      return `${Math.floor(d / 86400)}d`;
+
+    }
+
+
+
+    function formatNum(n = 0) {
+
+      if (n >= 1000000) {
+
+        return (
+          (n / 1000000)
+            .toFixed(1) +
+          "M"
+        );
+
+      }
+
+
+      if (n >= 1000) {
+
+        return (
+          (n / 1000)
+            .toFixed(1) +
+          "K"
+        );
+
+      }
+
+
+      return String(n);
+
+    }
+
+
+
+    // ══════════════════════════
+    // INIT
+    // ══════════════════════════
+
+    cargarVideos();
+
+  </script>
+
 </body>
 </html>
