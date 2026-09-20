@@ -201,3 +201,448 @@ body::after{content:"";position:fixed;inset:0;z-index:-9;pointer-events:none;opa
 /* SPOTIFY */
 .spotify-profile-card-wrap{margin-top:18px}.spotify-profile-card{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.08);border-radius:20px;background:linear-gradient(135deg,rgba(20,20,20,.94),rgba(8,8,8,.78));box-shadow:0 18px 45px rgba(0,0,0,.22);padding:15px}.spotify-profile-card::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 10% 0%,rgba(29,185,84,.15),transparent 38%)}.spotify-profile-top{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.spotify-profile-brand{display:flex;align-items:center;gap:8px;font-size:.75rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.72)}.spotify-profile-brand i{font-size:1.2rem;color:#1ed760}.spotify-profile-account{font-size:.72rem;color:rgba(255,255,255,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.spotify-now{position:relative;display:flex;align-items:center;gap:13px;text-decoration:none;color:#fff;min-width:0}.spotify-now-art{width:64px;height:64px;border-radius:12px;object-fit:cover;flex:none;box-shadow:0 8px 20px rgba(0,0,0,.35)}.spotify-now-info{min-width:0;flex:1}.spotify-now-label{display:flex;align-items:center;gap:6px;color:#1ed760;font-size:.67rem;font-weight:900;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}.spotify-now-label span{width:6px;height:6px;border-radius:50%;background:#1ed760;box-shadow:0 0 10px #1ed760}.spotify-now-title{font-size:.96rem;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.spotify-now-artist{font-size:.78rem;color:rgba(255,255,255,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}.spotify-open-icon{font-size:1rem;color:rgba(255,255,255,.42);flex:none}.spotify-idle{font-size:.82rem;color:rgba(255,255,255,.5);padding:4px 0}.spotify-connect-box,.spotify-connected-panel{border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:13px;background:rgba(255,255,255,.025)}.spotify-connect-box{display:flex;align-items:center;gap:12px}.spotify-connect-icon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:rgba(29,185,84,.12);color:#1ed760;font-size:1.35rem;flex:none}.spotify-connect-info{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}.spotify-connect-info strong{font-size:.9rem}.spotify-connect-info span{font-size:.72rem;color:var(--text-3);line-height:1.35}.spotify-connect-btn,.spotify-disconnect-btn{border:0;border-radius:11px;padding:9px 12px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.spotify-connect-btn{background:#1ed760;color:#061109}.spotify-connect-btn:hover{filter:brightness(1.08)}.spotify-connected-panel{margin-top:10px}.spotify-account-row{display:flex;align-items:center;gap:10px}.spotify-account-image{width:42px;height:42px;border-radius:50%;object-fit:cover}.spotify-account-meta{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}.spotify-account-meta strong{font-size:.88rem}.spotify-account-meta span{font-size:.7rem;color:var(--text-3)}.spotify-open-account{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--text-2);background:rgba(255,255,255,.05);text-decoration:none}.spotify-toggle-row{margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;gap:15px;cursor:pointer}.spotify-toggle-row span{display:flex;flex-direction:column;gap:3px}.spotify-toggle-row strong{font-size:.78rem}.spotify-toggle-row small{font-size:.68rem;color:var(--text-3)}.spotify-toggle-row input{appearance:none;width:42px;height:24px;border-radius:99px;background:rgba(255,255,255,.12);position:relative;cursor:pointer;transition:.2s;flex:none}.spotify-toggle-row input::after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;left:3px;top:3px;background:#fff;transition:.2s;box-shadow:0 2px 7px rgba(0,0,0,.3)}.spotify-toggle-row input:checked{background:#1ed760}.spotify-toggle-row input:checked::after{transform:translateX(18px)}.spotify-disconnect-btn{margin-top:12px;background:rgba(255,70,90,.08);color:#ff7c8b;border:1px solid rgba(255,70,90,.13)}.spotify-disconnect-btn:hover{background:rgba(255,70,90,.13)}
 @media(max-width:600px){.spotify-connect-box{align-items:flex-start}.spotify-connect-btn{padding:8px 10px;font-size:.72rem}.spotify-now-art{width:56px;height:56px}.spotify-profile-card{border-radius:16px;padding:13px}}
+
+
+/* ============================================================
+   FORO UBRE — PERSONALIZACIÓN PREMIUM
+   VIDRIO / AGUA / PROFUNDIDAD
+   ============================================================ */
+
+/* ============================================================
+   BANNER — VITRINA
+   ============================================================ */
+
+.profile-banner {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    transition:
+        border-radius .45s cubic-bezier(.22,1,.36,1),
+        box-shadow .45s ease,
+        transform .45s ease;
+}
+
+/* Vidrio exterior */
+.profile-banner.banner-vitrina {
+    border: 1px solid rgba(255,255,255,.20);
+
+    border-radius: 26px;
+
+    background-size: cover;
+    background-position: center;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.35),
+        inset 0 -1px 0 rgba(255,255,255,.06),
+        0 25px 65px rgba(0,0,0,.38),
+        0 0 0 1px rgba(255,255,255,.04);
+
+    transform: translateZ(0);
+}
+
+/* Capa de cristal */
+.profile-banner.banner-vitrina::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    z-index: 2;
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            115deg,
+            rgba(255,255,255,.18) 0%,
+            rgba(255,255,255,.045) 18%,
+            transparent 38%,
+            transparent 65%,
+            rgba(255,255,255,.055) 100%
+        );
+
+    backdrop-filter: blur(.35px);
+    -webkit-backdrop-filter: blur(.35px);
+}
+
+/* Reflejo superior */
+.profile-banner.banner-vitrina::after {
+    content: "";
+    position: absolute;
+    left: 4%;
+    right: 4%;
+    top: 2px;
+    height: 32%;
+
+    z-index: 3;
+    pointer-events: none;
+
+    border-radius: 22px 22px 50% 50%;
+
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(255,255,255,.18),
+            rgba(255,255,255,.035),
+            transparent
+        );
+
+    opacity: .8;
+}
+
+/* Vidrio profundo */
+.profile-banner.banner-vitrina.banner-depth {
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.38),
+        inset 0 -30px 70px rgba(0,0,0,.22),
+        0 30px 70px rgba(0,0,0,.45),
+        0 8px 22px rgba(0,0,0,.25);
+}
+
+/* Brillo */
+.profile-banner.banner-vitrina.banner-glow {
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.38),
+        0 0 35px rgba(120,190,255,.08),
+        0 30px 70px rgba(0,0,0,.45);
+}
+
+
+/* ============================================================
+   GOTAS SOBRE EL BANNER
+   ============================================================ */
+
+.banner-droplets {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.banner-drop {
+    position: absolute;
+
+    width: var(--drop-size, 8px);
+    height: var(--drop-size, 8px);
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle at 30% 25%,
+            rgba(255,255,255,.9) 0 8%,
+            rgba(255,255,255,.20) 20%,
+            rgba(150,210,255,.08) 55%,
+            transparent 75%
+        );
+
+    box-shadow:
+        inset -2px -3px 5px rgba(0,0,0,.15),
+        0 2px 7px rgba(0,0,0,.20);
+
+    opacity: .65;
+
+    filter: blur(.05px);
+}
+
+
+/* ============================================================
+   AVATAR — GOTA DE AGUA
+   ============================================================ */
+
+.profile-avatar-wrap.avatar-water {
+    position: relative;
+
+    width: 106px;
+    height: 106px;
+
+    padding: 5px;
+
+    border: 0;
+
+    border-radius:
+        58% 42% 54% 46%
+        /
+        54% 48% 52% 46%;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.72),
+            rgba(170,220,255,.32) 35%,
+            rgba(70,140,255,.18) 70%,
+            rgba(255,255,255,.08)
+        );
+
+    box-shadow:
+        inset 2px 2px 5px rgba(255,255,255,.65),
+        inset -5px -7px 12px rgba(0,35,80,.32),
+        0 0 0 1px rgba(255,255,255,.22),
+        0 15px 35px rgba(0,0,0,.42),
+        0 0 28px rgba(100,190,255,.16);
+
+    overflow: visible;
+
+    transform:
+        rotate(-7deg)
+        translateZ(0);
+
+    transition:
+        transform .45s cubic-bezier(.22,1,.36,1),
+        box-shadow .45s ease;
+}
+
+/* Imagen vuelve a posición normal */
+.profile-avatar-wrap.avatar-water > img,
+.profile-avatar-wrap.avatar-water > video {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    border-radius:
+        55% 45% 52% 48%
+        /
+        53% 48% 52% 47%;
+
+    object-fit: cover;
+
+    transform: rotate(7deg);
+
+    border: 1px solid rgba(255,255,255,.22);
+
+    box-shadow:
+        inset 0 0 20px rgba(0,0,0,.18);
+}
+
+/* Reflejo de la gota */
+.profile-avatar-wrap.avatar-water::before {
+    content: "";
+
+    position: absolute;
+
+    width: 25px;
+    height: 12px;
+
+    top: 13px;
+    left: 18px;
+
+    z-index: 10;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            100deg,
+            rgba(255,255,255,.85),
+            rgba(255,255,255,.08)
+        );
+
+    transform: rotate(-20deg);
+
+    filter: blur(.3px);
+
+    pointer-events: none;
+}
+
+/* Pequeño punto de luz */
+.profile-avatar-wrap.avatar-water::after {
+    content: "";
+
+    position: absolute;
+
+    width: 7px;
+    height: 7px;
+
+    right: 16px;
+    bottom: 19px;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,.72);
+
+    box-shadow:
+        0 0 9px rgba(255,255,255,.55);
+
+    z-index: 10;
+
+    pointer-events: none;
+}
+
+/* Hover */
+.profile-avatar-wrap.avatar-water:hover {
+    transform:
+        rotate(-4deg)
+        translateY(-3px)
+        scale(1.025);
+}
+
+
+/* ============================================================
+   GOTITA MÁS PRONUNCIADA
+   ============================================================ */
+
+.profile-avatar-wrap.avatar-water-drop {
+    border-radius:
+        50% 50% 55% 45%
+        /
+        45% 45% 65% 55%;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.82),
+            rgba(130,200,255,.30),
+            rgba(50,110,210,.18)
+        );
+
+    box-shadow:
+        inset 2px 2px 6px rgba(255,255,255,.75),
+        inset -7px -10px 15px rgba(0,30,80,.30),
+        0 18px 38px rgba(0,0,0,.45),
+        0 0 30px rgba(100,190,255,.18);
+}
+
+
+/* ============================================================
+   PERFIL CON PROFUNDIDAD
+   ============================================================ */
+
+.profile-info.profile-depth {
+    position: relative;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.035),
+        0 25px 60px rgba(0,0,0,.25);
+}
+
+.profile-info.profile-depth::before {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: 5%;
+    right: 5%;
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.18),
+            transparent
+        );
+
+    pointer-events: none;
+}
+
+
+/* ============================================================
+   TARJETAS GLASS DEL PERFIL
+   ============================================================ */
+
+.profile-glass {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.065),
+            rgba(255,255,255,.025)
+        );
+
+    border:
+        1px solid rgba(255,255,255,.09);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 15px 40px rgba(0,0,0,.25);
+
+    backdrop-filter: blur(18px) saturate(125%);
+    -webkit-backdrop-filter: blur(18px) saturate(125%);
+}
+
+
+/* ============================================================
+   TEMAS
+   ============================================================ */
+
+.profile-theme-carbon {
+    --profile-accent: #5cdb6f;
+    --profile-glow: rgba(92,219,111,.16);
+}
+
+.profile-theme-ocean {
+    --profile-accent: #4dabf7;
+    --profile-glow: rgba(77,171,247,.18);
+}
+
+.profile-theme-purple {
+    --profile-accent: #c77dff;
+    --profile-glow: rgba(199,125,255,.18);
+}
+
+.profile-theme-rose {
+    --profile-accent: #ff7eb6;
+    --profile-glow: rgba(255,126,182,.16);
+}
+
+.profile-theme-ice {
+    --profile-accent: #9ee7ff;
+    --profile-glow: rgba(158,231,255,.20);
+}
+
+.profile-theme-sunset {
+    --profile-accent: #ff9f68;
+    --profile-glow: rgba(255,159,104,.17);
+}
+
+.profile-theme-lavender {
+    --profile-accent: #b197fc;
+    --profile-glow: rgba(177,151,252,.18);
+}
+
+
+/* ============================================================
+   AMBIENTE DEL PERFIL
+   ============================================================ */
+
+.profile-ambient {
+    position: absolute;
+    inset: -120px;
+
+    pointer-events: none;
+
+    z-index: -1;
+
+    background:
+        radial-gradient(
+            circle at 30% 20%,
+            var(--profile-glow, transparent),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 75% 40%,
+            var(--profile-glow, transparent),
+            transparent 32%
+        );
+
+    filter: blur(35px);
+
+    opacity: .7;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media(max-width:760px) {
+
+    .profile-banner.banner-vitrina {
+        border-radius: 21px;
+    }
+
+    .profile-avatar-wrap.avatar-water {
+        width: 92px;
+        height: 92px;
+    }
+}
