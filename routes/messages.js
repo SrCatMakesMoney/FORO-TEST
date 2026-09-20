@@ -3,6 +3,9 @@ const Conversation = require("../models/Conversation");
 const Message      = require("../models/Message");
 const User         = require("../models/User");
 const auth         = require("../middleware/authMiddleware");
+const {
+  crearNotificacion
+} = require("../utils/notifications");
 
 const router = express.Router();
 
@@ -130,6 +133,35 @@ router.post("/:convId/send", auth, async (req, res) => {
     });
 
     const populated = await mensaje.populate("remitente", "nombre handle avatar avatarTipo");
+    // ============================================================
+// NOTIFICACIÓN
+// ============================================================
+
+const destinatarioId =
+  conv.participantes.find(
+    id =>
+      id.toString() !==
+      req.usuario._id.toString()
+  );
+
+if (destinatarioId) {
+
+  await crearNotificacion({
+    io: req.app.get("io"),
+
+    receptor: destinatarioId,
+
+    emisor: req.usuario._id,
+
+    tipo: "mensaje",
+
+    conversacion: conv._id,
+
+    texto: "te envió un mensaje",
+
+    url: `/messages.html?conv=${conv._id}`
+  });
+}
     res.status(201).json(populated);
   } catch (err) {
     console.error(err);
