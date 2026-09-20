@@ -1,281 +1,1022 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#050505">
-  <title>Crear cuenta — Foro Ubre</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#050505"/>
+  <title>Foro Ubre — Registro</title>
 
-  <link rel="stylesheet" href="style.css">
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+
+  <style>
+    /* ==========================================================
+       FORO UBRE — AUTH / REGISTER
+       Solo presentación. La lógica original se conserva.
+       ========================================================== */
+
+    .auth-page {
+      min-height: 100dvh;
+      margin: 0;
+      padding:
+        24px 18px
+        calc(24px + env(safe-area-inset-bottom));
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background:
+        radial-gradient(
+          circle at 50% 0%,
+          rgba(255,255,255,.075),
+          transparent 34%
+        ),
+        radial-gradient(
+          circle at 15% 75%,
+          rgba(255,255,255,.025),
+          transparent 30%
+        ),
+        #050505;
+
+      overflow-x: hidden;
+    }
+
+    .auth-container {
+      position: relative;
+      width: min(100%, 470px);
+
+      padding: 32px;
+
+      border-radius: 30px;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(30,30,32,.84),
+          rgba(12,12,13,.92)
+        );
+
+      border:
+        1px solid rgba(255,255,255,.085);
+
+      box-shadow:
+        0 35px 100px rgba(0,0,0,.55),
+        inset 0 1px 0 rgba(255,255,255,.065);
+
+      backdrop-filter:
+        blur(32px)
+        saturate(140%);
+
+      -webkit-backdrop-filter:
+        blur(32px)
+        saturate(140%);
+
+      animation: authEnter .65s cubic-bezier(.22,1,.36,1);
+    }
+
+    .auth-container::before {
+      content: "";
+
+      position: absolute;
+      inset: 1px;
+
+      border-radius: inherit;
+
+      pointer-events: none;
+
+      background:
+        linear-gradient(
+          125deg,
+          rgba(255,255,255,.065),
+          transparent 28%,
+          transparent 72%,
+          rgba(255,255,255,.012)
+        );
+    }
+
+    @keyframes authEnter {
+      from {
+        opacity: 0;
+        transform:
+          translateY(18px)
+          scale(.975);
+      }
+
+      to {
+        opacity: 1;
+        transform:
+          translateY(0)
+          scale(1);
+      }
+    }
+
+    .auth-logo {
+      position: relative;
+      z-index: 1;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+
+      margin-bottom: 24px;
+
+      color: #f5f5f7;
+
+      font-size: 1.05rem;
+      font-weight: 800;
+
+      letter-spacing: -.025em;
+    }
+
+    .auth-logo i {
+      display: grid;
+      place-items: center;
+
+      width: 34px;
+      height: 34px;
+
+      border-radius: 11px;
+
+      color: #050505 !important;
+
+      background:
+        linear-gradient(
+          145deg,
+          #f5f5f7,
+          #bdbdc2
+        );
+
+      box-shadow:
+        0 7px 20px rgba(0,0,0,.28),
+        inset 0 1px 0 rgba(255,255,255,.65);
+    }
+
+    .auth-container h2 {
+      position: relative;
+      z-index: 1;
+
+      margin: 0 0 23px;
+
+      color: #f5f5f7;
+
+      text-align: center;
+
+      font-size: clamp(1.65rem, 5vw, 2rem);
+      line-height: 1.1;
+
+      letter-spacing: -.045em;
+    }
+
+    .auth-container form {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ==========================================================
+       AVATAR
+       ========================================================== */
+
+    .avatar-picker {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+
+      margin:
+        0 0 22px;
+
+      padding:
+        13px;
+
+      background:
+        rgba(255,255,255,.028);
+
+      border:
+        1px solid rgba(255,255,255,.055);
+
+      border-radius: 19px;
+    }
+
+    .avatar-preview-wrap {
+      position: relative;
+
+      flex-shrink: 0;
+
+      width: 76px;
+      height: 76px;
+
+      overflow: hidden;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 50%;
+
+      cursor: pointer;
+
+      background:
+        linear-gradient(
+          145deg,
+          #252527,
+          #0d0d0e
+        );
+
+      border:
+        1px solid rgba(255,255,255,.11);
+
+      box-shadow:
+        0 9px 25px rgba(0,0,0,.35),
+        inset 0 1px 0 rgba(255,255,255,.06);
+
+      transition:
+        transform .3s cubic-bezier(.22,1,.36,1),
+        border-color .25s ease;
+    }
+
+    .avatar-preview-wrap:hover {
+      transform: scale(1.035);
+
+      border-color:
+        rgba(255,255,255,.22);
+    }
+
+    .avatar-preview-wrap img,
+    .avatar-preview-wrap video {
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+    }
+
+    .avatar-placeholder {
+      display: grid;
+      place-items: center;
+
+      width: 100%;
+      height: 100%;
+    }
+
+    .avatar-placeholder i {
+      color: #69696e !important;
+    }
+
+    .btn-pick-avatar {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      color: #f0f0f2;
+
+      font-size: .88rem;
+      font-weight: 750;
+
+      cursor: pointer;
+    }
+
+    .btn-pick-avatar > i {
+      display: none;
+    }
+
+    .btn-pick-avatar small {
+      color: #66666b;
+
+      font-size: .73rem;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    /* ==========================================================
+       FORM
+       ========================================================== */
+
+    .form-group {
+      position: relative;
+
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+
+      margin: 0 0 8px 3px;
+
+      color: #b8b8bd;
+
+      font-size: .83rem;
+      font-weight: 650;
+    }
+
+    .form-group label i {
+      color: #858589;
+      font-size: .95rem;
+    }
+
+    .form-group label small {
+      color: #606065;
+
+      font-size: .7rem;
+      font-weight: 500;
+    }
+
+    .form-group input {
+      width: 100%;
+      height: 49px;
+
+      padding:
+        0 14px;
+
+      color: #f5f5f7;
+
+      font-size: .94rem;
+
+      background:
+        rgba(255,255,255,.045);
+
+      border:
+        1px solid rgba(255,255,255,.075);
+
+      border-radius: 14px;
+
+      outline: none;
+
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.025);
+
+      transition:
+        border-color .25s ease,
+        background .25s ease,
+        box-shadow .3s ease;
+    }
+
+    .form-group input:hover {
+      background:
+        rgba(255,255,255,.06);
+
+      border-color:
+        rgba(255,255,255,.11);
+    }
+
+    .form-group input:focus {
+      background:
+        rgba(255,255,255,.065);
+
+      border-color:
+        rgba(255,255,255,.24);
+
+      box-shadow:
+        0 0 0 3px rgba(255,255,255,.035),
+        inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .form-group input::placeholder {
+      color: #55555a;
+    }
+
+    .input-prefix {
+      position: relative;
+    }
+
+    .input-prefix > span {
+      position: absolute;
+
+      left: 14px;
+      top: 50%;
+
+      transform: translateY(-50%);
+
+      color: #68686d;
+
+      font-size: .95rem;
+      font-weight: 650;
+
+      pointer-events: none;
+    }
+
+    .input-prefix input {
+      padding-left: 30px;
+    }
+
+    .char-hint {
+      position: absolute;
+
+      right: 5px;
+      bottom: -17px;
+
+      color: #55555a;
+
+      font-size: .68rem;
+    }
+
+    .input-password-wrap {
+      position: relative;
+    }
+
+    .input-password-wrap input {
+      padding-right: 50px;
+    }
+
+    .btn-toggle-pass {
+      position: absolute;
+
+      right: 9px;
+      top: 50%;
+
+      width: 34px;
+      height: 34px;
+
+      transform: translateY(-50%);
+
+      display: grid;
+      place-items: center;
+
+      padding: 0;
+
+      color: #77777c;
+
+      background: transparent;
+
+      border: 0;
+      border-radius: 10px;
+
+      cursor: pointer;
+
+      transition:
+        color .2s ease,
+        background .2s ease,
+        transform .2s ease;
+    }
+
+    .btn-toggle-pass:hover {
+      color: #f5f5f7;
+
+      background:
+        rgba(255,255,255,.06);
+
+      transform:
+        translateY(-50%)
+        scale(1.04);
+    }
+
+    .btn-toggle-pass:active {
+      transform:
+        translateY(-50%)
+        scale(.94);
+    }
+
+    /* ==========================================================
+       ERRORS
+       ========================================================== */
+
+    .error-msg {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+
+      margin:
+        5px 0 14px;
+
+      padding:
+        11px 13px;
+
+      color: #ff9da9;
+
+      font-size: .81rem;
+      line-height: 1.35;
+
+      background:
+        rgba(255,70,90,.065);
+
+      border:
+        1px solid rgba(255,70,90,.13);
+
+      border-radius: 13px;
+    }
+
+    .error-msg i {
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ==========================================================
+       SUBMIT
+       ========================================================== */
+
+    .btn-auth {
+      width: 100%;
+      height: 51px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+
+      margin-top: 8px;
+
+      color: #050505;
+
+      font-size: .94rem;
+      font-weight: 800;
+
+      background:
+        linear-gradient(
+          180deg,
+          #f5f5f7,
+          #cfcfd3
+        );
+
+      border:
+        1px solid rgba(255,255,255,.3);
+
+      border-radius: 15px;
+
+      cursor: pointer;
+
+      box-shadow:
+        0 10px 28px rgba(0,0,0,.28),
+        inset 0 1px 0 rgba(255,255,255,.7);
+
+      transition:
+        transform .25s cubic-bezier(.22,1,.36,1),
+        box-shadow .25s ease,
+        filter .25s ease;
+    }
+
+    .btn-auth:hover {
+      filter: brightness(1.04);
+
+      transform:
+        translateY(-1px);
+
+      box-shadow:
+        0 14px 35px rgba(0,0,0,.35),
+        inset 0 1px 0 rgba(255,255,255,.8);
+    }
+
+    .btn-auth:active {
+      transform:
+        translateY(1px)
+        scale(.985);
+    }
+
+    .btn-auth:disabled {
+      opacity: .58;
+      cursor: wait;
+      transform: none;
+    }
+
+    .auth-switch {
+      margin:
+        20px 0 0;
+
+      color: #707075;
+
+      text-align: center;
+
+      font-size: .82rem;
+    }
+
+    .auth-switch a {
+      color: #f0f0f2;
+
+      font-weight: 700;
+
+      text-decoration: none;
+    }
+
+    .auth-switch a:hover {
+      color: #fff;
+    }
+
+    .spin {
+      display: inline-block;
+
+      animation:
+        spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .auth-page {
+        align-items: flex-start;
+
+        padding:
+          14px 10px
+          calc(18px + env(safe-area-inset-bottom));
+      }
+
+      .auth-container {
+        margin-top: 3vh;
+
+        padding: 25px 18px;
+
+        border-radius: 25px;
+      }
+
+      .avatar-picker {
+        padding: 11px;
+      }
+
+      .avatar-preview-wrap {
+        width: 68px;
+        height: 68px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .auth-container,
+      .spin {
+        animation: none;
+      }
+    }
+  </style>
 </head>
 
 <body class="auth-page">
 
-  <div class="auth-atmosphere" aria-hidden="true">
-    <div class="auth-smoke auth-smoke-a"></div>
-    <div class="auth-smoke auth-smoke-b"></div>
-    <div class="auth-smoke auth-smoke-c"></div>
-    <div class="auth-grain"></div>
-    <div class="auth-orb"></div>
-  </div>
+  <main class="auth-container">
 
-  <main class="auth-stage">
+    <div class="auth-logo">
+      <i class="ri-leaf-fill"></i>
+      <span>Foro Ubre</span>
+    </div>
 
-    <div class="auth-container">
+    <h2>Crear cuenta</h2>
 
-      <div class="auth-brand">
+    <form id="registerForm" novalidate>
 
-        <div class="auth-logo">
-          <span class="auth-logo-mark">
-            <i class="ri-leaf-fill"></i>
-          </span>
+      <!-- Avatar picker -->
+      <div class="avatar-picker">
 
-          <span>Foro Ubre</span>
+        <div
+          class="avatar-preview-wrap"
+          id="avatarPreviewWrap"
+          onclick="document.getElementById('avatarInput').click()"
+        >
+          <img
+            id="avatarPreviewImg"
+            src=""
+            alt=""
+            class="hidden"
+          />
+
+          <video
+            id="avatarPreviewVid"
+            autoplay
+            loop
+            muted
+            playsinline
+            class="hidden"
+          ></video>
+
+          <div
+            id="avatarPlaceholder"
+            class="avatar-placeholder"
+          >
+            <i class="ri-user-3-line" style="font-size:2rem"></i>
+          </div>
         </div>
 
-        <span class="auth-live">
-          <span></span>
-          comunidad
+        <label
+          for="avatarInput"
+          class="btn-pick-avatar"
+        >
+          <span>Elegir foto de perfil</span>
+          <small>
+            Imagen, GIF o video · Máx. 3MB
+          </small>
+        </label>
+
+        <input
+          type="file"
+          id="avatarInput"
+          name="avatar"
+          accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm"
+          hidden
+        />
+
+        <span
+          id="avatarError"
+          class="error-msg hidden"
+        >
+          <i class="ri-error-warning-line"></i>
+          <span id="avatarErrorText"></span>
         </span>
 
       </div>
 
-      <div class="auth-heading">
-        <h2>Crear tu cuenta</h2>
-        <p>Únete a la conversación.</p>
+      <div class="form-group">
+
+        <label>
+          <i class="ri-user-line"></i>
+          Nombre
+          <small>(2–50 caracteres)</small>
+        </label>
+
+        <input
+          type="text"
+          id="nombre"
+          placeholder="Tu nombre"
+          required
+          minlength="2"
+          maxlength="50"
+        />
+
+        <span class="char-hint">
+          <span id="cNombre">50</span> restantes
+        </span>
+
       </div>
 
-      <form id="registerForm">
+      <div class="form-group">
 
-        <div class="form-group">
+        <label>
+          <i class="ri-at-line"></i>
+          Handle
+          <small>(3–20 caracteres)</small>
+        </label>
 
-          <label for="username">
-            <i class="ri-user-3-line"></i>
-            Nombre de usuario
-          </label>
+        <div class="input-prefix">
+          <span>@</span>
 
           <input
             type="text"
-            id="username"
-            name="username"
-            placeholder="Tu nombre de usuario"
-            autocomplete="username"
-            maxlength="30"
+            id="handle"
+            placeholder="tuhandle"
             required
-          >
-
+            minlength="3"
+            maxlength="20"
+            pattern="[a-zA-Z0-9_]+"
+            title="Solo letras, números y _"
+          />
         </div>
 
-        <div class="form-group">
+        <span class="char-hint">
+          <span id="cHandle">20</span> restantes
+        </span>
 
-          <label for="email">
-            <i class="ri-mail-line"></i>
-            Correo electrónico
-          </label>
-
-          <input
-            type="email"
-            id="email"
-            name="email"
-            placeholder="tu@email.com"
-            autocomplete="email"
-            required
-          >
-
-        </div>
-
-        <div class="form-group">
-
-          <label for="password">
-            <i class="ri-lock-2-line"></i>
-            Contraseña
-          </label>
-
-          <div class="input-password-wrap">
-
-            <input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="Crea una contraseña"
-              autocomplete="new-password"
-              minlength="6"
-              required
-            >
-
-            <button
-              type="button"
-              class="btn-toggle-pass"
-              id="togglePassword"
-              aria-label="Mostrar contraseña"
-            >
-              <i class="ri-eye-line"></i>
-            </button>
-
-          </div>
-
-        </div>
-
-        <div class="form-group">
-
-          <label for="confirmPassword">
-            <i class="ri-shield-check-line"></i>
-            Confirmar contraseña
-          </label>
-
-          <div class="input-password-wrap">
-
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              placeholder="Repite tu contraseña"
-              autocomplete="new-password"
-              minlength="6"
-              required
-            >
-
-            <button
-              type="button"
-              class="btn-toggle-pass"
-              id="toggleConfirmPassword"
-              aria-label="Mostrar contraseña"
-            >
-              <i class="ri-eye-line"></i>
-            </button>
-
-          </div>
-
-        </div>
-
-        <div
-          id="errorMsg"
-          class="error-msg"
-          style="display:none;"
-        ></div>
-
-        <button
-          type="submit"
-          class="btn-auth"
-          id="registerBtn"
-        >
-          <span>Crear cuenta</span>
-          <i class="ri-arrow-right-line"></i>
-        </button>
-
-      </form>
-
-      <div class="auth-switch">
-        ¿Ya tienes una cuenta?
-        <a href="/login.html">Iniciar sesión</a>
       </div>
 
-    </div>
+      <div class="form-group">
+
+        <label>
+          <i class="ri-mail-line"></i>
+          Email
+        </label>
+
+        <input
+          type="email"
+          id="email"
+          placeholder="tu@email.com"
+          required
+          maxlength="100"
+        />
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+          <i class="ri-lock-line"></i>
+          Contraseña
+          <small>(mín. 6 caracteres)</small>
+        </label>
+
+        <div class="input-password-wrap">
+
+          <input
+            type="password"
+            id="password"
+            placeholder="••••••••"
+            required
+            minlength="6"
+            maxlength="128"
+          />
+
+          <button
+            type="button"
+            class="btn-toggle-pass"
+            id="btnTogglePass"
+            tabindex="-1"
+            aria-label="Mostrar contraseña"
+          >
+            <i class="ri-eye-line" id="eyeIcon"></i>
+          </button>
+
+        </div>
+
+      </div>
+
+      <div id="errorMsg" class="error-msg hidden">
+        <i class="ri-error-warning-line"></i>
+        <span id="errorText"></span>
+      </div>
+
+      <button
+        type="submit"
+        class="btn-auth"
+        id="btnRegister"
+      >
+        <i class="ri-user-add-line"></i>
+        <span>Crear cuenta</span>
+      </button>
+
+    </form>
+
+    <p class="auth-switch">
+      ¿Ya tienes cuenta?
+      <a href="login.html">Inicia sesión</a>
+    </p>
 
   </main>
 
   <script>
-    const form = document.getElementById("registerForm");
+    if (localStorage.getItem("fu_token")) window.location.href = "/";
 
-    const password = document.getElementById("password");
-    const confirmPassword = document.getElementById("confirmPassword");
+    // Toggle password
+    document.getElementById("btnTogglePass").addEventListener("click", () => {
+      const inp  = document.getElementById("password");
+      const icon = document.getElementById("eyeIcon");
 
-    const togglePassword = document.getElementById("togglePassword");
-    const toggleConfirmPassword =
-      document.getElementById("toggleConfirmPassword");
+      inp.type = inp.type === "password"
+        ? "text"
+        : "password";
 
-    const errorMsg = document.getElementById("errorMsg");
-    const registerBtn = document.getElementById("registerBtn");
-
-    function toggleInput(input, button) {
-      const isPassword = input.type === "password";
-
-      input.type = isPassword ? "text" : "password";
-
-      button.innerHTML = isPassword
-        ? '<i class="ri-eye-off-line"></i>'
-        : '<i class="ri-eye-line"></i>';
-
-      button.setAttribute(
-        "aria-label",
-        isPassword ? "Ocultar contraseña" : "Mostrar contraseña"
-      );
-    }
-
-    togglePassword.addEventListener("click", () => {
-      toggleInput(password, togglePassword);
+      icon.className = inp.type === "password"
+        ? "ri-eye-line"
+        : "ri-eye-off-line";
     });
 
-    toggleConfirmPassword.addEventListener("click", () => {
-      toggleInput(confirmPassword, toggleConfirmPassword);
+    // Contadores
+    document.getElementById("nombre").addEventListener("input", function() {
+      document.getElementById("cNombre").textContent =
+        50 - this.value.length;
     });
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    document.getElementById("handle").addEventListener("input", function() {
+      this.value =
+        this.value.replace(/[^a-zA-Z0-9_]/g, "");
 
-      errorMsg.style.display = "none";
+      document.getElementById("cHandle").textContent =
+        20 - this.value.length;
+    });
 
-      const username =
-        document.getElementById("username").value.trim();
+    // Avatar preview
+    document.getElementById("avatarInput").addEventListener("change", function() {
 
-      const email =
-        document.getElementById("email").value.trim();
+      const file =
+        this.files[0];
 
-      const passwordValue = password.value;
-      const confirmPasswordValue = confirmPassword.value;
+      const errBox =
+        document.getElementById("avatarError");
 
-      if (passwordValue !== confirmPasswordValue) {
-        errorMsg.textContent = "Las contraseñas no coinciden.";
-        errorMsg.style.display = "block";
+      const errText =
+        document.getElementById("avatarErrorText");
+
+      const img =
+        document.getElementById("avatarPreviewImg");
+
+      const vid =
+        document.getElementById("avatarPreviewVid");
+
+      const holder =
+        document.getElementById("avatarPlaceholder");
+
+      errBox.classList.add("hidden");
+
+      if (!file) return;
+
+      if (file.size > 3 * 1024 * 1024) {
+
+        errText.textContent =
+          "El archivo supera los 3MB";
+
+        errBox.classList.remove("hidden");
+
+        this.value = "";
+
         return;
       }
 
-      registerBtn.disabled = true;
+      const url =
+        URL.createObjectURL(file);
 
-      registerBtn.innerHTML = `
-        <span>Creando cuenta...</span>
-        <i class="ri-loader-4-line"></i>
-      `;
+      holder.classList.add("hidden");
+
+      if (file.type.startsWith("video/")) {
+
+        img.classList.add("hidden");
+
+        vid.src = url;
+
+        vid.classList.remove("hidden");
+
+      } else {
+
+        vid.classList.add("hidden");
+
+        img.src = url;
+
+        img.classList.remove("hidden");
+      }
+    });
+
+    // Submit
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+
+      e.preventDefault();
+
+      const btn =
+        document.getElementById("btnRegister");
+
+      const errBox =
+        document.getElementById("errorMsg");
+
+      const errText =
+        document.getElementById("errorText");
+
+      errBox.classList.add("hidden");
+
+      btn.innerHTML =
+        '<i class="ri-loader-4-line spin"></i><span>Creando cuenta...</span>';
+
+      btn.disabled = true;
 
       try {
-        const response = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            username,
-            email,
-            password: passwordValue
-          })
-        });
 
-        const data = await response.json();
+        const formData =
+          new FormData();
 
-        if (!response.ok) {
-          throw new Error(
-            data.message ||
-            data.error ||
-            "No se pudo crear la cuenta."
-          );
+        formData.append(
+          "nombre",
+          document.getElementById("nombre").value.trim()
+        );
+
+        formData.append(
+          "handle",
+          document.getElementById("handle").value.trim().toLowerCase()
+        );
+
+        formData.append(
+          "email",
+          document.getElementById("email").value.trim()
+        );
+
+        formData.append(
+          "password",
+          document.getElementById("password").value
+        );
+
+        const avatarFile =
+          document.getElementById("avatarInput").files[0];
+
+        if (avatarFile) {
+          formData.append("avatar", avatarFile);
         }
 
-        if (data.token) {
-          localStorage.setItem("token", data.token);
+        const res =
+          await fetch("/api/auth/register", {
+            method: "POST",
+            body: formData
+          });
+
+        const data =
+          await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.mensaje);
         }
+
+        localStorage.setItem(
+          "fu_token",
+          data.token
+        );
+
+        localStorage.setItem(
+          "fu_usuario",
+          JSON.stringify(data.usuario)
+        );
 
         window.location.href = "/";
-      } catch (error) {
-        errorMsg.textContent = error.message;
-        errorMsg.style.display = "block";
-      } finally {
-        registerBtn.disabled = false;
 
-        registerBtn.innerHTML = `
-          <span>Crear cuenta</span>
-          <i class="ri-arrow-right-line"></i>
-        `;
+      } catch (err) {
+
+        errText.textContent =
+          err.message;
+
+        errBox.classList.remove("hidden");
+
+        btn.innerHTML =
+          '<i class="ri-user-add-line"></i><span>Crear cuenta</span>';
+
+        btn.disabled = false;
       }
     });
   </script>
