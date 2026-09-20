@@ -1,409 +1,362 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-
-    <title>Foro Ubre</title>
-
-    <meta name="theme-color" content="#090a0a">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet"
-    >
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css"
-        rel="stylesheet"
-    >
-
-    <link rel="stylesheet" href="/style.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Foro Ubre</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
 </head>
-
 <body>
 
-    <div class="app-shell">
-
-        <!-- =========================================
-             SIDEBAR
-        ========================================== -->
-
-        <aside class="sidebar">
-
-            <div class="logo">
-                <i class="ri-leaf-fill"></i>
-                <span>Foro Ubre</span>
-            </div>
-
-            <nav class="main-nav">
-
-                <a href="/" class="nav-item active">
-                    <span class="nav-icon">
-                        <i class="ri-home-5-fill"></i>
-                    </span>
-                    <span>Inicio</span>
-                </a>
-
-                <a href="/explore.html" class="nav-item">
-                    <span class="nav-icon">
-                        <i class="ri-compass-3-line"></i>
-                    </span>
-                    <span>Explorar</span>
-                </a>
-
-                <a href="/videos.html" class="nav-item">
-                    <span class="nav-icon">
-                        <i class="ri-video-line"></i>
-                    </span>
-                    <span>Videos</span>
-                </a>
-
-                <a href="/messages.html" class="nav-item">
-                    <span class="nav-icon">
-                        <i class="ri-chat-3-line"></i>
-                    </span>
-                    <span>Mensajes</span>
-                </a>
-
-                <a href="/profile.html" class="nav-item">
-                    <span class="nav-icon">
-                        <i class="ri-user-3-line"></i>
-                    </span>
-                    <span>Perfil</span>
-                </a>
-
-            </nav>
-
-            <button class="btn-post-sidebar" id="openPostModal">
-                <i class="ri-add-line"></i>
-                <span>Publicar</span>
-            </button>
-
-            <div class="sidebar-spacer"></div>
-
-            <div class="sidebar-user" id="sidebarUser">
-                <div class="sidebar-user-avatar">
-                    <img id="sidebarAvatar" src="/generated-icon.png" alt="Avatar">
-                </div>
-
-                <div>
-                    <strong id="sidebarUsername">Cargando...</strong>
-                    <small>@usuario</small>
-                </div>
-            </div>
-
-        </aside>
-
-
-        <!-- =========================================
-             CONTENIDO PRINCIPAL
-        ========================================== -->
-
-        <main class="main-content">
-
-            <section class="feed">
-
-                <!-- HEADER -->
-
-                <header class="feed-header">
-
-                    <div>
-                        <span class="feed-eyebrow">COMUNIDAD</span>
-                        <h2>Inicio</h2>
-                    </div>
-
-                    <button
-                        class="mobile-create-btn"
-                        id="mobileCreatePost"
-                        aria-label="Crear publicación"
-                    >
-                        <i class="ri-add-line"></i>
-                    </button>
-
-                </header>
-
-
-                <!-- =================================
-                     CREAR PUBLICACIÓN
-                ================================== -->
-
-                <section class="new-post">
-
-                    <div class="new-post-top">
-
-                        <div class="new-post-avatar">
-                            <img
-                                id="currentUserAvatar"
-                                src="/generated-icon.png"
-                                alt="Tu avatar"
-                            >
-                        </div>
-
-                        <button
-                            class="new-post-input"
-                            id="openPostComposer"
-                        >
-                            <span>¿Qué está pasando?</span>
-                        </button>
-
-                    </div>
-
-                    <div class="new-post-actions">
-
-                        <button type="button">
-                            <i class="ri-image-line"></i>
-                            <span>Foto</span>
-                        </button>
-
-                        <button type="button">
-                            <i class="ri-video-line"></i>
-                            <span>Video</span>
-                        </button>
-
-                        <button type="button">
-                            <i class="ri-emotion-line"></i>
-                            <span>Estado</span>
-                        </button>
-
-                    </div>
-
-                </section>
-
-
-                <!-- =================================
-                     FILTROS
-                ================================== -->
-
-                <div class="feed-filter">
-
-                    <button class="feed-filter-btn active">
-                        Para ti
-                    </button>
-
-                    <button class="feed-filter-btn">
-                        Siguiendo
-                    </button>
-
-                    <button class="feed-filter-btn">
-                        Recientes
-                    </button>
-
-                </div>
-
-
-                <!-- =================================
-                     POSTS
-                ================================== -->
-
-                <section id="postsContainer" class="posts-container">
-
-                    <div class="feed-loading">
-                        <div class="loading-spinner"></div>
-                        <span>Cargando publicaciones...</span>
-                    </div>
-
-                </section>
-
-            </section>
-
-
-            <!-- =====================================
-                 RIGHT SIDEBAR
-            ====================================== -->
-
-            <aside class="right-sidebar">
-
-                <div class="glass-panel">
-
-                    <div class="panel-heading">
-                        <div>
-                            <span class="panel-eyebrow">DESCUBRE</span>
-                            <h3>Tendencias</h3>
-                        </div>
-
-                        <i class="ri-fire-line"></i>
-                    </div>
-
-                    <div id="trendsContainer">
-
-                        <div class="trend-item">
-                            <small>Comunidad</small>
-                            <strong>Foro Ubre</strong>
-                            <span>Descubre publicaciones</span>
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="glass-panel">
-
-                    <div class="panel-heading">
-                        <div>
-                            <span class="panel-eyebrow">PERSONAS</span>
-                            <h3>A quién seguir</h3>
-                        </div>
-                    </div>
-
-                    <div id="suggestionsContainer"></div>
-
-                </div>
-
-            </aside>
-
-        </main>
-
+<div class="app-layout">
+
+  <!-- ══════════════ SIDEBAR ══════════════ -->
+  <aside class="sidebar">
+    <div class="logo">
+      <i class="ri-leaf-fill"></i>
+      <span>Foro Ubre</span>
     </div>
 
-
-    <!-- =========================================
-         MOBILE NAV
-    ========================================== -->
-
-    <nav class="bottom-nav">
-
-        <div class="bottom-nav-inner">
-
-            <a href="/" class="bottom-nav-item active">
-                <i class="ri-home-5-fill"></i>
-                <span>Inicio</span>
-            </a>
-
-            <a href="/explore.html" class="bottom-nav-item">
-                <i class="ri-compass-3-line"></i>
-                <span>Explorar</span>
-            </a>
-
-            <button
-                class="bottom-nav-create"
-                id="bottomCreatePost"
-                aria-label="Crear publicación"
-            >
-                <i class="ri-add-line"></i>
-            </button>
-
-            <a href="/messages.html" class="bottom-nav-item">
-                <i class="ri-chat-3-line"></i>
-                <span>Mensajes</span>
-            </a>
-
-            <a href="/profile.html" class="bottom-nav-item">
-                <i class="ri-user-3-line"></i>
-                <span>Perfil</span>
-            </a>
-
-        </div>
-
+    <nav>
+      <a href="/"             class="nav-item active">
+        <span class="nav-icon"><i class="ri-home-5-fill"></i></span>
+        <span>Inicio</span>
+      </a>
+      <a href="explore.html"  class="nav-item">
+        <span class="nav-icon"><i class="ri-search-line"></i></span>
+        <span>Explorar</span>
+      </a>
+      <a href="videos.html"   class="nav-item">
+        <span class="nav-icon"><i class="ri-video-line"></i></span>
+        <span>Videos</span>
+      </a>
+      <a href="messages.html" class="nav-item">
+        <span class="nav-icon"><i class="ri-message-3-line"></i></span>
+        <span>Mensajes</span>
+        <span class="nav-badge hidden" id="msgBadge"></span>
+      </a>
+      <a href="#" class="nav-item" id="navPerfil">
+        <span class="nav-icon"><i class="ri-user-3-line"></i></span>
+        <span>Perfil</span>
+      </a>
     </nav>
 
+    <button class="btn-post-sidebar" id="btnNuevoPostSidebar">
+      <i class="ri-quill-pen-line"></i>
+      <span>Nuevo post</span>
+    </button>
 
-    <!-- =========================================
-         POST MODAL
-    ========================================== -->
+    <div class="sidebar-user" id="sidebarUser"></div>
+  </aside>
 
-    <div
-        class="modal-overlay"
-        id="postModal"
-        aria-hidden="true"
-    >
+  <!-- ══════════════ FEED ══════════════ -->
+  <main class="feed">
 
-        <div class="modal-container">
+    <header class="feed-header">
+      <h2>Inicio</h2>
+      <button class="btn-logout" id="btnLogout">
+        <i class="ri-logout-box-r-line"></i>
+        <span>Salir</span>
+      </button>
+    </header>
 
-            <div class="modal-header">
+    <!-- COMPOSER -->
+    <div class="new-post">
+      <div id="composerAvatarWrap" style="flex-shrink:0"></div>
 
-                <div>
-                    <span class="modal-eyebrow">NUEVA PUBLICACIÓN</span>
-                    <h2>Crear publicación</h2>
-                </div>
+      <div class="post-input-area">
+        <textarea
+          id="postInput"
+          placeholder="¿Qué está pasando?"
+          maxlength="280"
+          rows="3"
+        ></textarea>
 
-                <button
-                    class="modal-close"
-                    id="closePostModal"
-                    aria-label="Cerrar"
-                >
-                    <i class="ri-close-line"></i>
-                </button>
-
-            </div>
-
-
-            <div class="modal-body">
-
-                <div class="composer-user">
-
-                    <div class="composer-avatar">
-                        <img
-                            id="composerAvatar"
-                            src="/generated-icon.png"
-                            alt="Avatar"
-                        >
-                    </div>
-
-                    <div>
-                        <strong id="composerUsername">
-                            Usuario
-                        </strong>
-
-                        <span>
-                            Publicación pública
-                        </span>
-                    </div>
-
-                </div>
-
-
-                <textarea
-                    id="postContent"
-                    class="post-composer-textarea"
-                    maxlength="5000"
-                    placeholder="Comparte algo con la comunidad..."
-                ></textarea>
-
-
-                <div class="composer-footer">
-
-                    <div class="composer-tools">
-
-                        <button type="button">
-                            <i class="ri-image-line"></i>
-                        </button>
-
-                        <button type="button">
-                            <i class="ri-emotion-line"></i>
-                        </button>
-
-                        <button type="button">
-                            <i class="ri-link"></i>
-                        </button>
-
-                    </div>
-
-                    <button
-                        class="btn-primary"
-                        id="publishPost"
-                    >
-                        Publicar
-                    </button>
-
-                </div>
-
-            </div>
-
+        <div id="imagePreviewBox" class="image-preview-box hidden">
+          <button class="remove-image" id="btnRemoveImage" type="button">
+            <i class="ri-close-line"></i>
+          </button>
+          <img id="imagePreview" src="" alt="preview"/>
         </div>
 
+        <div class="post-actions">
+          <div class="post-actions-left">
+            <label for="imageInput" class="btn-icon" title="Subir imagen">
+              <i class="ri-image-line"></i>
+            </label>
+            <input type="file" id="imageInput"
+                   accept="image/jpeg,image/png,image/gif,image/webp" hidden/>
+
+            <button type="button" class="btn-sticker"
+                    onclick="abrirModalSticker()" title="Sticker con IA">
+              <i class="ri-sparkling-line"></i> Sticker IA
+            </button>
+
+            <span id="charCount" class="char-count">280</span>
+          </div>
+
+          <button id="btnPost" type="button">
+            <i class="ri-send-plane-fill"></i> Publicar
+          </button>
+        </div>
+      </div>
     </div>
 
+    <!-- POSTS -->
+    <div id="feed">
+      <div class="loading">
+        <i class="ri-loader-4-line spin"></i> Cargando posts...
+      </div>
+    </div>
 
-    <!-- =========================================
-         APP
-    ========================================== -->
+    <div id="loadMoreBox" class="load-more-box hidden">
+      <button id="btnLoadMore">
+        <i class="ri-arrow-down-line"></i> Cargar más
+      </button>
+    </div>
 
-    <script src="/app.js"></script>
+  </main>
 
+  <!-- ══════════════ TRENDS ══════════════ -->
+  <aside class="trends">
+
+    <div class="trends-box">
+      <h3><i class="ri-fire-line"></i> Tendencias</h3>
+      <ul>
+        <li onclick="window.location.href='explore.html?q=ForoUbre'">
+          <span>#ForoUbre</span><small>1.2K posts</small>
+        </li>
+        <li onclick="window.location.href='explore.html?q=VacaViral'">
+          <span>#VacaViral</span><small>890 posts</small>
+        </li>
+        <li onclick="window.location.href='explore.html?q=Leche'">
+          <span>#Leche</span><small>540 posts</small>
+        </li>
+        <li onclick="window.location.href='explore.html?q=MuuuTech'">
+          <span>#MuuuTech</span><small>310 posts</small>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Videos recientes -->
+    <div class="trends-box">
+      <h3><i class="ri-video-line"></i> Videos recientes</h3>
+      <div id="videosRecientesList">
+        <p style="color:var(--text-3);font-size:.82rem;padding:4px 0">
+          <i class="ri-loader-4-line spin"></i> Cargando...
+        </p>
+      </div>
+      <a href="videos.html"
+         style="display:block;text-align:center;font-size:.8rem;color:var(--green);
+                margin-top:10px;font-weight:700;text-decoration:none">
+        Ver todos los videos →
+      </a>
+    </div>
+
+    <div class="trends-box" id="sugerenciasBox">
+      <h3><i class="ri-user-follow-line"></i> A quién seguir</h3>
+      <div id="sugerenciasList">
+        <p class="loading" style="padding:8px 0;font-size:.82rem">
+          <i class="ri-loader-4-line spin"></i> Cargando...
+        </p>
+      </div>
+    </div>
+
+  </aside>
+
+</div>
+
+<!-- ══════════════ BOTTOM NAV ══════════════ -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a href="/"             class="bottom-nav-btn active">
+      <span class="bn-icon"><i class="ri-home-5-fill"></i></span>
+      <span>Inicio</span>
+    </a>
+    <a href="explore.html"  class="bottom-nav-btn">
+      <span class="bn-icon"><i class="ri-search-line"></i></span>
+      <span>Buscar</span>
+    </a>
+    <a href="videos.html"   class="bottom-nav-btn">
+      <span class="bn-icon"><i class="ri-video-line"></i></span>
+      <span>Videos</span>
+    </a>
+    <a href="messages.html" class="bottom-nav-btn">
+      <span class="bn-icon"><i class="ri-message-3-line"></i></span>
+      <span>Mensajes</span>
+    </a>
+    <a href="#" class="bottom-nav-btn" id="bnPerfil">
+      <span class="bn-icon"><i class="ri-user-3-line"></i></span>
+      <span>Perfil</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ══════════════ MODAL STICKER IA ══════════════ -->
+<div class="modal-overlay hidden" id="modalSticker">
+  <div class="modal-box" style="max-width:500px">
+    <div class="modal-header">
+      <h3><i class="ri-sparkling-line"></i> Generar Sticker con IA</h3>
+      <button class="btn-cerrar-modal" onclick="cerrarModalSticker()">
+        <i class="ri-close-line"></i>
+      </button>
+    </div>
+    <div class="form-group">
+      <label>
+        <i class="ri-quill-pen-line"></i> Describe tu sticker
+        <small>(en inglés da mejores resultados)</small>
+      </label>
+      <input type="text" id="stickerPromptInput"
+             placeholder="ej: cute cat astronaut kawaii..."
+             maxlength="200"
+             onkeydown="if(event.key==='Enter') generarStickers()"/>
+    </div>
+    <button class="btn-auth" id="btnGenerarSticker" onclick="generarStickers()">
+      <i class="ri-sparkling-2-line"></i> Generar 2 stickers
+    </button>
+    <div id="stickerResults" class="sticker-results hidden"></div>
+    <div id="stickerSeleccionado" class="hidden">
+      <div style="display:flex;align-items:center;gap:10px;padding:12px;
+                  background:var(--green-subtle);border-radius:var(--radius);
+                  border:1px solid var(--green)">
+        <i class="ri-checkbox-circle-fill" style="color:var(--green);font-size:1.2rem"></i>
+        <span style="flex:1;font-size:.87rem;font-weight:600">Sticker seleccionado</span>
+        <button class="btn-auth"
+                style="width:auto;padding:7px 18px;font-size:.83rem"
+                onclick="adjuntarStickerAPost()">
+          <i class="ri-attachment-2"></i> Usar en post
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL IMAGEN ══════════════ -->
+<div class="modal-img" id="modalImg" onclick="cerrarModal()">
+  <img id="modalImgSrc" src="" alt=""/>
+</div>
+
+<!-- ══════════════ SCRIPTS ══════════════ -->
+<script src="app.js"></script>
+<script>
+  // Perfil links
+  document.getElementById("navPerfil").href = `profile.html?handle=${JSON.parse(localStorage.getItem("fu_usuario")||'{}').handle}`;
+  document.getElementById("bnPerfil").href  = `profile.html?handle=${JSON.parse(localStorage.getItem("fu_usuario")||'{}').handle}`;
+
+  const token = localStorage.getItem("fu_token");
+
+  // ── Videos recientes en trends ──
+  async function cargarVideosRecientes() {
+    try {
+      const res  = await fetch("/api/videos?pagina=1&limite=3", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const box  = document.getElementById("videosRecientesList");
+      if (!box) return;
+
+      if (!data.length) {
+        box.innerHTML = `<p style="color:var(--text-3);font-size:.82rem">Sin videos aún</p>`;
+        return;
+      }
+
+      box.innerHTML = data.map(v => `
+        <div onclick="window.location.href='videos.html'"
+             style="display:flex;align-items:center;gap:8px;cursor:pointer;
+                    padding:6px 0;border-bottom:1px solid var(--border)">
+          <div style="width:50px;height:50px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#111">
+            <video src="${v.url}" style="width:100%;height:100%;object-fit:cover"
+                   preload="metadata" muted></video>
+          </div>
+          <div style="min-width:0;flex:1">
+            <p style="font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;
+                      text-overflow:ellipsis;color:var(--text)">
+              ${v.descripcion || '@' + v.autor.handle}
+            </p>
+            <small style="color:var(--text-3);font-size:.72rem">
+              <i class="ri-heart-fill" style="color:#ff4466"></i> ${v.totalLikes}
+              · <i class="ri-eye-line"></i> ${v.reproducciones}
+            </small>
+          </div>
+        </div>
+      `).join("");
+    } catch(e) {}
+  }
+
+  // ── Sugerencias ──
+  async function cargarSugerencias() {
+    try {
+      const res  = await fetch("/api/profile/sugerencias", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const box  = document.getElementById("sugerenciasList");
+      if (!box) return;
+
+      if (!data.length) {
+        box.innerHTML = `<p style="color:var(--text-3);font-size:.82rem;padding:8px 0">Sin sugerencias</p>`;
+        return;
+      }
+
+      box.innerHTML = data.map(u => {
+        const av = u.avatarTipo === "video"
+          ? `<video src="${u.avatar}" autoplay loop muted playsinline class="avatar-sm"></video>`
+          : `<img src="${u.avatar}" class="avatar-sm" alt=""/>`;
+        return `
+          <div class="suggestion">
+            <div style="cursor:pointer"
+                 onclick="window.location.href='profile.html?handle=${u.handle}'">${av}</div>
+            <div style="flex:1;min-width:0;cursor:pointer"
+                 onclick="window.location.href='profile.html?handle=${u.handle}'">
+              <strong style="font-size:.85rem;display:block;white-space:nowrap;
+                             overflow:hidden;text-overflow:ellipsis">${u.nombre}</strong>
+              <small style="color:var(--text-3)">@${u.handle}</small>
+            </div>
+            <button class="btn-seguir" onclick="seguirDesdeIndex('${u._id}', this)">
+              <i class="ri-user-add-line"></i>
+            </button>
+          </div>
+        `;
+      }).join("");
+    } catch(e) {}
+  }
+
+  async function seguirDesdeIndex(userId, btn) {
+    try {
+      const res  = await fetch(`/api/profile/${userId}/follow`, {
+        method:  "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      btn.innerHTML = data.sigues
+        ? `<i class="ri-user-follow-line"></i>`
+        : `<i class="ri-user-add-line"></i>`;
+      btn.style.opacity = data.sigues ? "0.5" : "1";
+    } catch(e) {}
+  }
+
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      cargarSugerencias();
+      cargarVideosRecientes();
+    }, 800);
+  });
+</script>
+
+<style>
+  .char-count {
+    font-size:.78rem; color:var(--text-3);
+    font-weight:600; padding:0 4px; min-width:28px; text-align:center;
+  }
+  .nav-badge {
+    background:var(--green); color:#050505;
+    border-radius:var(--radius-full); min-width:18px; height:18px;
+    padding:0 5px; display:flex; align-items:center; justify-content:center;
+    font-size:.65rem; font-weight:900; margin-left:auto;
+  }
+  .spin { display:inline-block; animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
 </body>
 </html>
