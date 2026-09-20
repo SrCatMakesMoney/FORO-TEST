@@ -23,6 +23,9 @@ const userSchema = new mongoose.Schema(
       bannerPreset: { type: String, default: "default" }, // default|purple|blue|sunset|ocean|fire|neon|custom
       bannerColor1: { type: String, default: "#0d2010" },
       bannerColor2: { type: String, default: "#1a3a14" },
+      bannerUrl:    { type: String, default: "" },
+      bannerTipo:   { type: String, default: "imagen" },
+      bannerPublicId: { type: String, default: "" },
 
       // Nombre
       nombreEfecto:    { type: String, default: "none" }, // none|gradient|glow|neon|color|shadow
