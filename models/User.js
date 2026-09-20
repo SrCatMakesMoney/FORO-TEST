@@ -38,8 +38,36 @@ const userSchema = new mongoose.Schema(
       badge: { type: String, default: "none" }, // none|verified|star|fire|crown|dev|new|vip
 
       // Tema
-      temaColor: { type: String, default: "#5cdb6f" }
-    }
+      temaColor: { type: String, default: "#5cdb6f" },
+      tema: {
+  type: String,
+  default: "carbon"
+},
+
+bannerEstilo: {
+  type: String,
+  default: "normal"
+},
+
+avatarEstilo: {
+  type: String,
+  default: "normal"
+},
+
+profundidad: {
+  type: Boolean,
+  default: true
+},
+
+reflejo: {
+  type: Boolean,
+  default: true
+},
+
+brillo: {
+  type: Boolean,
+  default: true
+}
   },
   { timestamps: true }
 );
