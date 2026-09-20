@@ -2134,253 +2134,168 @@
 
     async function subirVideo() {
 
-      if (!videoFile) {
-        return;
-      }
+      if (!videoFile) return;
 
-
-      const btn =
-        document.getElementById(
-          "btnSubirVideo"
-        );
-
-
-      const prog =
-        document.getElementById(
-          "uploadProgress"
-        );
-
-
-      const bar =
-        document.getElementById(
-          "progressBar"
-        );
-
-
-      const text =
-        document.getElementById(
-          "progressText"
-        );
-
+      const btn  = document.getElementById("btnSubirVideo");
+      const prog = document.getElementById("uploadProgress");
+      const bar  = document.getElementById("progressBar");
+      const text = document.getElementById("progressText");
+      const descripcion = document.getElementById("videoDesc").value.trim();
 
       btn.innerHTML = `
-
         <i class="ri-loader-4-line spin"></i>
-
-        <span>
-          Subiendo...
-        </span>
-
+        <span>Preparando subida...</span>
       `;
-
-
       btn.disabled = true;
-
-
-      prog.classList.remove(
-        "hidden"
-      );
-
+      prog.classList.remove("hidden");
+      bar.style.width = "0%";
+      text.textContent = "Preparando... 0%";
 
       try {
 
-        await new Promise(
-          (resolve, reject) => {
-
-            const formData =
-              new FormData();
-
-
-            formData.append(
-              "video",
-              videoFile
-            );
-
-
-            formData.append(
-              "descripcion",
-              document
-                .getElementById(
-                  "videoDesc"
-                )
-                .value
-                .trim()
-            );
-
-
-            const xhr =
-              new XMLHttpRequest();
-
-
-            xhr.open(
-              "POST",
-              `${API}/videos`
-            );
-
-
-            xhr.setRequestHeader(
-              "Authorization",
-              `Bearer ${token}`
-            );
-
-
-            xhr.upload.addEventListener(
-              "progress",
-              e => {
-
-                if (e.lengthComputable) {
-
-                  const pct =
-                    Math.round(
-                      (e.loaded /
-                       e.total) * 100
-                    );
-
-
-                  bar.style.width =
-                    pct + "%";
-
-
-                  text.textContent =
-                    `Subiendo... ${pct}%`;
-
-                }
-
-              }
-            );
-
-
-            xhr.addEventListener(
-              "load",
-              () => {
-
-                if (
-                  xhr.status >= 200 &&
-                  xhr.status < 300
-                ) {
-
-                  const data =
-                    JSON.parse(
-                      xhr.responseText
-                    );
-
-
-                  cerrarUpload();
-
-
-                  toast(
-                    "Video publicado"
-                  );
-
-
-                  document.getElementById(
-                    "vfFeed"
-                  ).innerHTML = "";
-
-
-                  videos.unshift(
-                    data
-                  );
-
-
-                  renderVideo(
-                    data
-                  );
-
-
-                  videos.forEach(v => {
-
-                    if (
-                      v._id !==
-                      data._id
-                    ) {
-
-                      renderVideo(v);
-
-                    }
-
-                  });
-
-
-                  setupObserver();
-
-
-                  resolve();
-
-                }
-
-
-                else {
-
-                  const data =
-                    JSON.parse(
-                      xhr.responseText
-                    );
-
-
-                  reject(
-                    new Error(
-                      data.mensaje ||
-                      "Error al subir"
-                    )
-                  );
-
-                }
-
-              }
-            );
-
-
-            xhr.addEventListener(
-              "error",
-              () => {
-
-                reject(
-                  new Error(
-                    "Error de red"
-                  )
-                );
-
-              }
-            );
-
-
-            xhr.send(
-              formData
-            );
-
+        // 1) Pedimos al servidor una firma pequeña.
+        const signRes = await fetch(`${API}/videos/signature`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
           }
-        );
+        });
 
-      }
+        const signData = await signRes.json();
 
+        if (!signRes.ok) {
+          throw new Error(signData.mensaje || "No se pudo preparar la subida");
+        }
 
-      catch (err) {
-
-        toast(
-          err.message
-        );
-
-
+        // 2) El VIDEO va directo del navegador a Cloudinary.
+        //    Así Vercel no recibe los MB del archivo y no aparece el 413.
+        text.textContent = "Subiendo a Cloudinary... 0%";
         btn.innerHTML = `
-
-          <i class="ri-upload-cloud-line"></i>
-
-          <span>
-            Publicar video
-          </span>
-
+          <i class="ri-cloud-line"></i>
+          <span>Subiendo...</span>
         `;
 
+        const cloudForm = new FormData();
+        cloudForm.append("file", videoFile);
+        cloudForm.append("api_key", signData.apiKey);
+        cloudForm.append("timestamp", signData.timestamp);
+        cloudForm.append("folder", signData.folder);
+        cloudForm.append("public_id", signData.publicId);
+        cloudForm.append("signature", signData.signature);
+
+        const cloudResult = await new Promise((resolve, reject) => {
+
+          const xhr = new XMLHttpRequest();
+
+          xhr.open(
+            "POST",
+            `https://api.cloudinary.com/v1_1/${encodeURIComponent(signData.cloudName)}/video/upload`
+          );
+
+          xhr.upload.addEventListener("progress", e => {
+            if (!e.lengthComputable) return;
+
+            const pct = Math.round((e.loaded / e.total) * 100);
+
+            bar.style.width = pct + "%";
+            text.textContent = `Subiendo a Cloudinary... ${pct}%`;
+          });
+
+          xhr.addEventListener("load", () => {
+            let data = {};
+            try { data = JSON.parse(xhr.responseText || "{}"); } catch (_) {}
+
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve(data);
+            } else {
+              reject(new Error(data.error?.message || "Cloudinary rechazó el video"));
+            }
+          });
+
+          xhr.addEventListener("error", () => {
+            reject(new Error("Error de conexión con Cloudinary"));
+          });
+
+          xhr.addEventListener("abort", () => {
+            reject(new Error("Subida cancelada"));
+          });
+
+          xhr.send(cloudForm);
+        });
+
+        if (!cloudResult.secure_url || !cloudResult.public_id) {
+          throw new Error("Cloudinary no devolvió los datos del video");
+        }
+
+        // 3) Ya con el video en Cloudinary, mandamos a nuestro backend
+        //    SOLO los metadatos + descripción.
+        text.textContent = "Publicando...";
+        btn.innerHTML = `
+          <i class="ri-database-2-line"></i>
+          <span>Publicando...</span>
+        `;
+
+        const saveRes = await fetch(`${API}/videos`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            secure_url: cloudResult.secure_url,
+            public_id: cloudResult.public_id,
+            resource_type: cloudResult.resource_type || "video",
+            format: cloudResult.format || null,
+            duration: cloudResult.duration || null,
+            descripcion
+          })
+        });
+
+        const data = await saveRes.json();
+
+        if (!saveRes.ok) {
+          // Si Mongo falla, intentamos limpiar el asset recién subido.
+          // El endpoint de cleanup requiere backend y evita dejar basura.
+          try {
+            await fetch(`${API}/videos/cleanup-upload`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ public_id: cloudResult.public_id })
+            });
+          } catch (_) {}
+
+          throw new Error(data.mensaje || "No se pudo publicar el video");
+        }
+
+        cerrarUpload();
+        toast("Video publicado");
+
+        const feed = document.getElementById("vfFeed");
+        feed.innerHTML = "";
+
+        videos.unshift(data);
+        videos.forEach(v => renderVideo(v));
+
+        setupObserver();
+
+      } catch (err) {
+
+        toast(err.message || "Error al subir");
+
+        btn.innerHTML = `
+          <i class="ri-upload-cloud-line"></i>
+          <span>Publicar video</span>
+        `;
 
         btn.disabled = false;
-
         bar.style.width = "0%";
-
+        text.textContent = "Subida fallida";
       }
-
     }
-
 
 
     // ══════════════════════════
