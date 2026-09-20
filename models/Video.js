@@ -8,13 +8,17 @@ const videoSchema = new mongoose.Schema(
       required: true
     },
 
-    // URL pública del video
     url: {
       type: String,
       required: true
     },
 
-    // Información de Cloudinary
+    descripcion: {
+      type: String,
+      default: "",
+      maxlength: 300
+    },
+
     cloudinaryPublicId: {
       type: String,
       default: null
@@ -33,12 +37,6 @@ const videoSchema = new mongoose.Schema(
     cloudinaryDuration: {
       type: Number,
       default: null
-    },
-
-    descripcion: {
-      type: String,
-      default: "",
-      maxlength: 300
     },
 
     likes: [
@@ -60,10 +58,12 @@ const videoSchema = new mongoose.Schema(
       default: 0
     }
   },
-
   {
     timestamps: true
   }
 );
 
-module.exports = mongoose.model("Video", videoSchema);
+module.exports = mongoose.model(
+  "Video",
+  videoSchema
+);
