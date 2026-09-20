@@ -6,7 +6,6 @@
   <title>Foro Ubre — Perfil</title>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet"/>
   <link rel="stylesheet" href="profile.css"/>
-  <link rel="stylesheet" href="notifications.css">
 </head>
 <body>
 
@@ -145,9 +144,6 @@
       <button class="modal-tab-btn" data-tab="badge">
         <i class="ri-medal-line"></i> Badge
       </button>
-      <button class="modal-tab-btn" data-tab="conexiones">
-        <i class="ri-links-line"></i> Conexiones
-      </button>
     </div>
 
     <!-- TAB INFO -->
@@ -258,6 +254,62 @@
         </div>
       </div>
 
+      <!-- ESTILO PROFUNDO / LIQUID GLASS -->
+      <div class="premium-visual-section">
+        <p class="custom-section-title">
+          <i class="ri-drop-line"></i> Estilo del perfil
+        </p>
+
+        <div class="visual-style-grid" id="visualStyleOptions">
+          <button class="visual-style-card" data-visual="normal">
+            <span class="visual-preview visual-preview-normal"></span>
+            <span><strong>Normal</strong><small>Clásico</small></span>
+          </button>
+
+          <button class="visual-style-card" data-visual="vitrina">
+            <span class="visual-preview visual-preview-vitrina"></span>
+            <span><strong>Vitrina</strong><small>Vidrio profundo</small></span>
+          </button>
+
+          <button class="visual-style-card" data-visual="water">
+            <span class="visual-preview visual-preview-water"></span>
+            <span><strong>Liquid</strong><small>Agua + relieve</small></span>
+          </button>
+
+          <button class="visual-style-card" data-visual="frosted">
+            <span class="visual-preview visual-preview-frosted"></span>
+            <span><strong>Frosted</strong><small>Cristal esmerilado</small></span>
+          </button>
+        </div>
+
+        <div class="visual-subsection">
+          <span class="visual-subtitle"><i class="ri-user-3-line"></i> Avatar</span>
+          <div class="visual-pill-row" id="avatarStyleOptions">
+            <button class="visual-pill" data-avatar-style="normal">Circular</button>
+            <button class="visual-pill" data-avatar-style="water">Gota</button>
+            <button class="visual-pill" data-avatar-style="water-drop">Gota profunda</button>
+          </div>
+        </div>
+
+        <div class="visual-toggle-grid">
+          <label class="visual-toggle">
+            <input type="checkbox" id="profileDepthToggle">
+            <span class="visual-toggle-track"><span></span></span>
+            <span><strong>Profundidad</strong><small>Sombras y relieve</small></span>
+          </label>
+          <label class="visual-toggle">
+            <input type="checkbox" id="profileReflectionToggle">
+            <span class="visual-toggle-track"><span></span></span>
+            <span><strong>Reflejos</strong><small>Brillo de cristal</small></span>
+          </label>
+          <label class="visual-toggle">
+            <input type="checkbox" id="profileGlowToggle">
+            <span class="visual-toggle-track"><span></span></span>
+            <span><strong>Ambiente</strong><small>Glow muy suave</small></span>
+          </label>
+        </div>
+      </div>
+
       <button class="btn-auth" id="btnGuardarApariencia">
         <i class="ri-save-line"></i> Guardar apariencia
       </button>
@@ -339,31 +391,6 @@
       </button>
     </div>
 
-    <!-- TAB CONEXIONES -->
-    <div class="modal-tab-panel" id="tabConexiones">
-      <p class="custom-section-title"><i class="ri-links-line"></i> Conexiones</p>
-      <div class="spotify-connect-box" id="spotifyConnectBox">
-        <div class="spotify-connect-icon"><i class="ri-spotify-fill"></i></div>
-        <div class="spotify-connect-info">
-          <strong>Spotify</strong>
-          <span id="spotifyConnectStatus">Conecta tu cuenta para mostrarla en tu perfil.</span>
-        </div>
-        <button class="spotify-connect-btn" id="btnSpotifyConnect" type="button"><i class="ri-link"></i> Conectar</button>
-      </div>
-      <div id="spotifyConnectedPanel" class="spotify-connected-panel hidden">
-        <div class="spotify-account-row">
-          <img id="spotifyAccountImage" src="" alt="" class="spotify-account-image hidden"/>
-          <div class="spotify-account-meta"><strong id="spotifyAccountName">Spotify</strong><span id="spotifyAccountId"></span></div>
-          <a id="spotifyOpenAccount" href="#" target="_blank" rel="noopener" class="spotify-open-account"><i class="ri-external-link-line"></i></a>
-        </div>
-        <label class="spotify-toggle-row">
-          <span><strong>Mostrar lo que escucho</strong><small>La canción actual aparecerá en tu perfil.</small></span>
-          <input type="checkbox" id="spotifyShowNow"/>
-        </label>
-        <button class="spotify-disconnect-btn" id="btnSpotifyDisconnect" type="button"><i class="ri-link-unlink"></i> Desconectar Spotify</button>
-      </div>
-    </div>
-
     <!-- TAB BADGE -->
     <div class="modal-tab-panel" id="tabBadge">
       <p class="custom-section-title">
@@ -418,7 +445,6 @@
 </div>
 
 <!-- ══════════════ SCRIPT ══════════════ -->
-<script src="spotify.js"></script>
 <script>
 const API   = "/api";
 const token = localStorage.getItem("fu_token");
@@ -547,7 +573,6 @@ async function cargarPerfil() {
     postsCache   = data.posts;
 
     renderPerfil(data.usuario);
-    if (typeof window.initSpotifyProfile === "function") window.initSpotifyProfile(data.usuario);
     document.getElementById("headerNombre").textContent = data.usuario.nombre;
     document.title = `${data.usuario.nombre} — Foro Ubre`;
 
@@ -573,48 +598,92 @@ function renderPerfil(u) {
   const p           = u.personalizacion || {};
   const bannerStyle = getBannerStyle(p);
   const marcoStyle  = getMarcoStyle(p);
-  const extraClass  = p.marco === "rainbow" ? "avatar-rainbow" : p.marco === "animated" ? "avatar-animated" : "";
+
+  const visual = p.bannerEstilo || "normal";
+  const avatarStyle = p.avatarEstilo || (visual === "water" ? "water" : "normal");
+
+  const visualClass = visual === "vitrina"
+    ? "profile-visual-vitrina"
+    : visual === "water"
+      ? "profile-visual-water"
+      : visual === "frosted"
+        ? "profile-visual-frosted"
+        : "profile-visual-normal";
+
+  const avatarClass = avatarStyle === "water"
+    ? "profile-avatar-water"
+    : avatarStyle === "water-drop"
+      ? "profile-avatar-water profile-avatar-drop"
+      : "";
+
+  const extraClass = p.marco === "rainbow"
+    ? "avatar-rainbow"
+    : p.marco === "animated"
+      ? "avatar-animated"
+      : "";
 
   const avatarEl = u.avatarTipo === "video"
-    ? `<video src="${u.avatar}" autoplay loop muted playsinline
+    ? `<video src="${u.avatar || ""}" autoplay loop muted playsinline
                class="${extraClass}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></video>`
-    : `<img src="${u.avatar}" alt="avatar"
+    : `<img src="${u.avatar || "https://api.dicebear.com/7.x/thumbs/svg?seed=x"}" alt="avatar"
              class="${extraClass}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;
 
+  const drops = visual === "vitrina" || visual === "water"
+    ? `<div class="profile-liquid-drops" aria-hidden="true">
+        <span style="--x:16%;--y:22%;--s:7px"></span>
+        <span style="--x:73%;--y:17%;--s:11px"></span>
+        <span style="--x:83%;--y:68%;--s:6px"></span>
+        <span style="--x:43%;--y:78%;--s:9px"></span>
+        <span style="--x:28%;--y:63%;--s:5px"></span>
+      </div>`
+    : "";
+
   document.getElementById("profileContent").innerHTML = `
-    <div class="profile-banner" style="background:${bannerStyle}"></div>
-    <div class="profile-info">
-      <div class="profile-avatar-wrap" style="${marcoStyle}position:relative">
-        ${avatarEl}
+    <div class="profile-premium-shell ${visualClass} ${p.profundidad === false ? "no-depth" : ""}"
+         style="--profile-accent:${p.temaColor || "#5cdb6f"}">
+
+      <div class="profile-ambient-layer" aria-hidden="true"></div>
+
+      <div class="profile-banner ${visual === "vitrina" ? "banner-vitrina" : ""}"
+           style="background:${bannerStyle}">
+        ${drops}
+        <div class="profile-banner-highlight" aria-hidden="true"></div>
       </div>
-      <div class="profile-actions">
-        ${u.esTuPerfil ? `
-          <button class="btn-edit-profile" onclick="abrirModalEditar()">
-            <i class="ri-edit-box-line"></i> Editar perfil
-          </button>
-        ` : `
-          <button class="btn-mensaje" onclick="iniciarChat('${u._id}')">
-            <i class="ri-message-3-line"></i> Mensaje
-          </button>
-          <button class="btn-follow ${u.sigues ? 'siguiendo' : ''}"
-                  id="btnFollow" onclick="toggleFollow('${u._id}')">
-            ${u.sigues
-              ? `<i class="ri-user-follow-line"></i> Siguiendo`
-              : `<i class="ri-user-add-line"></i> Seguir`}
-          </button>
-        `}
+
+      <div class="profile-info ${p.profundidad === false ? "no-depth" : ""}">
+        <div class="profile-avatar-wrap ${avatarClass}" style="${marcoStyle}position:relative">
+          ${avatarEl}
+        </div>
+
+        <div class="profile-actions">
+          ${u.esTuPerfil ? `
+            <button class="btn-edit-profile" onclick="abrirModalEditar()">
+              <i class="ri-edit-box-line"></i> Editar perfil
+            </button>
+          ` : `
+            <button class="btn-mensaje" onclick="iniciarChat('${u._id}')">
+              <i class="ri-message-3-line"></i> Mensaje
+            </button>
+            <button class="btn-follow ${u.sigues ? 'siguiendo' : ''}"
+                    id="btnFollow" onclick="toggleFollow('${u._id}')">
+              ${u.sigues
+                ? `<i class="ri-user-follow-line"></i> Siguiendo`
+                : `<i class="ri-user-add-line"></i> Seguir`}
+            </button>
+          `}
+        </div>
+
+        <div style="margin-top:10px;display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+          ${renderNombreEl(u)}
+        </div>
+        <p class="profile-handle">@${escHtml(u.handle)}</p>
+        ${u.bio ? `<p class="profile-bio">${escHtml(u.bio)}</p>` : ""}
+        <div class="profile-stats">
+          <span><strong>${perfilData.totalPosts}</strong> Posts</span>
+          <span><strong id="statSeguidores">${u.totalSeguidores}</strong> Seguidores</span>
+          <span><strong>${u.totalSiguiendo}</strong> Siguiendo</span>
+        </div>
       </div>
-      <div style="margin-top:10px;display:flex;align-items:center;gap:4px;flex-wrap:wrap">
-        ${renderNombreEl(u)}
-      </div>
-      <p class="profile-handle">@${escHtml(u.handle)}</p>
-      ${u.bio ? `<p class="profile-bio">${escHtml(u.bio)}</p>` : ""}
-      <div class="profile-stats">
-        <span><strong>${perfilData.totalPosts}</strong> Posts</span>
-        <span><strong id="statSeguidores">${u.totalSeguidores}</strong> Seguidores</span>
-        <span><strong>${u.totalSiguiendo}</strong> Siguiendo</span>
-      </div>
-      <div id="spotifyProfileCard" class="spotify-profile-card-wrap"></div>
     </div>
   `;
 }
@@ -990,6 +1059,23 @@ function abrirModalEditar() {
   if (p.bannerColor1) document.getElementById("bannerColor1").value = p.bannerColor1;
   if (p.bannerColor2) document.getElementById("bannerColor2").value = p.bannerColor2;
 
+  const visualValue = p.bannerEstilo || "normal";
+  document.querySelectorAll("#visualStyleOptions .visual-style-card").forEach(b =>
+    b.classList.toggle("active", b.dataset.visual === visualValue)
+  );
+
+  const avatarValue = p.avatarEstilo || "normal";
+  document.querySelectorAll("#avatarStyleOptions .visual-pill").forEach(b =>
+    b.classList.toggle("active", b.dataset.avatarStyle === avatarValue)
+  );
+
+  const depth = document.getElementById("profileDepthToggle");
+  const reflection = document.getElementById("profileReflectionToggle");
+  const glow = document.getElementById("profileGlowToggle");
+  if (depth) depth.checked = p.profundidad !== false;
+  if (reflection) reflection.checked = p.reflejo !== false;
+  if (glow) glow.checked = p.brillo !== false;
+
   document.querySelectorAll("#nombreOptions .option-btn").forEach(b =>
     b.classList.toggle("active", b.dataset.efecto === (p.nombreEfecto || "none"))
   );
@@ -1053,6 +1139,28 @@ document.querySelectorAll("#bannerOptions .option-btn").forEach(btn => {
     const row = document.getElementById("bannerCustomRow");
     if (this.dataset.banner === "custom") { row.classList.remove("hidden"); row.style.display = "flex"; }
     else row.classList.add("hidden");
+  });
+});
+
+// ── Estilo visual ──
+document.querySelectorAll("#visualStyleOptions .visual-style-card").forEach(btn => {
+  btn.addEventListener("click", function() {
+    document.querySelectorAll("#visualStyleOptions .visual-style-card").forEach(b => b.classList.remove("active"));
+    this.classList.add("active");
+
+    const visual = this.dataset.visual;
+    if (visual === "water") {
+      document.querySelectorAll("#avatarStyleOptions .visual-pill").forEach(b => b.classList.remove("active"));
+      document.querySelector('#avatarStyleOptions .visual-pill[data-avatar-style="water"]')?.classList.add("active");
+    }
+  });
+});
+
+// ── Estilo del avatar ──
+document.querySelectorAll("#avatarStyleOptions .visual-pill").forEach(btn => {
+  btn.addEventListener("click", function() {
+    document.querySelectorAll("#avatarStyleOptions .visual-pill").forEach(b => b.classList.remove("active"));
+    this.classList.add("active");
   });
 });
 
@@ -1186,7 +1294,12 @@ document.getElementById("btnGuardarApariencia")?.addEventListener("click", async
     marcoColor:   document.getElementById("marcoColorPicker")?.value || "#5cdb6f",
     bannerPreset: document.querySelector("#bannerOptions .option-btn.active")?.dataset.banner || "default",
     bannerColor1: document.getElementById("bannerColor1")?.value || "#0d2010",
-    bannerColor2: document.getElementById("bannerColor2")?.value || "#1a3a14"
+    bannerColor2: document.getElementById("bannerColor2")?.value || "#1a3a14",
+    bannerEstilo: document.querySelector("#visualStyleOptions .visual-style-card.active")?.dataset.visual || "normal",
+    avatarEstilo: document.querySelector("#avatarStyleOptions .visual-pill.active")?.dataset.avatarStyle || "normal",
+    profundidad: document.getElementById("profileDepthToggle")?.checked !== false,
+    reflejo: document.getElementById("profileReflectionToggle")?.checked !== false,
+    brillo: document.getElementById("profileGlowToggle")?.checked !== false
   };
   try {
     const res = await fetch(`${API}/auth/personalizacion`, {
@@ -1290,6 +1403,285 @@ cargarPerfil();
 </script>
 
 <style>
+  /* ==========================================================
+     FORO UBRE — LIQUID GLASS / WATER PROFILE
+     Todo lo nuevo del perfil vive aquí para que profile.html
+     funcione aunque todavía no hayas tocado profile.css.
+     ========================================================== */
+
+  .profile-premium-shell {
+    --profile-accent: #5cdb6f;
+    position: relative;
+    isolation: isolate;
+    margin: 0 0 18px;
+    border-radius: 28px;
+  }
+
+  .profile-ambient-layer {
+    position: absolute;
+    inset: -80px -40px;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--profile-accent) 14%, transparent), transparent 34%),
+      radial-gradient(circle at 82% 35%, rgba(90,170,255,.10), transparent 34%);
+    filter: blur(38px);
+    opacity: .75;
+  }
+
+  .profile-premium-shell .profile-banner {
+    position: relative;
+    min-height: 190px;
+    overflow: hidden;
+    border-radius: 27px 27px 12px 12px;
+    border: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 18px 45px rgba(0,0,0,.28);
+  }
+
+  .profile-premium-shell .profile-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,255,.06), transparent 40%, rgba(0,0,0,.18));
+  }
+
+  .profile-premium-shell .profile-banner-highlight {
+    position: absolute;
+    left: 5%; right: 5%; top: 1px;
+    height: 34%;
+    border-radius: 0 0 60% 60%;
+    background: linear-gradient(180deg, rgba(255,255,255,.10), transparent);
+    pointer-events: none;
+  }
+
+  .profile-premium-shell .profile-info {
+    position: relative;
+    margin: -42px 10px 0;
+    padding: 54px 22px 22px;
+    border-radius: 24px;
+    background: linear-gradient(145deg, rgba(20,20,22,.86), rgba(10,10,12,.70));
+    border: 1px solid rgba(255,255,255,.075);
+    backdrop-filter: blur(24px) saturate(125%);
+    -webkit-backdrop-filter: blur(24px) saturate(125%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 20px 50px rgba(0,0,0,.28);
+  }
+
+  .profile-premium-shell .profile-avatar-wrap {
+    z-index: 5;
+    transform: translateZ(0);
+  }
+
+  .profile-premium-shell:not(.no-depth) .profile-info {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 28px 65px rgba(0,0,0,.36);
+  }
+
+  /* VITRINA */
+  .profile-visual-vitrina .profile-banner {
+    border: 1px solid rgba(255,255,255,.22);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.30),
+      inset 0 -35px 60px rgba(0,0,0,.18),
+      0 28px 65px rgba(0,0,0,.42);
+  }
+
+  .profile-visual-vitrina .profile-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(115deg, rgba(255,255,255,.16), rgba(255,255,255,.025) 25%, transparent 42%),
+      linear-gradient(180deg, transparent 55%, rgba(255,255,255,.025));
+    backdrop-filter: blur(.3px);
+  }
+
+  /* FROSTED */
+  .profile-visual-frosted .profile-banner {
+    border: 1px solid rgba(255,255,255,.16);
+    backdrop-filter: blur(14px) saturate(130%);
+    -webkit-backdrop-filter: blur(14px) saturate(130%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 24px 55px rgba(0,0,0,.35);
+  }
+
+  .profile-visual-frosted .profile-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,.035);
+    pointer-events: none;
+  }
+
+  /* LIQUID */
+  .profile-visual-water .profile-banner {
+    border: 1px solid rgba(175,225,255,.20);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.28),
+      inset 0 -30px 65px rgba(0,25,60,.20),
+      0 28px 70px rgba(0,0,0,.43),
+      0 0 32px rgba(100,190,255,.08);
+  }
+
+  .profile-visual-water .profile-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 35% 0%, rgba(255,255,255,.16), transparent 32%);
+    pointer-events: none;
+  }
+
+  /* GOTAS */
+  .profile-liquid-drops {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  .profile-liquid-drops span {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--s);
+    height: calc(var(--s) * 1.22);
+    border-radius: 65% 35% 55% 45% / 45% 50% 50% 55%;
+    transform: rotate(-18deg);
+    background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.85), rgba(190,225,255,.20) 38%, rgba(90,160,220,.08) 70%, transparent 74%);
+    box-shadow: inset -2px -2px 4px rgba(0,30,70,.18), 0 2px 6px rgba(0,0,0,.20);
+    opacity: .58;
+  }
+
+  /* AVATAR GOTA */
+  .profile-avatar-water {
+    border-radius: 58% 42% 54% 46% !important;
+    background: linear-gradient(145deg, rgba(255,255,255,.72), rgba(145,215,255,.30) 42%, rgba(50,110,210,.14));
+    padding: 5px !important;
+    border: 1px solid rgba(255,255,255,.22) !important;
+    box-shadow:
+      inset 2px 2px 6px rgba(255,255,255,.62),
+      inset -6px -9px 14px rgba(0,35,80,.30),
+      0 17px 38px rgba(0,0,0,.44),
+      0 0 28px rgba(110,195,255,.14) !important;
+    transform: rotate(-6deg);
+    transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease;
+  }
+
+  .profile-avatar-water:hover {
+    transform: rotate(-3deg) translateY(-3px) scale(1.02);
+  }
+
+  .profile-avatar-water > img,
+  .profile-avatar-water > video {
+    border-radius: 55% 45% 52% 48% !important;
+    transform: rotate(6deg);
+  }
+
+  .profile-avatar-water::before {
+    content: "";
+    position: absolute;
+    width: 25px; height: 11px;
+    left: 17px; top: 11px;
+    border-radius: 50%;
+    transform: rotate(-22deg);
+    background: linear-gradient(100deg, rgba(255,255,255,.86), rgba(255,255,255,.04));
+    filter: blur(.25px);
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .profile-avatar-water::after {
+    content: "";
+    position: absolute;
+    width: 6px; height: 6px;
+    right: 15px; bottom: 17px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.72);
+    box-shadow: 0 0 10px rgba(255,255,255,.55);
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .profile-avatar-drop {
+    border-radius: 50% 50% 58% 42% !important;
+  }
+
+  /* EDITOR */
+  .premium-visual-section {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255,255,255,.07);
+  }
+
+  .visual-style-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 9px;
+  }
+
+  .visual-style-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    min-width: 0;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    background: rgba(255,255,255,.025);
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    transition: transform .22s ease, border-color .22s ease, background .22s ease, box-shadow .22s ease;
+  }
+
+  .visual-style-card:hover { transform: translateY(-1px); background: rgba(255,255,255,.045); }
+  .visual-style-card.active {
+    border-color: color-mix(in srgb, var(--green) 65%, transparent);
+    background: color-mix(in srgb, var(--green) 8%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--green) 18%, transparent), 0 8px 24px rgba(0,0,0,.16);
+  }
+
+  .visual-style-card > span:last-child { display:flex; flex-direction:column; min-width:0; }
+  .visual-style-card strong { font-size:.82rem; }
+  .visual-style-card small { color:var(--text-3); font-size:.68rem; margin-top:2px; }
+
+  .visual-preview {
+    width: 42px; height: 42px; flex: 0 0 42px;
+    border-radius: 13px;
+    border: 1px solid rgba(255,255,255,.13);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 5px 14px rgba(0,0,0,.25);
+  }
+  .visual-preview-normal { background: linear-gradient(135deg,#151515,#292929); }
+  .visual-preview-vitrina { background: linear-gradient(135deg,#26313b,#657686); position:relative; overflow:hidden; }
+  .visual-preview-vitrina::after { content:""; position:absolute; inset:0; background:linear-gradient(115deg,rgba(255,255,255,.42),transparent 35%); }
+  .visual-preview-water { background:linear-gradient(135deg,#10202d,#47758f); border-radius:55% 45% 58% 42%; }
+  .visual-preview-frosted { background:linear-gradient(135deg,#42484e,#191b1f); backdrop-filter:blur(10px); }
+
+  .visual-subsection { margin-top:14px; }
+  .visual-subtitle { display:block; color:var(--text-2); font-size:.72rem; font-weight:800; margin-bottom:8px; text-transform:uppercase; letter-spacing:.04em; }
+  .visual-pill-row { display:flex; gap:7px; flex-wrap:wrap; }
+  .visual-pill {
+    border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.025); color:var(--text-2);
+    border-radius:999px; padding:8px 11px; font-size:.73rem; cursor:pointer; transition:.2s ease;
+  }
+  .visual-pill.active { color:var(--text); border-color:var(--green); background:rgba(92,219,111,.08); }
+
+  .visual-toggle-grid { display:grid; gap:8px; margin-top:13px; }
+  .visual-toggle { display:flex; align-items:center; gap:9px; padding:10px 11px; border:1px solid rgba(255,255,255,.06); border-radius:14px; background:rgba(255,255,255,.02); cursor:pointer; }
+  .visual-toggle input { display:none; }
+  .visual-toggle-track { width:34px; height:20px; flex:0 0 34px; border-radius:999px; background:#333; padding:2px; transition:.2s ease; }
+  .visual-toggle-track span { display:block; width:16px; height:16px; border-radius:50%; background:#888; transition:.2s ease; }
+  .visual-toggle input:checked + .visual-toggle-track { background:var(--green); }
+  .visual-toggle input:checked + .visual-toggle-track span { transform:translateX(14px); background:#050505; }
+  .visual-toggle > span:last-child { display:flex; flex-direction:column; }
+  .visual-toggle strong { font-size:.76rem; }
+  .visual-toggle small { color:var(--text-3); font-size:.65rem; margin-top:2px; }
+
+  @media(max-width:600px) {
+    .profile-premium-shell .profile-banner { min-height:150px; border-radius:22px 22px 10px 10px; }
+    .profile-premium-shell .profile-info { margin:-32px 5px 0; padding:46px 15px 18px; border-radius:20px; }
+    .visual-style-grid { grid-template-columns:1fr; }
+  }
+
   .spin { display:inline-block; animation:spin .8s linear infinite; }
   @keyframes spin { to { transform:rotate(360deg); } }
   #badgeOptions .badge-option {
@@ -1300,6 +1692,5 @@ cargarPerfil();
   #badgeOptions .badge-option strong { font-size:.9rem; }
   #badgeOptions .badge-option small  { color:var(--text-3); font-size:.75rem; }
 </style>
-  <script src="notifications.js" defer></script>
 </body>
 </html>
