@@ -60,7 +60,7 @@ router.get("/sugerencias", auth, async (req, res) => {
 router.get("/:handle", auth, async (req, res) => {
   try {
     const usuario = await User.findOne({ handle: req.params.handle.toLowerCase() })
-      .select("-password")
+      .select("-password -spotify.accessToken -spotify.refreshToken")
       .populate("seguidores", "nombre handle avatar avatarTipo")
       .populate("siguiendo",  "nombre handle avatar avatarTipo")
       .lean();
