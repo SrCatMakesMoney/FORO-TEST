@@ -1,48 +1,31 @@
 const express = require("express");
 const Notification = require("../models/Notification");
+const PushSubscription = require("../models/PushSubscription");
 const auth = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// ============================================================
 // GET /api/notifications
-// ============================================================
-
 router.get("/", auth, async (req, res) => {
   try {
-    const limite = Math.min(
-      parseInt(req.query.limite) || 30,
-      50
-    );
+    const limite = Math.min(parseInt(req.query.limite) || 30, 50);
 
     const notifications = await Notification.find({
       receptor: req.usuario._id
     })
       .sort({ createdAt: -1 })
       .limit(limite)
-      .populate(
-        "emisor",
-        "nombre handle avatar avatarTipo personalizacion"
-      )
+      .populate("emisor", "nombre handle avatar avatarTipo personalizacion")
       .lean();
 
     res.json(notifications);
   } catch (err) {
-    console.error(
-      "Error obteniendo notificaciones:",
-      err
-    );
-
-    res.status(500).json({
-      mensaje: "Error al obtener notificaciones"
-    });
+    console.error("Error obteniendo notificaciones:", err);
+    res.status(500).json({ mensaje: "Error al obtener notificaciones" });
   }
 });
 
-// ============================================================
 // GET /api/notifications/count
-// ============================================================
-
 router.get("/count", auth, async (req, res) => {
   try {
     const count = await Notification.countDocuments({
@@ -53,87 +36,49 @@ router.get("/count", auth, async (req, res) => {
     res.json({ count });
   } catch (err) {
     console.error(err);
-
-    res.status(500).json({
-      mensaje: "Error"
-    });
+    res.status(500).json({ mensaje: "Error" });
   }
 });
 
-// ============================================================
 // PUT /api/notifications/:id/read
-// ============================================================
-
 router.put("/:id/read", auth, async (req, res) => {
   try {
-    const notification =
-      await Notification.findOneAndUpdate(
-        {
-          _id: req.params.id,
-          receptor: req.usuario._id
-        },
-        {
-          $set: {
-            leida: true
-          }
-        },
-        {
-          new: true
-        }
-      );
+    const notification = await Notification.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        receptor: req.usuario._id
+      },
+      { $set: { leida: true } },
+      { new: true }
+    );
 
     if (!notification) {
-      return res.status(404).json({
-        mensaje: "Notificación no encontrada"
-      });
+      return res.status(404).json({ mensaje: "Notificación no encontrada" });
     }
 
-    res.json({
-      ok: true
-    });
+    res.json({ ok: true });
   } catch (err) {
     console.error(err);
-
-    res.status(500).json({
-      mensaje: "Error"
-    });
+    res.status(500).json({ mensaje: "Error" });
   }
 });
 
-// ============================================================
 // PUT /api/notifications/read-all
-// ============================================================
-
 router.put("/read-all", auth, async (req, res) => {
   try {
     await Notification.updateMany(
-      {
-        receptor: req.usuario._id,
-        leida: false
-      },
-      {
-        $set: {
-          leida: true
-        }
-      }
+      { receptor: req.usuario._id, leida: false },
+      { $set: { leida: true } }
     );
 
-    res.json({
-      ok: true
-    });
+    res.json({ ok: true });
   } catch (err) {
     console.error(err);
-
-    res.status(500).json({
-      mensaje: "Error"
-    });
+    res.status(500).json({ mensaje: "Error" });
   }
 });
 
-// ============================================================
 // DELETE /api/notifications/:id
-// ============================================================
-
 router.delete("/:id", auth, async (req, res) => {
   try {
     await Notification.deleteOne({
@@ -141,15 +86,10 @@ router.delete("/:id", auth, async (req, res) => {
       receptor: req.usuario._id
     });
 
-    res.json({
-      ok: true
-    });
+    res.json({ ok: true });
   } catch (err) {
     console.error(err);
-
-    res.status(500).json({
-      mensaje: "Error"
-    });
+    res.status(500).json({ mensaje: "Error" });
   }
 });
 
