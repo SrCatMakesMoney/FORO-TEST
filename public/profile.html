@@ -238,7 +238,10 @@
             <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,#0a001a,#1a002e);vertical-align:middle;margin-right:4px"></span>Neón
           </button>
           <button class="option-btn" data-banner="custom">
-            <i class="ri-palette-line"></i> Personalizado
+            <i class="ri-palette-line"></i> Colores
+          </button>
+          <button class="option-btn" data-banner="image">
+            <i class="ri-image-add-line"></i> Imagen / GIF
           </button>
         </div>
         <div id="bannerCustomRow" class="hidden"
@@ -251,6 +254,22 @@
             <label>Color 2</label>
             <input type="color" id="bannerColor2" value="#1a3a14"/>
           </div>
+        </div>
+        <div class="banner-upload-row">
+          <label class="btn-pick-avatar" for="bannerImageInput" style="margin:0;cursor:pointer">
+            <i class="ri-upload-cloud-2-line"></i> Subir banner
+            <small>JPG, PNG, WebP o GIF · Máx. 20MB</small>
+          </label>
+          <button type="button" class="option-btn btn-remove-banner" id="btnRemoveBanner">
+            <i class="ri-delete-bin-6-line"></i> Quitar banner
+          </button>
+          <input type="file" id="bannerImageInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden/>
+        </div>
+        <div class="banner-upload-preview" id="bannerUploadPreview">
+          <img id="bannerUploadPreviewImg" src="" alt="Vista previa del banner"/>
+        </div>
+        <div class="banner-upload-info" id="bannerUploadInfo">
+          Los GIF se guardan como GIF y seguirán animados en tu perfil.
         </div>
       </div>
 
@@ -399,6 +418,10 @@ const handle = new URLSearchParams(location.search).get("handle") || yo.handle;
 let perfilData     = null;
 let postsCache     = [];
 let avatarEditFile = null;
+let bannerUploadFile = null;
+let bannerUploadUrl = null;
+let bannerUploadPublicId = null;
+let bannerRemoveRequested = false;
 
 // ── Nav links ──
 document.getElementById("navPerfil").href = `profile.html?handle=${yo.handle}`;
@@ -551,7 +574,9 @@ function renderPerfil(u) {
              class="${extraClass}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;
 
   document.getElementById("profileContent").innerHTML = `
-    <div class="profile-banner" style="background:${bannerStyle}"></div>
+    <div class="profile-banner ${p.bannerUrl ? "has-media" : ""}" style="background:${bannerStyle}">
+      ${p.bannerUrl ? `<img class="profile-banner-media" src="${escAttr(p.bannerUrl)}" alt="Banner de ${escAttr(u.nombre)}"/>` : ""}
+    </div>
     <div class="profile-info">
       <div class="profile-avatar-wrap" style="${marcoStyle}position:relative">
         ${avatarEl}
@@ -951,12 +976,26 @@ function abrirModalEditar() {
   );
   document.getElementById("marcoColorPicker").value = p.marcoColor || "#5cdb6f";
 
+  const bannerChoice = p.bannerUrl ? "image" : (p.bannerPreset || "default");
   document.querySelectorAll("#bannerOptions .option-btn").forEach(b =>
-    b.classList.toggle("active", b.dataset.banner === (p.bannerPreset || "default"))
+    b.classList.toggle("active", b.dataset.banner === bannerChoice)
   );
-  document.getElementById("bannerCustomRow").classList.toggle("hidden", p.bannerPreset !== "custom");
+  document.getElementById("bannerCustomRow").classList.toggle("hidden", bannerChoice !== "custom");
   if (p.bannerColor1) document.getElementById("bannerColor1").value = p.bannerColor1;
   if (p.bannerColor2) document.getElementById("bannerColor2").value = p.bannerColor2;
+
+  bannerUploadFile = null;
+  bannerUploadUrl = p.bannerUrl || null;
+  bannerUploadPublicId = p.bannerPublicId || null;
+  bannerRemoveRequested = false;
+  const bannerInput = document.getElementById("bannerImageInput");
+  if (bannerInput) bannerInput.value = "";
+  const bannerPreview = document.getElementById("bannerUploadPreview");
+  const bannerPreviewImg = document.getElementById("bannerUploadPreviewImg");
+  const removeBannerBtn = document.getElementById("btnRemoveBanner");
+  if (bannerPreviewImg) bannerPreviewImg.src = p.bannerUrl || "";
+  bannerPreview?.classList.toggle("active", !!p.bannerUrl);
+  removeBannerBtn?.classList.toggle("active", !!p.bannerUrl);
 
   document.querySelectorAll("#nombreOptions .option-btn").forEach(b =>
     b.classList.toggle("active", b.dataset.efecto === (p.nombreEfecto || "none"))
@@ -991,6 +1030,10 @@ function abrirModalEditar() {
 function cerrarModalEditar() {
   document.getElementById("modalEditarPerfil").classList.add("hidden");
   avatarEditFile = null;
+  bannerUploadFile = null;
+  bannerUploadUrl = null;
+  bannerUploadPublicId = null;
+  bannerRemoveRequested = false;
 }
 
 // ── Modal tabs ──
@@ -1021,6 +1064,11 @@ document.querySelectorAll("#bannerOptions .option-btn").forEach(btn => {
     const row = document.getElementById("bannerCustomRow");
     if (this.dataset.banner === "custom") { row.classList.remove("hidden"); row.style.display = "flex"; }
     else row.classList.add("hidden");
+    if (this.dataset.banner === "image") {
+      document.getElementById("bannerUploadInfo").textContent = bannerUploadUrl
+        ? "Tu imagen/GIF está seleccionado. Puedes reemplazarlo desde el botón Subir banner."
+        : "Sube una imagen o GIF para usarlo como banner.";
+    }
   });
 });
 
@@ -1106,7 +1154,8 @@ document.getElementById("gradColor2")?.addEventListener("input", actualizarPrevi
 document.getElementById("editAvatarInput")?.addEventListener("change", function() {
   const file = this.files[0];
   if (!file) return;
-  if (file.size > 3 * 1024 * 1024) { alert("Máximo 3MB"); this.value = ""; return; }
+  const maxAvatar = file.type.startsWith("video/") ? 3 * 1024 * 1024 : 10 * 1024 * 1024;
+  if (file.size > maxAvatar) { alert(file.type.startsWith("video/") ? "Los videos siguen limitados a 3MB" : "Imágenes/GIF máximo 10MB"); this.value = ""; return; }
   avatarEditFile = file;
   const url  = URL.createObjectURL(file);
   const img  = document.getElementById("editAvatarImg");
@@ -1118,6 +1167,75 @@ document.getElementById("editAvatarInput")?.addEventListener("change", function(
     vid.classList.add("hidden"); img.src = url; img.classList.remove("hidden");
   }
 });
+
+// ── Banner personalizado ──
+document.getElementById("bannerImageInput")?.addEventListener("change", function() {
+  const file = this.files?.[0];
+  if (!file) return;
+  const allowed = ["image/jpeg","image/png","image/gif","image/webp"];
+  if (!allowed.includes(file.type)) {
+    alert("Solo JPG, PNG, WebP o GIF");
+    this.value = "";
+    return;
+  }
+  if (file.size > 20 * 1024 * 1024) {
+    alert("El banner máximo es de 20MB");
+    this.value = "";
+    return;
+  }
+
+  bannerUploadFile = file;
+  bannerRemoveRequested = false;
+  const url = URL.createObjectURL(file);
+  document.getElementById("bannerUploadPreviewImg").src = url;
+  document.getElementById("bannerUploadPreview").classList.add("active");
+  document.getElementById("btnRemoveBanner")?.classList.add("active");
+  document.querySelectorAll("#bannerOptions .option-btn").forEach(b => b.classList.remove("active"));
+  document.querySelector('#bannerOptions .option-btn[data-banner="image"]')?.classList.add("active");
+  const info = document.getElementById("bannerUploadInfo");
+  if (info) info.textContent = file.type === "image/gif" ? "GIF animado listo. Se conservará como GIF." : "Imagen lista para subir a Cloudinary.";
+});
+
+document.getElementById("btnRemoveBanner")?.addEventListener("click", function() {
+  bannerUploadFile = null;
+  bannerUploadUrl = null;
+  bannerUploadPublicId = null;
+  bannerRemoveRequested = true;
+  const input = document.getElementById("bannerImageInput");
+  if (input) input.value = "";
+  document.getElementById("bannerUploadPreview")?.classList.remove("active");
+  this.classList.remove("active");
+  document.querySelectorAll("#bannerOptions .option-btn").forEach(b => b.classList.remove("active"));
+  document.querySelector('#bannerOptions .option-btn[data-banner="default"]')?.classList.add("active");
+});
+
+async function subirBannerCloudinary(file) {
+  const sigRes = await fetch(`${API}/auth/personalizacion/signature`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const sig = await sigRes.json();
+  if (!sigRes.ok) throw new Error(sig.mensaje || "No se pudo preparar Cloudinary");
+
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("api_key", sig.apiKey);
+  fd.append("timestamp", sig.timestamp);
+  fd.append("folder", sig.folder);
+  fd.append("public_id", sig.publicId);
+  fd.append("signature", sig.signature);
+
+  const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`, {
+    method: "POST",
+    body: fd
+  });
+  const uploaded = await uploadRes.json();
+  if (!uploadRes.ok || !uploaded.secure_url) {
+    throw new Error(uploaded.error?.message || "Cloudinary rechazó el banner");
+  }
+
+  return { url: uploaded.secure_url, publicId: uploaded.public_id };
+}
 
 // ── Guardar info ──
 document.getElementById("btnGuardarInfo")?.addEventListener("click", async () => {
@@ -1148,26 +1266,56 @@ document.getElementById("btnGuardarInfo")?.addEventListener("click", async () =>
 document.getElementById("btnGuardarApariencia")?.addEventListener("click", async () => {
   const btn = document.getElementById("btnGuardarApariencia");
   btn.innerHTML = '<i class="ri-loader-4-line spin"></i> Guardando...';
-  btn.disabled  = true;
-  const body = {
-    marco:        document.querySelector("#marcoOptions .option-btn.active")?.dataset.marco || "none",
-    marcoColor:   document.getElementById("marcoColorPicker")?.value || "#5cdb6f",
-    bannerPreset: document.querySelector("#bannerOptions .option-btn.active")?.dataset.banner || "default",
-    bannerColor1: document.getElementById("bannerColor1")?.value || "#0d2010",
-    bannerColor2: document.getElementById("bannerColor2")?.value || "#1a3a14"
-  };
+  btn.disabled = true;
+
+  let uploadedNow = null;
   try {
+    if (bannerUploadFile) {
+      btn.innerHTML = '<i class="ri-loader-4-line spin"></i> Subiendo banner...';
+      uploadedNow = await subirBannerCloudinary(bannerUploadFile);
+      bannerUploadUrl = uploadedNow.url;
+      bannerUploadPublicId = uploadedNow.publicId;
+    }
+
+    const body = {
+      marco: document.querySelector("#marcoOptions .option-btn.active")?.dataset.marco || "none",
+      marcoColor: document.getElementById("marcoColorPicker")?.value || "#5cdb6f",
+      bannerPreset: bannerUploadUrl ? "custom-image" : (document.querySelector("#bannerOptions .option-btn.active")?.dataset.banner || "default"),
+      bannerColor1: document.getElementById("bannerColor1")?.value || "#0d2010",
+      bannerColor2: document.getElementById("bannerColor2")?.value || "#1a3a14",
+      bannerUrl: bannerRemoveRequested ? "" : (bannerUploadUrl || perfilData?.usuario?.personalizacion?.bannerUrl || ""),
+      bannerTipo: bannerRemoveRequested ? "imagen" : ((bannerUploadFile?.type === "image/gif" || perfilData?.usuario?.personalizacion?.bannerTipo === "gif") ? "gif" : "imagen"),
+      bannerPublicId: bannerRemoveRequested ? "" : (bannerUploadPublicId || perfilData?.usuario?.personalizacion?.bannerPublicId || "")
+    };
+
     const res = await fetch(`${API}/auth/personalizacion`, {
-      method: "PUT", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify(body)
     });
-    if (!res.ok) throw new Error("Error");
+    const data = await res.json();
+    if (!res.ok) {
+      if (uploadedNow?.publicId) {
+        fetch(`${API}/auth/personalizacion/cleanup-upload`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ publicId: uploadedNow.publicId })
+        }).catch(() => {});
+      }
+      throw new Error(data.mensaje || "Error al guardar");
+    }
+
     const stored = JSON.parse(localStorage.getItem("fu_usuario") || "{}");
-    stored.personalizacion = { ...(stored.personalizacion || {}), ...body };
+    stored.personalizacion = data.usuario.personalizacion;
     localStorage.setItem("fu_usuario", JSON.stringify(stored));
-    cerrarModalEditar(); cargarPerfil();
-  } catch(e) { alert(e.message); }
-  finally { btn.innerHTML = '<i class="ri-save-line"></i> Guardar apariencia'; btn.disabled = false; }
+    cerrarModalEditar();
+    cargarPerfil();
+  } catch(e) {
+    alert(e.message || "No se pudo guardar la apariencia");
+  } finally {
+    btn.innerHTML = '<i class="ri-save-line"></i> Guardar apariencia';
+    btn.disabled = false;
+  }
 });
 
 // ── Guardar nombre ──
@@ -1230,6 +1378,7 @@ function cerrarModalImg() {
 // ══════════════════════════════════
 // UTILS
 // ══════════════════════════════════
+function escAttr(v) { return String(v ?? "").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 function escHtml(s = "") {
   return String(s)
     .replace(/&/g,"&amp;").replace(/</g,"&lt;")
