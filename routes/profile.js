@@ -18,7 +18,7 @@ router.get("/search", auth, async (req, res) => {
         { handle: { $regex: q, $options: "i" } }
       ]
     })
-      .select("nombre handle avatar avatarTipo seguidores")
+      .select("nombre handle avatar avatarTipo personalizacion seguidores")
       .limit(10)
       .lean();
 
@@ -70,7 +70,7 @@ router.get("/:handle", auth, async (req, res) => {
     const posts = await Post.find({ autor: usuario._id })
       .sort({ createdAt: -1 })
       .limit(30)
-      .populate("autor", "nombre handle avatar avatarTipo")
+      .populate("autor", "nombre handle avatar avatarTipo personalizacion")
       .lean();
 
     const postsConLike = posts.map(p => ({
