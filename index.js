@@ -225,6 +225,11 @@ app.use(
 );
 
 app.use(
+  "/api/spotify",
+  require("./routes/spotify")
+);
+
+app.use(
   "/api/search",
   require("./routes/search")
 );
