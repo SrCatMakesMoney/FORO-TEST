@@ -28,18 +28,17 @@
 
     <aside class="sidebar">
 
-      <div class="sidebar-top">
+      <div class="sidebar-glass">
 
-        <a href="/" class="brand">
-          <div class="brand-icon">
+        <div class="logo">
+          <span class="logo-mark">
             <i class="ri-leaf-fill"></i>
-          </div>
+          </span>
 
-          <div class="brand-text">
-            <strong>Foro Ubre</strong>
-            <span>Comunidad</span>
-          </div>
-        </a>
+          <span class="logo-text">
+            Foro Ubre
+          </span>
+        </div>
 
         <nav class="main-nav">
 
@@ -48,9 +47,7 @@
               <i class="ri-home-5-fill"></i>
             </span>
 
-            <span class="nav-label">
-              Inicio
-            </span>
+            <span>Inicio</span>
           </a>
 
           <a href="explore.html" class="nav-item">
@@ -58,9 +55,7 @@
               <i class="ri-search-line"></i>
             </span>
 
-            <span class="nav-label">
-              Explorar
-            </span>
+            <span>Explorar</span>
           </a>
 
           <a href="videos.html" class="nav-item">
@@ -68,9 +63,7 @@
               <i class="ri-video-line"></i>
             </span>
 
-            <span class="nav-label">
-              Videos
-            </span>
+            <span>Videos</span>
           </a>
 
           <a href="messages.html" class="nav-item">
@@ -79,30 +72,22 @@
               <i class="ri-message-3-line"></i>
             </span>
 
-            <span class="nav-label">
-              Mensajes
-            </span>
+            <span>Mensajes</span>
 
             <span
               class="nav-badge hidden"
-              id="msgBadge"
-            ></span>
+              id="msgBadge">
+            </span>
 
           </a>
 
-          <a
-            href="#"
-            class="nav-item"
-            id="navPerfil"
-          >
+          <a href="#" class="nav-item" id="navPerfil">
 
             <span class="nav-icon">
               <i class="ri-user-3-line"></i>
             </span>
 
-            <span class="nav-label">
-              Perfil
-            </span>
+            <span>Perfil</span>
 
           </a>
 
@@ -114,29 +99,18 @@
           type="button"
         >
 
-          <span class="post-button-icon">
-            <i class="ri-quill-pen-line"></i>
-          </span>
+          <i class="ri-quill-pen-line"></i>
 
-          <span>
-            Nuevo post
-          </span>
-
-          <kbd>
-            N
-          </kbd>
+          <span>Nuevo post</span>
 
         </button>
 
+        <div
+          class="sidebar-user"
+          id="sidebarUser"
+        ></div>
+
       </div>
-
-
-      <!-- USUARIO -->
-
-      <div
-        class="sidebar-user"
-        id="sidebarUser"
-      ></div>
 
     </aside>
 
@@ -151,16 +125,14 @@
 
       <header class="feed-header">
 
-        <div class="feed-title">
+        <div>
 
           <span class="feed-eyebrow">
             <span class="live-dot"></span>
-            Comunidad
+            COMUNIDAD
           </span>
 
-          <h1>
-            Inicio
-          </h1>
+          <h1>Inicio</h1>
 
         </div>
 
@@ -172,9 +144,7 @@
 
           <i class="ri-logout-box-r-line"></i>
 
-          <span>
-            Salir
-          </span>
+          <span>Salir</span>
 
         </button>
 
@@ -182,10 +152,10 @@
 
 
       <!-- =====================================================
-           COMPOSER
+           NUEVO POST
       ====================================================== -->
 
-      <section class="new-post">
+      <section class="new-post glass-panel">
 
         <div
           id="composerAvatarWrap"
@@ -198,11 +168,7 @@
           <div class="composer-top">
 
             <span class="composer-label">
-              ¿Qué está pasando?
-            </span>
-
-            <span class="composer-limit">
-              280 caracteres
+              Comparte algo con la comunidad
             </span>
 
           </div>
@@ -210,13 +176,13 @@
 
           <textarea
             id="postInput"
-            placeholder="Comparte algo con la comunidad..."
+            placeholder="¿Qué está pasando?"
             maxlength="280"
             rows="3"
           ></textarea>
 
 
-          <!-- PREVIEW IMAGEN -->
+          <!-- IMAGE PREVIEW -->
 
           <div
             id="imagePreviewBox"
@@ -229,7 +195,9 @@
               type="button"
               aria-label="Eliminar imagen"
             >
+
               <i class="ri-close-line"></i>
+
             </button>
 
             <img
@@ -249,15 +217,11 @@
 
               <label
                 for="imageInput"
-                class="composer-action"
+                class="btn-icon"
                 title="Subir imagen"
               >
 
                 <i class="ri-image-line"></i>
-
-                <span>
-                  Imagen
-                </span>
 
               </label>
 
@@ -271,16 +235,13 @@
 
               <button
                 type="button"
-                class="composer-action sticker-action"
+                class="btn-sticker"
                 onclick="abrirModalSticker()"
-                title="Crear sticker con IA"
               >
 
-                <i class="ri-sparkling-2-line"></i>
+                <i class="ri-sparkling-line"></i>
 
-                <span>
-                  Sticker IA
-                </span>
+                <span>Sticker IA</span>
 
               </button>
 
@@ -297,13 +258,11 @@
 
             <button
               id="btnPost"
-              class="btn-publish"
               type="button"
+              class="publish-button"
             >
 
-              <span>
-                Publicar
-              </span>
+              <span>Publicar</span>
 
               <i class="ri-arrow-up-line"></i>
 
@@ -320,20 +279,13 @@
            POSTS
       ====================================================== -->
 
-      <section
-        id="feed"
-        class="posts-feed"
-      >
+      <section id="feed" class="posts-feed">
 
         <div class="loading">
 
-          <span class="loading-spinner">
-            <i class="ri-loader-4-line"></i>
-          </span>
+          <i class="ri-loader-4-line spin"></i>
 
-          <span>
-            Cargando posts...
-          </span>
+          <span>Cargando posts...</span>
 
         </div>
 
@@ -354,9 +306,7 @@
 
           <i class="ri-arrow-down-line"></i>
 
-          <span>
-            Cargar más
-          </span>
+          Cargar más
 
         </button>
 
@@ -366,30 +316,24 @@
 
 
     <!-- =======================================================
-         RIGHT SIDEBAR
+         TRENDS
     ======================================================== -->
 
     <aside class="trends">
 
-
       <!-- TENDENCIAS -->
 
-      <section class="glass-card trends-box">
+      <section class="trends-box glass-panel">
 
-        <div class="card-heading">
+        <div class="section-heading">
 
-          <div class="card-heading-icon">
+          <div class="section-heading-icon">
             <i class="ri-fire-line"></i>
           </div>
 
           <div>
-            <span>
-              Comunidad
-            </span>
-
-            <h3>
-              Tendencias
-            </h3>
+            <h3>Tendencias</h3>
+            <span>Lo que está pasando</span>
           </div>
 
         </div>
@@ -397,86 +341,50 @@
 
         <ul class="trends-list">
 
-          <li
-            onclick="window.location.href='explore.html?q=ForoUbre'"
-          >
+          <li onclick="window.location.href='explore.html?q=ForoUbre'">
 
             <div>
-              <strong>
-                #ForoUbre
-              </strong>
-
-              <small>
-                Comunidad
-              </small>
+              <span>#ForoUbre</span>
+              <small>1.2K posts</small>
             </div>
 
-            <span>
-              1.2K
-            </span>
+            <i class="ri-arrow-right-s-line"></i>
 
           </li>
 
 
-          <li
-            onclick="window.location.href='explore.html?q=VacaViral'"
-          >
+          <li onclick="window.location.href='explore.html?q=VacaViral'">
 
             <div>
-              <strong>
-                #VacaViral
-              </strong>
-
-              <small>
-                Tendencia
-              </small>
+              <span>#VacaViral</span>
+              <small>890 posts</small>
             </div>
 
-            <span>
-              890
-            </span>
+            <i class="ri-arrow-right-s-line"></i>
 
           </li>
 
 
-          <li
-            onclick="window.location.href='explore.html?q=Leche'"
-          >
+          <li onclick="window.location.href='explore.html?q=Leche'">
 
             <div>
-              <strong>
-                #Leche
-              </strong>
-
-              <small>
-                Comunidad
-              </small>
+              <span>#Leche</span>
+              <small>540 posts</small>
             </div>
 
-            <span>
-              540
-            </span>
+            <i class="ri-arrow-right-s-line"></i>
 
           </li>
 
 
-          <li
-            onclick="window.location.href='explore.html?q=MuuuTech'"
-          >
+          <li onclick="window.location.href='explore.html?q=MuuuTech'">
 
             <div>
-              <strong>
-                #MuuuTech
-              </strong>
-
-              <small>
-                Tecnología
-              </small>
+              <span>#MuuuTech</span>
+              <small>310 posts</small>
             </div>
 
-            <span>
-              310
-            </span>
+            <i class="ri-arrow-right-s-line"></i>
 
           </li>
 
@@ -485,47 +393,33 @@
       </section>
 
 
-      <!-- =====================================================
-           VIDEOS
-      ====================================================== -->
+      <!-- VIDEOS -->
 
-      <section class="glass-card trends-box">
+      <section class="trends-box glass-panel">
 
-        <div class="card-heading">
+        <div class="section-heading">
 
-          <div class="card-heading-icon video-icon">
+          <div class="section-heading-icon video">
             <i class="ri-video-line"></i>
           </div>
 
           <div>
-
-            <span>
-              Multimedia
-            </span>
-
-            <h3>
-              Videos recientes
-            </h3>
-
+            <h3>Videos recientes</h3>
+            <span>Últimos videos</span>
           </div>
 
         </div>
 
 
-        <div
-          id="videosRecientesList"
-          class="recent-videos"
-        >
+        <div id="videosRecientesList">
 
-          <div class="mini-loading">
+          <p class="side-loading">
 
-            <i class="ri-loader-4-line"></i>
+            <i class="ri-loader-4-line spin"></i>
 
-            <span>
-              Cargando...
-            </span>
+            Cargando...
 
-          </div>
+          </p>
 
         </div>
 
@@ -534,60 +428,43 @@
           href="videos.html"
           class="see-all"
         >
-
-          Ver todos
-
+          Ver todos los videos
           <i class="ri-arrow-right-line"></i>
-
         </a>
 
       </section>
 
 
-      <!-- =====================================================
-           SUGERENCIAS
-      ====================================================== -->
+      <!-- SUGERENCIAS -->
 
       <section
-        class="glass-card trends-box"
+        class="trends-box glass-panel"
         id="sugerenciasBox"
       >
 
-        <div class="card-heading">
+        <div class="section-heading">
 
-          <div class="card-heading-icon people-icon">
+          <div class="section-heading-icon people">
             <i class="ri-user-follow-line"></i>
           </div>
 
           <div>
-
-            <span>
-              Comunidad
-            </span>
-
-            <h3>
-              A quién seguir
-            </h3>
-
+            <h3>A quién seguir</h3>
+            <span>Descubre personas</span>
           </div>
 
         </div>
 
 
-        <div
-          id="sugerenciasList"
-          class="suggestions-list"
-        >
+        <div id="sugerenciasList">
 
-          <div class="mini-loading">
+          <p class="side-loading">
 
-            <i class="ri-loader-4-line"></i>
+            <i class="ri-loader-4-line spin"></i>
 
-            <span>
-              Cargando...
-            </span>
+            Cargando...
 
-          </div>
+          </p>
 
         </div>
 
@@ -615,9 +492,7 @@
           <i class="ri-home-5-fill"></i>
         </span>
 
-        <span>
-          Inicio
-        </span>
+        <span>Inicio</span>
 
       </a>
 
@@ -631,9 +506,7 @@
           <i class="ri-search-line"></i>
         </span>
 
-        <span>
-          Buscar
-        </span>
+        <span>Buscar</span>
 
       </a>
 
@@ -647,9 +520,7 @@
           <i class="ri-video-line"></i>
         </span>
 
-        <span>
-          Videos
-        </span>
+        <span>Videos</span>
 
       </a>
 
@@ -663,9 +534,7 @@
           <i class="ri-message-3-line"></i>
         </span>
 
-        <span>
-          Mensajes
-        </span>
+        <span>Mensajes</span>
 
       </a>
 
@@ -680,9 +549,7 @@
           <i class="ri-user-3-line"></i>
         </span>
 
-        <span>
-          Perfil
-        </span>
+        <span>Perfil</span>
 
       </a>
 
@@ -701,27 +568,27 @@
   >
 
     <div
-      class="modal-box sticker-modal"
+      class="modal-box"
+      onclick="event.stopPropagation()"
     >
 
       <div class="modal-header">
 
         <div>
 
-          <span class="modal-eyebrow">
-            Inteligencia artificial
+          <span class="modal-kicker">
+            FORO UBRE AI
           </span>
 
           <h3>
 
-            <i class="ri-sparkling-2-line"></i>
+            <i class="ri-sparkling-line"></i>
 
-            Generar sticker
+            Generar Sticker
 
           </h3>
 
         </div>
-
 
         <button
           class="btn-cerrar-modal"
@@ -738,14 +605,14 @@
 
       <div class="form-group">
 
-        <label for="stickerPromptInput">
+        <label>
 
           <i class="ri-quill-pen-line"></i>
 
           Describe tu sticker
 
           <small>
-            En inglés suele dar mejores resultados
+            En inglés suele funcionar mejor
           </small>
 
         </label>
@@ -754,7 +621,7 @@
         <input
           type="text"
           id="stickerPromptInput"
-          placeholder="cute cat astronaut kawaii..."
+          placeholder="cute cow astronaut kawaii..."
           maxlength="200"
           onkeydown="if(event.key==='Enter') generarStickers()"
         >
@@ -784,28 +651,30 @@
 
       <div
         id="stickerSeleccionado"
-        class="hidden sticker-selected"
+        class="hidden"
       >
 
-        <div class="selected-icon">
+        <div class="sticker-selected">
 
           <i class="ri-checkbox-circle-fill"></i>
 
+          <span>
+            Sticker seleccionado
+          </span>
+
+          <button
+            class="btn-auth small-auth"
+            onclick="adjuntarStickerAPost()"
+            type="button"
+          >
+
+            <i class="ri-attachment-2"></i>
+
+            Usar
+
+          </button>
+
         </div>
-
-        <span>
-          Sticker seleccionado
-        </span>
-
-        <button
-          class="btn-use-sticker"
-          onclick="adjuntarStickerAPost()"
-          type="button"
-        >
-
-          Usar en post
-
-        </button>
 
       </div>
 
@@ -825,9 +694,9 @@
   >
 
     <button
-      class="image-modal-close"
       type="button"
-      onclick="cerrarModal()"
+      class="image-modal-close"
+      onclick="event.stopPropagation(); cerrarModal()"
     >
 
       <i class="ri-close-line"></i>
@@ -851,35 +720,29 @@
 
 
   <!-- =========================================================
-       INDEX-ONLY LOGIC
+       INDEX-SPECIFIC LOGIC
+       NO BACKEND CHANGES
   ========================================================== -->
 
   <script>
 
+    const token = localStorage.getItem("fu_token");
+
     /*
-     * IMPORTANTE:
-     * No usamos "const token" aquí porque app.js
-     * ya declara esa variable.
+     * Perfil
      */
-
-    const indexToken = localStorage.getItem("fu_token");
-
-
-    /* =========================================================
-       PERFIL
-    ========================================================== */
 
     try {
 
-      const storedUser =
+      const usuarioLocal =
         JSON.parse(
           localStorage.getItem("fu_usuario") || "{}"
         );
 
-      if (storedUser.handle) {
+      if (usuarioLocal.handle) {
 
-        const profileUrl =
-          `profile.html?handle=${encodeURIComponent(storedUser.handle)}`;
+        const perfilURL =
+          `profile.html?handle=${encodeURIComponent(usuarioLocal.handle)}`;
 
         const navPerfil =
           document.getElementById("navPerfil");
@@ -887,24 +750,20 @@
         const bnPerfil =
           document.getElementById("bnPerfil");
 
-        if (navPerfil) {
-          navPerfil.href = profileUrl;
-        }
+        if (navPerfil)
+          navPerfil.href = perfilURL;
 
-        if (bnPerfil) {
-          bnPerfil.href = profileUrl;
-        }
+        if (bnPerfil)
+          bnPerfil.href = perfilURL;
 
       }
 
-    } catch (error) {
-      console.warn("No se pudo cargar el perfil:", error);
-    }
+    } catch (e) {}
 
 
-    /* =========================================================
-       VIDEOS RECIENTES
-    ========================================================== */
+    /*
+     * VIDEOS RECIENTES
+     */
 
     async function cargarVideosRecientes() {
 
@@ -914,35 +773,30 @@
           "/api/videos?pagina=1&limite=3",
           {
             headers: {
-              Authorization: `Bearer ${indexToken}`
+              Authorization: `Bearer ${token}`
             }
           }
         );
 
-        if (!res.ok) {
-          throw new Error("No se pudieron cargar los videos");
-        }
-
         const data = await res.json();
 
         const box =
-          document.getElementById(
-            "videosRecientesList"
-          );
+          document.getElementById("videosRecientesList");
 
-        if (!box) return;
+        if (!box)
+          return;
 
 
         if (!Array.isArray(data) || !data.length) {
 
           box.innerHTML = `
-            <div class="mini-empty">
-              <i class="ri-video-off-line"></i>
-              <span>Sin videos aún</span>
-            </div>
+            <p class="side-empty">
+              Sin videos aún
+            </p>
           `;
 
           return;
+
         }
 
 
@@ -961,7 +815,7 @@
                 muted
               ></video>
 
-              <span class="video-play">
+              <span class="play-overlay">
                 <i class="ri-play-fill"></i>
               </span>
 
@@ -970,23 +824,18 @@
 
             <div class="recent-video-info">
 
-              <strong>
-                ${
-                  v.descripcion ||
-                  "@" + v.autor.handle
-                }
-              </strong>
+              <p>
+                ${v.descripcion || '@' + v.autor.handle}
+              </p>
 
               <small>
 
                 <i class="ri-heart-fill"></i>
-
                 ${v.totalLikes}
 
                 <span>·</span>
 
                 <i class="ri-eye-line"></i>
-
                 ${v.reproducciones}
 
               </small>
@@ -997,21 +846,17 @@
 
         `).join("");
 
-
-      } catch (error) {
+      } catch (e) {
 
         const box =
-          document.getElementById(
-            "videosRecientesList"
-          );
+          document.getElementById("videosRecientesList");
 
         if (box) {
 
           box.innerHTML = `
-            <div class="mini-empty">
-              <i class="ri-error-warning-line"></i>
-              <span>No se pudieron cargar</span>
-            </div>
+            <p class="side-empty">
+              No se pudieron cargar
+            </p>
           `;
 
         }
@@ -1021,9 +866,9 @@
     }
 
 
-    /* =========================================================
-       SUGERENCIAS
-    ========================================================== */
+    /*
+     * SUGERENCIAS
+     */
 
     async function cargarSugerencias() {
 
@@ -1033,62 +878,55 @@
           "/api/profile/sugerencias",
           {
             headers: {
-              Authorization: `Bearer ${indexToken}`
+              Authorization: `Bearer ${token}`
             }
           }
         );
 
-        if (!res.ok) {
-          throw new Error("No se pudieron cargar sugerencias");
-        }
-
         const data = await res.json();
 
         const box =
-          document.getElementById(
-            "sugerenciasList"
-          );
+          document.getElementById("sugerenciasList");
 
-        if (!box) return;
+        if (!box)
+          return;
 
 
         if (!Array.isArray(data) || !data.length) {
 
           box.innerHTML = `
-            <div class="mini-empty">
-              <i class="ri-user-unfollow-line"></i>
-              <span>Sin sugerencias</span>
-            </div>
+            <p class="side-empty">
+              Sin sugerencias
+            </p>
           `;
 
           return;
+
         }
 
 
         box.innerHTML = data.map(u => {
 
-          const av =
-            u.avatarTipo === "video"
+          const av = u.avatarTipo === "video"
 
-              ? `
-                <video
-                  src="${u.avatar}"
-                  autoplay
-                  loop
-                  muted
-                  playsinline
-                  class="avatar-sm"
-                ></video>
-              `
+            ? `
+              <video
+                src="${u.avatar}"
+                autoplay
+                loop
+                muted
+                playsinline
+                class="avatar-sm"
+              ></video>
+            `
 
-              : `
-                <img
-                  src="${u.avatar}"
-                  class="avatar-sm"
-                  alt=""
-                  loading="lazy"
-                >
-              `;
+            : `
+              <img
+                src="${u.avatar}"
+                class="avatar-sm"
+                alt=""
+              >
+            `;
 
 
           return `
@@ -1096,7 +934,7 @@
             <div class="suggestion">
 
               <div
-                class="suggestion-avatar-wrap"
+                class="suggestion-avatar"
                 onclick="window.location.href='profile.html?handle=${encodeURIComponent(u.handle)}'"
               >
                 ${av}
@@ -1104,7 +942,7 @@
 
 
               <div
-                class="suggestion-user"
+                class="suggestion-info"
                 onclick="window.location.href='profile.html?handle=${encodeURIComponent(u.handle)}'"
               >
 
@@ -1123,7 +961,6 @@
                 class="btn-seguir"
                 onclick="seguirDesdeIndex('${u._id}', this)"
                 type="button"
-                aria-label="Seguir"
               >
 
                 <i class="ri-user-add-line"></i>
@@ -1136,21 +973,17 @@
 
         }).join("");
 
-
-      } catch (error) {
+      } catch (e) {
 
         const box =
-          document.getElementById(
-            "sugerenciasList"
-          );
+          document.getElementById("sugerenciasList");
 
         if (box) {
 
           box.innerHTML = `
-            <div class="mini-empty">
-              <i class="ri-error-warning-line"></i>
-              <span>No se pudieron cargar</span>
-            </div>
+            <p class="side-empty">
+              No se pudieron cargar
+            </p>
           `;
 
         }
@@ -1160,24 +993,26 @@
     }
 
 
-    /* =========================================================
-       SEGUIR
-    ========================================================== */
+    /*
+     * SEGUIR
+     */
 
     async function seguirDesdeIndex(userId, btn) {
 
-      if (!btn) return;
-
-      btn.disabled = true;
+      if (!btn)
+        return;
 
       try {
+
+        btn.disabled = true;
 
         const res = await fetch(
           `/api/profile/${userId}/follow`,
           {
             method: "POST",
+
             headers: {
-              Authorization: `Bearer ${indexToken}`
+              Authorization: `Bearer ${token}`
             }
           }
         );
@@ -1186,7 +1021,7 @@
 
         btn.innerHTML = data.sigues
 
-          ? `<i class="ri-user-follow-fill"></i>`
+          ? `<i class="ri-user-follow-line"></i>`
 
           : `<i class="ri-user-add-line"></i>`;
 
@@ -1195,12 +1030,9 @@
           !!data.sigues
         );
 
-      } catch (error) {
+      } catch (e) {
 
-        console.warn(
-          "No se pudo seguir al usuario:",
-          error
-        );
+        console.error(e);
 
       } finally {
 
@@ -1211,26 +1043,20 @@
     }
 
 
-    /* =========================================================
-       CARGA LATERAL
-    ========================================================== */
+    /*
+     * CARGAS SECUNDARIAS
+     */
 
-    window.addEventListener(
-      "load",
-      () => {
+    window.addEventListener("load", () => {
 
-        setTimeout(
-          () => {
+      setTimeout(() => {
 
-            cargarSugerencias();
-            cargarVideosRecientes();
+        cargarSugerencias();
+        cargarVideosRecientes();
 
-          },
-          600
-        );
+      }, 500);
 
-      }
-    );
+    });
 
   </script>
 
