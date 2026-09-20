@@ -66,14 +66,15 @@ const notificationSchema = new mongoose.Schema(
   }
 );
 
-// Evita que Mongo se llene de notificaciones viejas indefinidamente.
-// 90 días.
 notificationSchema.index(
   { createdAt: 1 },
-  { expireAfterSeconds: 60 * 60 * 24 * 90 }
+  {
+    expireAfterSeconds: 60 * 60 * 24 * 90
+  }
 );
 
-module.exports = mongoose.model(
-  "Notification",
-  notificationSchema
-);
+module.exports =
+  mongoose.model(
+    "Notification",
+    notificationSchema
+  );
