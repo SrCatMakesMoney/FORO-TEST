@@ -221,27 +221,193 @@
   }
 
   function showToast(n) {
-    const old = document.querySelector(".notification-toast");
-    old?.remove();
+  const old = document.querySelector(".notification-toast");
+  old?.remove();
 
-    const u = n.emisor || {};
-    const toast = document.createElement("div");
-    toast.className = "notification-toast";
-    toast.innerHTML = `
-      <div class="notification-toast-icon"><i class="${icon[n.tipo] || "ri-notification-3-fill"}"></i></div>
-      <div class="notification-toast-copy">
-        <strong>${esc(u.nombre || "Foro Ubre")}</strong>
-        <span>${esc(n.texto || "Tienes una nueva notificación")}</span>
-      </div>`;
+  // Crear estilos una sola vez
+  if (!document.getElementById("notificationToastStyles")) {
+    const style = document.createElement("style");
+    style.id = "notificationToastStyles";
+    style.textContent = `
+      .notification-toast {
+        position: fixed !important;
+        top: 20px !important;
+        right: 20px !important;
+        z-index: 2147483647 !important;
 
-    toast.onclick = () => {
+        width: min(380px, calc(100vw - 32px));
+        min-height: 68px;
+
+        display: flex !important;
+        align-items: center;
+        gap: 12px;
+
+        padding: 13px 15px;
+
+        background:
+          linear-gradient(
+            135deg,
+            rgba(30, 33, 38, .96),
+            rgba(10, 12, 15, .97)
+          ) !important;
+
+        border: 1px solid rgba(255,255,255,.10);
+        border-radius: 18px;
+
+        color: #fff;
+        box-shadow:
+          0 20px 60px rgba(0,0,0,.55),
+          0 0 0 1px rgba(255,255,255,.03),
+          inset 0 1px 0 rgba(255,255,255,.06);
+
+        backdrop-filter: blur(22px);
+        -webkit-backdrop-filter: blur(22px);
+
+        cursor: pointer;
+
+        opacity: 0;
+        transform: translate3d(0,-20px,0) scale(.96);
+
+        animation:
+          notificationToastIn .35s cubic-bezier(.2,.8,.2,1) forwards;
+      }
+
+      .notification-toast-icon {
+        width: 42px;
+        height: 42px;
+        flex: 0 0 42px;
+
+        display: grid;
+        place-items: center;
+
+        border-radius: 14px;
+
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.08);
+
+        color: #ff4d67;
+        font-size: 19px;
+      }
+
+      .notification-toast-copy {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .notification-toast-copy strong {
+        color: #fff;
+        font-size: 14px;
+        font-weight: 750;
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .notification-toast-copy span {
+        color: #a7adb5;
+        font-size: 12px;
+        line-height: 1.35;
+
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .notification-toast:hover {
+        transform: translate3d(0,0,0) scale(1.01);
+        border-color: rgba(255,255,255,.16);
+      }
+
+      @keyframes notificationToastIn {
+        from {
+          opacity: 0;
+          transform: translate3d(0,-20px,0) scale(.96);
+        }
+
+        to {
+          opacity: 1;
+          transform: translate3d(0,0,0) scale(1);
+        }
+      }
+
+      @keyframes notificationToastOut {
+        from {
+          opacity: 1;
+          transform: translate3d(0,0,0) scale(1);
+        }
+
+        to {
+          opacity: 0;
+          transform: translate3d(0,-12px,0) scale(.97);
+        }
+      }
+
+      @media (max-width: 600px) {
+        .notification-toast {
+          top: calc(10px + env(safe-area-inset-top)) !important;
+          right: 10px !important;
+          left: 10px !important;
+          width: auto;
+          max-width: none;
+
+          border-radius: 17px;
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  const u = n.emisor || {};
+
+  const toast = document.createElement("div");
+  toast.className = "notification-toast";
+
+  const tipoTexto = {
+    mensaje: "te envió un mensaje",
+    follow: "empezó a seguirte",
+    like: "le dio me gusta a tu publicación",
+    comentario: "comentó en tu publicación",
+    like_comentario: "le dio me gusta a tu comentario"
+  };
+
+  const accion = tipoTexto[n.tipo] || "tienes una nueva notificación";
+
+  toast.innerHTML = `
+    <div class="notification-toast-icon">
+      <i class="${icon[n.tipo] || "ri-notification-3-fill"}"></i>
+    </div>
+
+    <div class="notification-toast-copy">
+      <strong>${esc(u.nombre || "Foro Ubre")}</strong>
+      <span>${esc(accion)}</span>
+    </div>
+  `;
+
+  toast.onclick = () => {
+    toast.style.animation = "notificationToastOut .22s ease forwards";
+
+    setTimeout(() => {
       toast.remove();
       abrirNotificacion(n._id, n.url);
-    };
+    }, 180);
+  };
 
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 6000);
-  }
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    if (!toast.isConnected) return;
+
+    toast.style.animation =
+      "notificationToastOut .25s ease forwards";
+
+    setTimeout(() => toast.remove(), 260);
+  }, 6000);
+}
 
   function connectSocket() {
     const registerSocket = () => {
