@@ -624,7 +624,7 @@ function renderPerfil(u) {
   const p           = u.personalizacion || {};
   const bannerStyle = getBannerStyle(p);
   const marcoStyle  = getMarcoStyle(p);
-  const hasUploadedBanner = !!p.banner;
+  const hasUploadedBanner = !!u.banner;
 
   const visual = p.bannerEstilo || "normal";
   const avatarStyle = p.avatarEstilo || (visual === "water" ? "water" : "normal");
@@ -673,7 +673,7 @@ function renderPerfil(u) {
 
       <div class="profile-banner ${visual === "vitrina" ? "banner-vitrina" : ""} ${hasUploadedBanner ? "has-banner-media" : ""}"
            style="background:${bannerStyle}">
-        ${hasUploadedBanner ? `<img class="profile-banner-media" src="${escHtml(p.banner)}" alt="Banner de ${escHtml(u.nombre)}"/>` : ""}
+        ${hasUploadedBanner ? `<img class="profile-banner-media" src="${escHtml(u.banner)}" alt="Banner de ${escHtml(u.nombre)}"/>` : ""}
         ${drops}
         <div class="profile-banner-highlight" aria-hidden="true"></div>
       </div>
@@ -1094,10 +1094,10 @@ function abrirModalEditar() {
   const bannerEmpty = document.getElementById("bannerUploadEmpty");
   const bannerStatus = document.getElementById("bannerUploadStatus");
   const clearBanner = document.getElementById("btnClearBanner");
-  if (bannerStatus) bannerStatus.textContent = p.banner ? "Banner actual guardado. Elige otro para reemplazarlo." : "";
+  if (bannerStatus) bannerStatus.textContent = u.banner ? "Banner actual guardado. Elige otro para reemplazarlo." : "";
   if (bannerImg && bannerEmpty) {
-    if (p.banner) {
-      bannerImg.src = p.banner;
+    if (u.banner) {
+      bannerImg.src = u.banner;
       bannerImg.classList.remove("hidden");
       bannerEmpty.classList.add("hidden");
       clearBanner?.classList.add("hidden");
