@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -21,6 +22,7 @@ const io = new Server(server, {
   }
 });
 
+// Permite que las rutas accedan al mismo Socket.IO con req.app.get("io").
 app.set("io", io);
 
 // ============================================================
@@ -215,6 +217,11 @@ app.use(
 app.use(
   "/api/notifications",
   require("./routes/notifications")
+);
+
+app.use(
+  "/api/push",
+  require("./routes/push")
 );
 
 app.use(
