@@ -1,202 +1,284 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Foro Ubre — Registro</title>
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet"/>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#050505">
+  <title>Crear cuenta — Foro Ubre</title>
+
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
 </head>
+
 <body class="auth-page">
 
-  <div class="auth-container">
-
-    <div class="auth-logo">
-      <i class="ri-leaf-fill" style="color:var(--green)"></i>
-      Foro Ubre
-    </div>
-
-    <h2>Crear cuenta</h2>
-
-    <form id="registerForm" novalidate>
-
-      <!-- Avatar picker -->
-      <div class="avatar-picker">
-        <div class="avatar-preview-wrap" id="avatarPreviewWrap" onclick="document.getElementById('avatarInput').click()">
-          <img    id="avatarPreviewImg" src="" alt="" class="hidden"/>
-          <video  id="avatarPreviewVid" autoplay loop muted playsinline class="hidden"></video>
-          <div   id="avatarPlaceholder" class="avatar-placeholder">
-            <i class="ri-user-3-line" style="font-size:2rem;color:var(--text-3)"></i>
-          </div>
-        </div>
-        <label for="avatarInput" class="btn-pick-avatar">
-          <i class="ri-camera-line"></i>
-          Elegir foto de perfil
-          <small>Imagen, GIF o Video · Máx. 3MB</small>
-        </label>
-        <input type="file" id="avatarInput" name="avatar"
-               accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm" hidden/>
-        <span id="avatarError" class="error-msg hidden">
-          <i class="ri-error-warning-line"></i>
-          <span id="avatarErrorText"></span>
-        </span>
-      </div>
-
-      <div class="form-group">
-        <label><i class="ri-user-line"></i> Nombre <small>(2–50 caracteres)</small></label>
-        <input type="text" id="nombre" placeholder="Tu nombre" required minlength="2" maxlength="50"/>
-        <span class="char-hint"><span id="cNombre">50</span> restantes</span>
-      </div>
-
-      <div class="form-group">
-        <label><i class="ri-at-line"></i> Handle <small>(3–20 caracteres)</small></label>
-        <div class="input-prefix">
-          <span>@</span>
-          <input type="text" id="handle" placeholder="tuhandle" required
-                 minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]+"
-                 title="Solo letras, números y _"/>
-        </div>
-        <span class="char-hint"><span id="cHandle">20</span> restantes</span>
-      </div>
-
-      <div class="form-group">
-        <label><i class="ri-mail-line"></i> Email</label>
-        <input type="email" id="email" placeholder="tu@email.com" required maxlength="100"/>
-      </div>
-
-      <div class="form-group">
-        <label><i class="ri-lock-line"></i> Contraseña <small>(mín. 6 caracteres)</small></label>
-        <div class="input-password-wrap">
-          <input type="password" id="password" placeholder="••••••••"
-                 required minlength="6" maxlength="128"/>
-          <button type="button" class="btn-toggle-pass" id="btnTogglePass" tabindex="-1">
-            <i class="ri-eye-line" id="eyeIcon"></i>
-          </button>
-        </div>
-      </div>
-
-      <div id="errorMsg" class="error-msg hidden">
-        <i class="ri-error-warning-line"></i>
-        <span id="errorText"></span>
-      </div>
-
-      <button type="submit" class="btn-auth" id="btnRegister">
-        <i class="ri-user-add-line"></i>
-        Crear cuenta
-      </button>
-
-    </form>
-
-    <p class="auth-switch">
-      ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
-    </p>
-
+  <div class="auth-atmosphere" aria-hidden="true">
+    <div class="auth-smoke auth-smoke-a"></div>
+    <div class="auth-smoke auth-smoke-b"></div>
+    <div class="auth-smoke auth-smoke-c"></div>
+    <div class="auth-grain"></div>
+    <div class="auth-orb"></div>
   </div>
 
+  <main class="auth-stage">
+
+    <div class="auth-container">
+
+      <div class="auth-brand">
+
+        <div class="auth-logo">
+          <span class="auth-logo-mark">
+            <i class="ri-leaf-fill"></i>
+          </span>
+
+          <span>Foro Ubre</span>
+        </div>
+
+        <span class="auth-live">
+          <span></span>
+          comunidad
+        </span>
+
+      </div>
+
+      <div class="auth-heading">
+        <h2>Crear tu cuenta</h2>
+        <p>Únete a la conversación.</p>
+      </div>
+
+      <form id="registerForm">
+
+        <div class="form-group">
+
+          <label for="username">
+            <i class="ri-user-3-line"></i>
+            Nombre de usuario
+          </label>
+
+          <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="Tu nombre de usuario"
+            autocomplete="username"
+            maxlength="30"
+            required
+          >
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="email">
+            <i class="ri-mail-line"></i>
+            Correo electrónico
+          </label>
+
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="tu@email.com"
+            autocomplete="email"
+            required
+          >
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="password">
+            <i class="ri-lock-2-line"></i>
+            Contraseña
+          </label>
+
+          <div class="input-password-wrap">
+
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Crea una contraseña"
+              autocomplete="new-password"
+              minlength="6"
+              required
+            >
+
+            <button
+              type="button"
+              class="btn-toggle-pass"
+              id="togglePassword"
+              aria-label="Mostrar contraseña"
+            >
+              <i class="ri-eye-line"></i>
+            </button>
+
+          </div>
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="confirmPassword">
+            <i class="ri-shield-check-line"></i>
+            Confirmar contraseña
+          </label>
+
+          <div class="input-password-wrap">
+
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              placeholder="Repite tu contraseña"
+              autocomplete="new-password"
+              minlength="6"
+              required
+            >
+
+            <button
+              type="button"
+              class="btn-toggle-pass"
+              id="toggleConfirmPassword"
+              aria-label="Mostrar contraseña"
+            >
+              <i class="ri-eye-line"></i>
+            </button>
+
+          </div>
+
+        </div>
+
+        <div
+          id="errorMsg"
+          class="error-msg"
+          style="display:none;"
+        ></div>
+
+        <button
+          type="submit"
+          class="btn-auth"
+          id="registerBtn"
+        >
+          <span>Crear cuenta</span>
+          <i class="ri-arrow-right-line"></i>
+        </button>
+
+      </form>
+
+      <div class="auth-switch">
+        ¿Ya tienes una cuenta?
+        <a href="/login.html">Iniciar sesión</a>
+      </div>
+
+    </div>
+
+  </main>
+
   <script>
-    if (localStorage.getItem("fu_token")) window.location.href = "/";
+    const form = document.getElementById("registerForm");
 
-    // Toggle password
-    document.getElementById("btnTogglePass").addEventListener("click", () => {
-      const inp  = document.getElementById("password");
-      const icon = document.getElementById("eyeIcon");
-      inp.type       = inp.type === "password" ? "text" : "password";
-      icon.className = inp.type === "password" ? "ri-eye-line" : "ri-eye-off-line";
+    const password = document.getElementById("password");
+    const confirmPassword = document.getElementById("confirmPassword");
+
+    const togglePassword = document.getElementById("togglePassword");
+    const toggleConfirmPassword =
+      document.getElementById("toggleConfirmPassword");
+
+    const errorMsg = document.getElementById("errorMsg");
+    const registerBtn = document.getElementById("registerBtn");
+
+    function toggleInput(input, button) {
+      const isPassword = input.type === "password";
+
+      input.type = isPassword ? "text" : "password";
+
+      button.innerHTML = isPassword
+        ? '<i class="ri-eye-off-line"></i>'
+        : '<i class="ri-eye-line"></i>';
+
+      button.setAttribute(
+        "aria-label",
+        isPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+      );
+    }
+
+    togglePassword.addEventListener("click", () => {
+      toggleInput(password, togglePassword);
     });
 
-    // Contadores
-    document.getElementById("nombre").addEventListener("input", function() {
-      document.getElementById("cNombre").textContent = 50 - this.value.length;
-    });
-    document.getElementById("handle").addEventListener("input", function() {
-      this.value = this.value.replace(/[^a-zA-Z0-9_]/g, "");
-      document.getElementById("cHandle").textContent = 20 - this.value.length;
+    toggleConfirmPassword.addEventListener("click", () => {
+      toggleInput(confirmPassword, toggleConfirmPassword);
     });
 
-    // Avatar preview
-    document.getElementById("avatarInput").addEventListener("change", function() {
-      const file      = this.files[0];
-      const errBox    = document.getElementById("avatarError");
-      const errText   = document.getElementById("avatarErrorText");
-      const img       = document.getElementById("avatarPreviewImg");
-      const vid       = document.getElementById("avatarPreviewVid");
-      const holder    = document.getElementById("avatarPlaceholder");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-      errBox.classList.add("hidden");
-      if (!file) return;
+      errorMsg.style.display = "none";
 
-      if (file.size > 3 * 1024 * 1024) {
-        errText.textContent = "El archivo supera los 3MB";
-        errBox.classList.remove("hidden");
-        this.value = "";
+      const username =
+        document.getElementById("username").value.trim();
+
+      const email =
+        document.getElementById("email").value.trim();
+
+      const passwordValue = password.value;
+      const confirmPasswordValue = confirmPassword.value;
+
+      if (passwordValue !== confirmPasswordValue) {
+        errorMsg.textContent = "Las contraseñas no coinciden.";
+        errorMsg.style.display = "block";
         return;
       }
 
-      const url = URL.createObjectURL(file);
-      holder.classList.add("hidden");
+      registerBtn.disabled = true;
 
-      if (file.type.startsWith("video/")) {
-        img.classList.add("hidden");
-        vid.src = url;
-        vid.classList.remove("hidden");
-      } else {
-        vid.classList.add("hidden");
-        img.src = url;
-        img.classList.remove("hidden");
-      }
-    });
-
-    // Submit
-    document.getElementById("registerForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const btn     = document.getElementById("btnRegister");
-      const errBox  = document.getElementById("errorMsg");
-      const errText = document.getElementById("errorText");
-
-      errBox.classList.add("hidden");
-      btn.innerHTML = '<i class="ri-loader-4-line spin"></i> Creando cuenta...';
-      btn.disabled  = true;
+      registerBtn.innerHTML = `
+        <span>Creando cuenta...</span>
+        <i class="ri-loader-4-line"></i>
+      `;
 
       try {
-        const formData = new FormData();
-        formData.append("nombre",   document.getElementById("nombre").value.trim());
-        formData.append("handle",   document.getElementById("handle").value.trim().toLowerCase());
-        formData.append("email",    document.getElementById("email").value.trim());
-        formData.append("password", document.getElementById("password").value);
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            username,
+            email,
+            password: passwordValue
+          })
+        });
 
-        const avatarFile = document.getElementById("avatarInput").files[0];
-        if (avatarFile) formData.append("avatar", avatarFile);
+        const data = await response.json();
 
-        const res  = await fetch("/api/auth/register", { method: "POST", body: formData });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.mensaje);
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+            data.error ||
+            "No se pudo crear la cuenta."
+          );
+        }
 
-        localStorage.setItem("fu_token",   data.token);
-        localStorage.setItem("fu_usuario", JSON.stringify(data.usuario));
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+        }
+
         window.location.href = "/";
+      } catch (error) {
+        errorMsg.textContent = error.message;
+        errorMsg.style.display = "block";
+      } finally {
+        registerBtn.disabled = false;
 
-      } catch (err) {
-        errText.textContent = err.message;
-        errBox.classList.remove("hidden");
-        btn.innerHTML = '<i class="ri-user-add-line"></i> Crear cuenta';
-        btn.disabled  = false;
+        registerBtn.innerHTML = `
+          <span>Crear cuenta</span>
+          <i class="ri-arrow-right-line"></i>
+        `;
       }
     });
   </script>
-
-  <style>
-    .input-password-wrap { position: relative; }
-    .input-password-wrap input { padding-right: 44px; }
-    .btn-toggle-pass {
-      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; color: var(--text-3); font-size: 1rem;
-      cursor: pointer; transition: color var(--transition); padding: 4px;
-    }
-    .btn-toggle-pass:hover { color: var(--text); }
-    .error-msg { display: flex; align-items: center; gap: 8px; }
-    .spin { display: inline-block; animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
 
 </body>
 </html>
