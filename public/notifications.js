@@ -244,40 +244,86 @@
   }
 
   function connectSocket() {
-    const connect = () => {
-      if (window.foroNotificationSocket) {
-        socket = window.foroNotificationSocket;
-      } else if (typeof window.io === "function") {
-        socket = window.io();
-        window.foroNotificationSocket = socket;
-      } else {
-        const script = document.createElement("script");
-        script.src = "/socket.io/socket.io.js";
-        script.onload = () => {
-          socket = window.io();
-          window.foroNotificationSocket = socket;
-          registerSocket();
-        };
-        document.head.appendChild(script);
-        return;
-      }
+    const registerSocket = () => {
+      if (!socket) return;
 
+      const registrar = () => {
+        if (usuario?._id) socket.emit("registrar", usuario._id);
+      };
+
+      // Evita listeners duplicados si la página vuelve a inicializarse.
+      socket.off("nuevaNotificacion");
+      socket.off("connect", registrar);
+
+      socket.on("nuevaNotificacion", (notification) => {
+        if (!notification?._id) return;
+
+        // Si el panel está abierto, insertamos la nueva notificación
+        // inmediatamente sin esperar a otra petición HTTP.
+        insertarNotificacionEnVivo(notification);
+        cargarCount();
+        showToast(notification);
+      });
+
+      socket.on("connect", registrar);
+      registrar();
+    };
+
+    if (window.foroNotificationSocket) {
+      socket = window.foroNotificationSocket;
+      registerSocket();
+      return;
+    }
+
+    const iniciar = () => {
+      if (typeof window.io !== "function") return;
+      socket = window.io({
+        transports: ["websocket", "polling"],
+        withCredentials: false
+      });
+      window.foroNotificationSocket = socket;
       registerSocket();
     };
 
-    const registerSocket = () => {
-      if (!socket) return;
-      socket.emit("registrar", usuario._id);
-      socket.off("nuevaNotificacion");
-      socket.on("nuevaNotificacion", (notification) => {
-        showToast(notification);
-        cargarCount();
-        if (panel?.classList.contains("open")) cargarNotificaciones();
-      });
-      socket.on("connect", () => socket.emit("registrar", usuario._id));
-    };
+    if (typeof window.io === "function") {
+      iniciar();
+      return;
+    }
 
-    connect();
+    const existing = document.querySelector('script[src*="socket.io.js"]');
+    if (existing) {
+      existing.addEventListener("load", iniciar, { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "/socket.io/socket.io.js";
+    script.async = true;
+    script.onload = iniciar;
+    script.onerror = () => console.warn("No se pudo cargar Socket.IO");
+    document.head.appendChild(script);
+  }
+
+  function insertarNotificacionEnVivo(n) {
+    if (!list || !n?._id) return;
+
+    // Evitar duplicados si el usuario recibió el evento y luego recargó el panel.
+    if (list.querySelector(`[data-id="${CSS.escape(String(n._id))}"]`)) return;
+
+    const empty = list.querySelector(".notifications-empty");
+    if (empty) list.innerHTML = "";
+
+    const html = renderNotification(n);
+    list.insertAdjacentHTML("afterbegin", html);
+
+    const item = list.querySelector(`[data-id="${CSS.escape(String(n._id))}"]`);
+    item?.addEventListener("click", () => abrirNotificacion(item.dataset.id, item.dataset.url));
+
+    // Mantener el panel ligero aunque lleguen muchas notificaciones seguidas.
+    const items = list.querySelectorAll(".notification-item");
+    items.forEach((el, index) => {
+      if (index >= 30) el.remove();
+    });
   }
 
   function urlBase64ToUint8Array(base64String) {
