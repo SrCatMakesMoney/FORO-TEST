@@ -21,6 +21,8 @@ const io = new Server(server, {
   }
 });
 
+app.set("io", io);
+
 // ============================================================
 // MIDDLEWARE
 // ============================================================
@@ -208,6 +210,11 @@ app.use(
 app.use(
   "/api/messages",
   require("./routes/messages")
+);
+
+app.use(
+  "/api/notifications",
+  require("./routes/notifications")
 );
 
 app.use(
