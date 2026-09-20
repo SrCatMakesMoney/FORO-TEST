@@ -2,7 +2,10 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
 
   <title>Foro Ubre — Explorar</title>
 
@@ -16,455 +19,499 @@
 
 <body>
 
-  <!-- =========================================================
-       BACKGROUND
-  ========================================================== -->
-
-  <div class="carbon-bg"></div>
-  <div class="ambient ambient-one"></div>
-  <div class="ambient ambient-two"></div>
-
+<div class="app-layout">
 
   <!-- =========================================================
-       APP
+       SIDEBAR — MISMA ESTRUCTURA QUE INDEX
   ========================================================== -->
 
-  <div class="app-layout">
+  <aside class="sidebar">
 
-    <!-- =======================================================
-         SIDEBAR
-    ======================================================== -->
+    <div class="logo">
+      <i class="ri-leaf-fill"></i>
+      <span>Foro Ubre</span>
+    </div>
 
-    <aside class="sidebar">
 
-      <div class="sidebar-top">
+    <nav>
 
-        <a href="/" class="brand">
-          <span class="brand-icon">
-            <i class="ri-leaf-fill"></i>
-          </span>
-
-          <span class="brand-name">
-            Foro Ubre
-          </span>
-        </a>
-
-
-        <nav class="main-nav">
-
-          <a href="/" class="nav-item">
-            <span class="nav-icon">
-              <i class="ri-home-5-line"></i>
-            </span>
-
-            <span class="nav-label">
-              Inicio
-            </span>
-          </a>
-
-
-          <a href="explorer.html" class="nav-item active">
-            <span class="nav-icon">
-              <i class="ri-search-fill"></i>
-            </span>
-
-            <span class="nav-label">
-              Explorar
-            </span>
-          </a>
-
-
-          <a href="messages.html" class="nav-item">
-            <span class="nav-icon">
-              <i class="ri-message-3-line"></i>
-            </span>
-
-            <span class="nav-label">
-              Mensajes
-            </span>
-          </a>
-
-
-          <a href="#" class="nav-item" id="navPerfil">
-            <span class="nav-icon">
-              <i class="ri-user-3-line"></i>
-            </span>
-
-            <span class="nav-label">
-              Perfil
-            </span>
-          </a>
-
-        </nav>
-
-
-        <button
-          class="new-post-button"
-          onclick="window.location.href='/'"
-        >
-          <span class="new-post-icon">
-            <i class="ri-quill-pen-line"></i>
-          </span>
-
-          <span>
-            Nuevo post
-          </span>
-        </button>
-
-      </div>
-
-
-      <!-- =====================================================
-           SIDEBAR USER
-      ====================================================== -->
-
-      <div class="sidebar-user" id="sidebarUser"></div>
-
-    </aside>
-
-
-
-    <!-- =======================================================
-         MAIN
-    ======================================================== -->
-
-    <main class="explorer-main">
-
-      <!-- =====================================================
-           HEADER
-      ====================================================== -->
-
-      <header class="explorer-header">
-
-        <div>
-          <span class="header-eyebrow">
-            <span class="live-dot"></span>
-            COMUNIDAD
-          </span>
-
-          <h1>
-            Explorar
-          </h1>
-
-          <p>
-            Encuentra personas, publicaciones y contenido.
-          </p>
-        </div>
-
-      </header>
-
-
-      <!-- =====================================================
-           SEARCH CARD
-      ====================================================== -->
-
-      <section class="search-panel">
-
-        <div class="search-box">
-
-          <span class="search-icon">
-            <i class="ri-search-line"></i>
-          </span>
-
-          <input
-            type="text"
-            id="searchInput"
-            placeholder="Buscar usuarios, posts..."
-            autocomplete="off"
-            spellcheck="false"
-          >
-
-          <button
-            class="clear-search hidden"
-            id="btnClearSearch"
-            type="button"
-            aria-label="Limpiar búsqueda"
-          >
-            <i class="ri-close-line"></i>
-          </button>
-
-        </div>
-
-
-        <!-- ===================================================
-             TABS
-        ==================================================== -->
-
-        <div class="search-tabs" id="searchTabs">
-
-          <button
-            class="tab-btn active"
-            data-tipo="todo"
-            type="button"
-          >
-            <i class="ri-layout-grid-line"></i>
-            <span>Todo</span>
-          </button>
-
-
-          <button
-            class="tab-btn"
-            data-tipo="usuarios"
-            type="button"
-          >
-            <i class="ri-user-3-line"></i>
-            <span>Usuarios</span>
-          </button>
-
-
-          <button
-            class="tab-btn"
-            data-tipo="posts"
-            type="button"
-          >
-            <i class="ri-article-line"></i>
-            <span>Posts</span>
-          </button>
-
-        </div>
-
-      </section>
-
-
-
-      <!-- =====================================================
-           SEARCH RESULTS
-      ====================================================== -->
-
-      <section
-        id="searchResults"
-        class="search-results"
-      >
-
-        <div class="explore-placeholder">
-
-          <div class="placeholder-icon">
-            <i class="ri-search-2-line"></i>
-          </div>
-
-          <h2>
-            Explora Foro Ubre
-          </h2>
-
-          <p>
-            Busca usuarios o publicaciones para comenzar.
-          </p>
-
-        </div>
-
-      </section>
-
-    </main>
-
-
-
-    <!-- =======================================================
-         RIGHT SIDEBAR
-    ======================================================== -->
-
-    <aside class="right-sidebar">
-
-      <section class="trends-card">
-
-        <div class="trends-header">
-
-          <div>
-            <span class="trends-eyebrow">
-              AHORA
-            </span>
-
-            <h2>
-              Tendencias
-            </h2>
-          </div>
-
-          <span class="trends-icon">
-            <i class="ri-fire-line"></i>
-          </span>
-
-        </div>
-
-
-        <div class="trend-list">
-
-          <div class="trend-item">
-
-            <div class="trend-number">
-              01
-            </div>
-
-            <div class="trend-content">
-              <strong>#ForoUbre</strong>
-              <span>1.2K posts</span>
-            </div>
-
-          </div>
-
-
-          <div class="trend-item">
-
-            <div class="trend-number">
-              02
-            </div>
-
-            <div class="trend-content">
-              <strong>#VacaViral</strong>
-              <span>890 posts</span>
-            </div>
-
-          </div>
-
-
-          <div class="trend-item">
-
-            <div class="trend-number">
-              03
-            </div>
-
-            <div class="trend-content">
-              <strong>#Leche</strong>
-              <span>540 posts</span>
-            </div>
-
-          </div>
-
-
-          <div class="trend-item">
-
-            <div class="trend-number">
-              04
-            </div>
-
-            <div class="trend-content">
-              <strong>#MuuuTech</strong>
-              <span>310 posts</span>
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <div class="right-footer">
-        Foro Ubre · Comunidad
-      </div>
-
-    </aside>
-
-  </div>
-
-
-
-  <!-- =========================================================
-       MOBILE NAVIGATION
-  ========================================================== -->
-
-  <nav class="bottom-nav">
-
-    <div class="bottom-nav-inner">
-
-      <a
-        href="/"
-        class="bottom-nav-btn"
-      >
-        <span class="bn-icon">
-          <i class="ri-home-5-line"></i>
+      <a href="/" class="nav-item">
+        <span class="nav-icon">
+          <i class="ri-home-5-fill"></i>
         </span>
 
-        <span>
-          Inicio
-        </span>
+        <span>Inicio</span>
       </a>
 
 
-      <a
-        href="explorer.html"
-        class="bottom-nav-btn active"
-      >
-        <span class="bn-icon">
+      <a href="explorer.html" class="nav-item active">
+        <span class="nav-icon">
           <i class="ri-search-fill"></i>
         </span>
 
-        <span>
-          Explorar
-        </span>
+        <span>Explorar</span>
       </a>
 
 
-      <a
-        href="messages.html"
-        class="bottom-nav-btn"
-      >
-        <span class="bn-icon">
+      <a href="videos.html" class="nav-item">
+        <span class="nav-icon">
+          <i class="ri-video-line"></i>
+        </span>
+
+        <span>Videos</span>
+      </a>
+
+
+      <a href="messages.html" class="nav-item">
+
+        <span class="nav-icon">
           <i class="ri-message-3-line"></i>
         </span>
 
-        <span>
-          Mensajes
-        </span>
+        <span>Mensajes</span>
+
+        <span
+          class="nav-badge hidden"
+          id="msgBadge"
+        ></span>
+
       </a>
 
 
       <a
         href="#"
-        class="bottom-nav-btn"
-        id="bnPerfil"
+        class="nav-item"
+        id="navPerfil"
       >
-        <span class="bn-icon">
+
+        <span class="nav-icon">
           <i class="ri-user-3-line"></i>
         </span>
 
-        <span>
-          Perfil
-        </span>
+        <span>Perfil</span>
+
       </a>
 
-    </div>
+    </nav>
 
-  </nav>
+
+    <button
+      class="btn-post-sidebar"
+      onclick="window.location.href='/'"
+    >
+
+      <i class="ri-quill-pen-line"></i>
+
+      <span>
+        Nuevo post
+      </span>
+
+    </button>
+
+
+    <div
+      class="sidebar-user"
+      id="sidebarUser"
+    ></div>
+
+  </aside>
 
 
 
   <!-- =========================================================
-       JAVASCRIPT
-       MISMA LÓGICA DEL EXPLORE ORIGINAL
+       EXPLORER
   ========================================================== -->
 
-  <script>
+  <main class="feed explorer-feed">
 
-    const API = "/api";
+    <header class="feed-header">
 
-    const token = localStorage.getItem("fu_token");
+      <div class="feed-title">
 
-    const yo = JSON.parse(
+        <span class="feed-eyebrow">
+          <i class="ri-compass-3-line"></i>
+          DESCUBRIR
+        </span>
+
+        <h2>
+          Explorar
+        </h2>
+
+      </div>
+
+    </header>
+
+
+
+    <!-- =======================================================
+         SEARCH
+    ======================================================== -->
+
+    <section class="explorer-search">
+
+      <div class="explore-input-wrap">
+
+        <i class="ri-search-line"></i>
+
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Buscar usuarios, posts..."
+          autocomplete="off"
+          spellcheck="false"
+        >
+
+        <button
+          class="btn-clear-search hidden"
+          id="btnClearSearch"
+          type="button"
+        >
+
+          <i class="ri-close-line"></i>
+
+        </button>
+
+      </div>
+
+
+      <div
+        class="search-tabs"
+        id="searchTabs"
+      >
+
+        <button
+          class="tab-btn active"
+          data-tipo="todo"
+          type="button"
+        >
+
+          <i class="ri-layout-grid-line"></i>
+
+          <span>
+            Todo
+          </span>
+
+        </button>
+
+
+        <button
+          class="tab-btn"
+          data-tipo="usuarios"
+          type="button"
+        >
+
+          <i class="ri-user-3-line"></i>
+
+          <span>
+            Usuarios
+          </span>
+
+        </button>
+
+
+        <button
+          class="tab-btn"
+          data-tipo="posts"
+          type="button"
+        >
+
+          <i class="ri-article-line"></i>
+
+          <span>
+            Posts
+          </span>
+
+        </button>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =======================================================
+         RESULTS
+    ======================================================== -->
+
+    <section id="searchResults">
+
+      <div class="explore-placeholder">
+
+        <div class="placeholder-icon">
+          <i class="ri-search-2-line"></i>
+        </div>
+
+        <h3>
+          Explora Foro Ubre
+        </h3>
+
+        <p>
+          Busca usuarios o publicaciones para comenzar.
+        </p>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+
+  <!-- =========================================================
+       RIGHT SIDEBAR — MISMO CONTENIDO QUE INDEX
+  ========================================================== -->
+
+  <aside class="trends">
+
+
+    <!-- =======================================================
+         TENDENCIAS
+    ======================================================== -->
+
+    <div class="trends-box">
+
+      <h3>
+        <i class="ri-fire-line"></i>
+        Tendencias
+      </h3>
+
+
+      <ul>
+
+        <li
+          onclick="window.location.href='explorer.html?q=ForoUbre'"
+        >
+          <span>#ForoUbre</span>
+          <small>1.2K posts</small>
+        </li>
+
+
+        <li
+          onclick="window.location.href='explorer.html?q=VacaViral'"
+        >
+          <span>#VacaViral</span>
+          <small>890 posts</small>
+        </li>
+
+
+        <li
+          onclick="window.location.href='explorer.html?q=Leche'"
+        >
+          <span>#Leche</span>
+          <small>540 posts</small>
+        </li>
+
+
+        <li
+          onclick="window.location.href='explorer.html?q=MuuuTech'"
+        >
+          <span>#MuuuTech</span>
+          <small>310 posts</small>
+        </li>
+
+      </ul>
+
+    </div>
+
+
+
+    <!-- =======================================================
+         VIDEOS RECIENTES
+    ======================================================== -->
+
+    <div class="trends-box">
+
+      <h3>
+        <i class="ri-video-line"></i>
+        Videos recientes
+      </h3>
+
+
+      <div id="videosRecientesList">
+
+        <p class="side-loading">
+          <i class="ri-loader-4-line spin"></i>
+          Cargando...
+        </p>
+
+      </div>
+
+
+      <a
+        href="videos.html"
+        class="see-all"
+      >
+        Ver todos los videos
+        <i class="ri-arrow-right-line"></i>
+      </a>
+
+    </div>
+
+
+
+    <!-- =======================================================
+         SUGERENCIAS
+    ======================================================== -->
+
+    <div
+      class="trends-box"
+      id="sugerenciasBox"
+    >
+
+      <h3>
+        <i class="ri-user-follow-line"></i>
+        A quién seguir
+      </h3>
+
+
+      <div id="sugerenciasList">
+
+        <p class="side-loading">
+          <i class="ri-loader-4-line spin"></i>
+          Cargando...
+        </p>
+
+      </div>
+
+    </div>
+
+  </aside>
+
+</div>
+
+
+
+<!-- ===========================================================
+     MOBILE NAV — MISMA QUE INDEX
+=========================================================== -->
+
+<nav class="bottom-nav">
+
+  <div class="bottom-nav-inner">
+
+    <a
+      href="/"
+      class="bottom-nav-btn"
+    >
+
+      <span class="bn-icon">
+        <i class="ri-home-5-fill"></i>
+      </span>
+
+      <span>
+        Inicio
+      </span>
+
+    </a>
+
+
+    <a
+      href="explorer.html"
+      class="bottom-nav-btn active"
+    >
+
+      <span class="bn-icon">
+        <i class="ri-search-fill"></i>
+      </span>
+
+      <span>
+        Explorar
+      </span>
+
+    </a>
+
+
+    <a
+      href="videos.html"
+      class="bottom-nav-btn"
+    >
+
+      <span class="bn-icon">
+        <i class="ri-video-line"></i>
+      </span>
+
+      <span>
+        Videos
+      </span>
+
+    </a>
+
+
+    <a
+      href="messages.html"
+      class="bottom-nav-btn"
+    >
+
+      <span class="bn-icon">
+        <i class="ri-message-3-line"></i>
+      </span>
+
+      <span>
+        Mensajes
+      </span>
+
+    </a>
+
+
+    <a
+      href="#"
+      class="bottom-nav-btn"
+      id="bnPerfil"
+    >
+
+      <span class="bn-icon">
+        <i class="ri-user-3-line"></i>
+      </span>
+
+      <span>
+        Perfil
+      </span>
+
+    </a>
+
+  </div>
+
+</nav>
+
+
+
+<script>
+
+  const API = "/api";
+
+  const token =
+    localStorage.getItem("fu_token");
+
+  const yo =
+    JSON.parse(
       localStorage.getItem("fu_usuario") || "null"
     );
 
 
-    if (!token || !yo) {
-      window.location.href = "/login.html";
-    }
-
-
-    /* =========================================================
-       PERFIL
-    ========================================================== */
-
-    document.getElementById("navPerfil").href =
-      `profile.html?handle=${encodeURIComponent(yo.handle)}`;
-
-    document.getElementById("bnPerfil").href =
-      `profile.html?handle=${encodeURIComponent(yo.handle)}`;
+  if (!token || !yo) {
+    window.location.href = "/login.html";
+  }
 
 
 
-    /* =========================================================
-       SIDEBAR USER
-    ========================================================== */
+  /* =========================================================
+     PERFIL
+  ========================================================== */
 
-    const av = yo.avatarTipo === "video"
+  document.getElementById("navPerfil").href =
+    `profile.html?handle=${encodeURIComponent(yo.handle)}`;
+
+  document.getElementById("bnPerfil").href =
+    `profile.html?handle=${encodeURIComponent(yo.handle)}`;
+
+
+
+  /* =========================================================
+     SIDEBAR USER
+  ========================================================== */
+
+  const avatarUsuario =
+    yo.avatarTipo === "video"
 
       ? `
         <video
@@ -486,526 +533,510 @@
       `;
 
 
-    document.getElementById("sidebarUser").innerHTML = `
+  document.getElementById("sidebarUser").innerHTML = `
 
-      ${av}
+    ${avatarUsuario}
 
-      <div class="sidebar-user-info">
+    <div class="sidebar-user-info">
 
-        <strong>
-          ${escHtml(yo.nombre)}
-        </strong>
+      <strong>
+        ${escHtml(yo.nombre)}
+      </strong>
 
-        <small>
-          @${escHtml(yo.handle)}
-        </small>
+      <small>
+        @${escHtml(yo.handle)}
+      </small>
 
-      </div>
+    </div>
 
-      <i class="ri-more-2-fill sidebar-user-more"></i>
-
-    `;
+  `;
 
 
 
-    /* =========================================================
-       SEARCH
-    ========================================================== */
+  /* =========================================================
+     SEARCH
+  ========================================================== */
 
-    let tipoActual = "todo";
+  let tipoActual = "todo";
 
-    let searchTimer = null;
+  let searchTimer = null;
 
 
-    document
-      .querySelectorAll(".search-tabs .tab-btn")
-      .forEach(btn => {
+  document
+    .querySelectorAll(".search-tabs .tab-btn")
+    .forEach(btn => {
 
-        btn.addEventListener("click", function() {
+      btn.addEventListener("click", function() {
 
+        document
+          .querySelectorAll(".search-tabs .tab-btn")
+          .forEach(b =>
+            b.classList.remove("active")
+          );
+
+
+        this.classList.add("active");
+
+
+        tipoActual =
+          this.dataset.tipo;
+
+
+        const q =
           document
-            .querySelectorAll(".search-tabs .tab-btn")
-            .forEach(b => {
-              b.classList.remove("active");
-            });
-
-
-          this.classList.add("active");
-
-
-          tipoActual = this.dataset.tipo;
-
-
-          const q = document
             .getElementById("searchInput")
             .value
             .trim();
 
 
-          if (q) {
-            buscar(q, tipoActual);
-          }
-
-        });
+        if (q) {
+          buscar(q, tipoActual);
+        }
 
       });
-
-
-
-    /* =========================================================
-       SEARCH INPUT
-    ========================================================== */
-
-    const inp = document.getElementById("searchInput");
-
-
-    inp.addEventListener("input", function() {
-
-      const clearBtn =
-        document.getElementById("btnClearSearch");
-
-
-      clearBtn.classList.toggle(
-        "hidden",
-        !this.value
-      );
-
-
-      clearTimeout(searchTimer);
-
-
-      if (!this.value.trim()) {
-
-        mostrarPlaceholder();
-
-        return;
-
-      }
-
-
-      searchTimer = setTimeout(() => {
-
-        buscar(
-          this.value.trim(),
-          tipoActual
-        );
-
-      }, 400);
 
     });
 
 
 
-    /* =========================================================
-       CLEAR
-    ========================================================== */
-
-    document
-      .getElementById("btnClearSearch")
-      .addEventListener("click", () => {
-
-        inp.value = "";
-
-        document
-          .getElementById("btnClearSearch")
-          .classList.add("hidden");
+  const inp =
+    document.getElementById("searchInput");
 
 
-        mostrarPlaceholder();
+  inp.addEventListener("input", function() {
 
-        inp.focus();
-
-      });
-
+    const clearBtn =
+      document.getElementById("btnClearSearch");
 
 
-    /* =========================================================
-       PLACEHOLDER
-    ========================================================== */
+    clearBtn.classList.toggle(
+      "hidden",
+      !this.value
+    );
 
-    function mostrarPlaceholder() {
 
-      document.getElementById("searchResults").innerHTML = `
+    clearTimeout(searchTimer);
 
-        <div class="explore-placeholder">
 
-          <div class="placeholder-icon">
-            <i class="ri-search-2-line"></i>
-          </div>
+    if (!this.value.trim()) {
 
-          <h2>
-            Explora Foro Ubre
-          </h2>
+      mostrarPlaceholder();
 
-          <p>
-            Busca usuarios o publicaciones para comenzar.
-          </p>
-
-        </div>
-
-      `;
+      return;
 
     }
 
 
+    searchTimer =
+      setTimeout(
+        () => buscar(
+          this.value.trim(),
+          tipoActual
+        ),
+        400
+      );
 
-    /* =========================================================
-       SEARCH
-    ========================================================== */
-
-    async function buscar(q, tipo) {
-
-      const box =
-        document.getElementById("searchResults");
+  });
 
 
-      box.innerHTML = `
 
-        <div class="search-loading">
+  document
+    .getElementById("btnClearSearch")
+    .addEventListener("click", () => {
 
-          <span class="loading-spinner"></span>
+      inp.value = "";
 
-          <span>
-            Buscando...
-          </span>
+      document
+        .getElementById("btnClearSearch")
+        .classList.add("hidden");
 
+      mostrarPlaceholder();
+
+      inp.focus();
+
+    });
+
+
+
+  /* =========================================================
+     PLACEHOLDER
+  ========================================================== */
+
+  function mostrarPlaceholder() {
+
+    document.getElementById(
+      "searchResults"
+    ).innerHTML = `
+
+      <div class="explore-placeholder">
+
+        <div class="placeholder-icon">
+          <i class="ri-search-2-line"></i>
         </div>
 
-      `;
+        <h3>
+          Explora Foro Ubre
+        </h3>
+
+        <p>
+          Busca usuarios o publicaciones para comenzar.
+        </p>
+
+      </div>
+
+    `;
+
+  }
 
 
-      try {
 
-        const res = await fetch(
+  /* =========================================================
+     SEARCH API
+  ========================================================== */
+
+  async function buscar(q, tipo) {
+
+    const box =
+      document.getElementById("searchResults");
+
+
+    box.innerHTML = `
+
+      <div class="search-loading">
+
+        <i class="ri-loader-4-line spin"></i>
+
+        Buscando...
+
+      </div>
+
+    `;
+
+
+    try {
+
+      const res =
+        await fetch(
           `${API}/search?q=${encodeURIComponent(q)}&tipo=${tipo}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`
+              Authorization:
+                `Bearer ${token}`
             }
           }
         );
 
 
-        const data = await res.json();
+      const data =
+        await res.json();
 
 
-        let html = "";
+      let html = "";
 
 
-        /* =====================================================
-           USERS
-        ====================================================== */
 
-        if (
-          data.usuarios?.length > 0 &&
-          (tipo === "todo" || tipo === "usuarios")
-        ) {
+      /* =====================================================
+         USERS
+      ====================================================== */
 
-          html += `
+      if (
+        data.usuarios?.length > 0 &&
+        (tipo === "todo" ||
+         tipo === "usuarios")
+      ) {
 
-            <div class="search-section-title">
+        html += `
 
-              <span class="section-title-icon">
-                <i class="ri-user-3-line"></i>
-              </span>
+          <div class="search-section-title">
 
-              <span>
-                Usuarios
-              </span>
+            <i class="ri-user-3-line"></i>
 
-            </div>
+            Usuarios
 
-          `;
+          </div>
+
+        `;
 
 
-          html += data.usuarios.map(u => {
+        html +=
+          data.usuarios
+            .map(u => {
 
-            const marcoStyle =
-              getMarcoStyle(u.personalizacion);
-
-
-            const avHTML =
-              u.avatarTipo === "video"
-
-                ? `
-                  <video
-                    src="${u.avatar}"
-                    autoplay
-                    loop
-                    muted
-                    playsinline
-                    class="result-avatar"
-                    style="${marcoStyle}"
-                  ></video>
-                `
-
-                : `
-                  <img
-                    src="${u.avatar}"
-                    class="result-avatar"
-                    style="${marcoStyle}"
-                    alt=""
-                  >
-                `;
+              const marcoStyle =
+                getMarcoStyle(
+                  u.personalizacion
+                );
 
 
-            return `
+              const avHTML =
+                u.avatarTipo === "video"
 
-              <article
-                class="search-user-result"
-                onclick="window.location.href='profile.html?handle=${encodeURIComponent(u.handle)}'"
-              >
+                  ? `
+                    <video
+                      src="${u.avatar}"
+                      autoplay
+                      loop
+                      muted
+                      playsinline
+                      class="result-avatar"
+                      style="${marcoStyle}"
+                    ></video>
+                  `
 
-                <div class="result-avatar-wrap">
-                  ${avHTML}
-                </div>
+                  : `
+                    <img
+                      src="${u.avatar}"
+                      class="result-avatar"
+                      style="${marcoStyle}"
+                      alt=""
+                    >
+                  `;
 
 
-                <div class="search-user-content">
+              return `
 
-                  <div class="search-user-name">
-                    ${renderNombreHTML(u)}
+                <article
+                  class="search-user-result"
+                  onclick="
+                    window.location.href=
+                    'profile.html?handle=${encodeURIComponent(u.handle)}'
+                  "
+                >
+
+                  <div class="result-avatar-wrap">
+                    ${avHTML}
                   </div>
 
 
-                  <div class="search-user-handle">
-                    @${escHtml(u.handle)}
-                  </div>
+                  <div class="search-user-info">
 
-
-                  ${
-                    u.bio
-                      ? `
-                        <p class="search-user-bio">
-                          ${escHtml(u.bio)}
-                        </p>
-                      `
-                      : ""
-                  }
-
-                </div>
-
-
-                <button
-                  class="btn-follow-search ${u.sigues ? "siguiendo" : ""}"
-                  onclick="event.stopPropagation();toggleFollowSearch(this,'${u._id}')"
-                >
-
-                  ${
-                    u.sigues
-
-                      ? `
-                        <i class="ri-user-follow-line"></i>
-                        <span>Siguiendo</span>
-                      `
-
-                      : `
-                        <i class="ri-user-add-line"></i>
-                        <span>Seguir</span>
-                      `
-                  }
-
-                </button>
-
-              </article>
-
-            `;
-
-          }).join("");
-
-        }
-
-
-
-        /* =====================================================
-           POSTS
-        ====================================================== */
-
-        if (
-          data.posts?.length > 0 &&
-          (tipo === "todo" || tipo === "posts")
-        ) {
-
-          html += `
-
-            <div class="search-section-title">
-
-              <span class="section-title-icon">
-                <i class="ri-article-line"></i>
-              </span>
-
-              <span>
-                Posts
-              </span>
-
-            </div>
-
-          `;
-
-
-          html += data.posts.map(p => {
-
-            const marcoStyle =
-              getMarcoStyle(
-                p.autor.personalizacion
-              );
-
-
-            const avHTML =
-              p.autor.avatarTipo === "video"
-
-                ? `
-                  <video
-                    src="${p.autor.avatar}"
-                    autoplay
-                    loop
-                    muted
-                    playsinline
-                    class="post-avatar"
-                    style="${marcoStyle}"
-                  ></video>
-                `
-
-                : `
-                  <img
-                    src="${p.autor.avatar}"
-                    class="post-avatar"
-                    style="${marcoStyle}"
-                    alt=""
-                  >
-                `;
-
-
-            const img = p.imagen
-
-              ? `
-                <img
-                  src="${p.imagen}"
-                  class="search-post-image"
-                  loading="lazy"
-                  alt=""
-                >
-              `
-
-              : "";
-
-
-            return `
-
-              <article
-                class="search-post"
-                onclick="window.location.href='profile.html?handle=${encodeURIComponent(p.autor.handle)}'"
-              >
-
-                <div class="post-avatar-wrap">
-                  ${avHTML}
-                </div>
-
-
-                <div class="post-body">
-
-                  <div class="post-user">
-
-                    <div class="post-name">
-                      ${renderNombreHTML(p.autor)}
+                    <div class="result-name">
+                      ${renderNombreHTML(u)}
                     </div>
 
-                    <span class="handle">
-                      @${escHtml(p.autor.handle)}
-                    </span>
 
-                    <span class="post-time">
-                      · ${tiempoRelativo(p.createdAt)}
-                    </span>
-
-                  </div>
+                    <small>
+                      @${escHtml(u.handle)}
+                    </small>
 
 
-                  ${
-                    p.texto
-                      ? `
-                        <p class="post-text">
-                          ${escHtml(p.texto)}
-                        </p>
-                      `
-                      : ""
-                  }
-
-
-                  ${img}
-
-
-                  <div class="post-footer">
-
-                    <span class="post-stat">
-                      <i class="ri-heart-line"></i>
-                      ${p.totalLikes}
-                    </span>
+                    ${
+                      u.bio
+                        ? `
+                          <p>
+                            ${escHtml(u.bio)}
+                          </p>
+                        `
+                        : ""
+                    }
 
                   </div>
 
-                </div>
 
-              </article>
+                  <button
+                    class="
+                      btn-follow-search
+                      ${u.sigues ? "siguiendo" : ""}
+                    "
+                    onclick="
+                      event.stopPropagation();
+                      toggleFollowSearch(
+                        this,
+                        '${u._id}'
+                      )
+                    "
+                  >
 
-            `;
+                    ${
+                      u.sigues
 
-          }).join("");
+                        ? `
+                          <i class="ri-user-follow-line"></i>
+                          <span>Siguiendo</span>
+                        `
 
-        }
+                        : `
+                          <i class="ri-user-add-line"></i>
+                          <span>Seguir</span>
+                        `
+                    }
+
+                  </button>
+
+                </article>
+
+              `;
+
+            })
+            .join("");
+
+      }
 
 
 
-        /* =====================================================
-           NO RESULTS
-        ====================================================== */
+      /* =====================================================
+         POSTS
+      ====================================================== */
 
-        if (!html) {
+      if (
+        data.posts?.length > 0 &&
+        (tipo === "todo" ||
+         tipo === "posts")
+      ) {
 
-          html = `
+        html += `
 
-            <div class="explore-placeholder no-results">
+          <div class="search-section-title">
 
-              <div class="placeholder-icon">
-                <i class="ri-search-eye-line"></i>
-              </div>
+            <i class="ri-article-line"></i>
 
-              <h2>
-                No encontramos nada
-              </h2>
+            Posts
 
-              <p>
-                Sin resultados para
-                <strong>"${escHtml(q)}"</strong>
-              </p>
+          </div>
 
+        `;
+
+
+        html +=
+          data.posts
+            .map(p => {
+
+              const marcoStyle =
+                getMarcoStyle(
+                  p.autor.personalizacion
+                );
+
+
+              const avHTML =
+                p.autor.avatarTipo === "video"
+
+                  ? `
+                    <video
+                      src="${p.autor.avatar}"
+                      autoplay
+                      loop
+                      muted
+                      playsinline
+                      class="post-avatar"
+                      style="${marcoStyle}"
+                    ></video>
+                  `
+
+                  : `
+                    <img
+                      src="${p.autor.avatar}"
+                      class="post-avatar"
+                      style="${marcoStyle}"
+                      alt=""
+                    >
+                  `;
+
+
+              const img =
+                p.imagen
+
+                  ? `
+                    <img
+                      src="${p.imagen}"
+                      class="search-post-image"
+                      loading="lazy"
+                      alt=""
+                    >
+                  `
+
+                  : "";
+
+
+              return `
+
+                <article
+                  class="search-post"
+                  onclick="
+                    window.location.href=
+                    'profile.html?handle=${encodeURIComponent(p.autor.handle)}'
+                  "
+                >
+
+                  <div class="post-avatar-wrap">
+                    ${avHTML}
+                  </div>
+
+
+                  <div class="post-body">
+
+                    <div class="post-user">
+
+                      ${renderNombreHTML(p.autor)}
+
+                      <span class="handle">
+                        @${escHtml(p.autor.handle)}
+                      </span>
+
+                      <span class="post-time">
+                        · ${tiempoRelativo(p.createdAt)}
+                      </span>
+
+                    </div>
+
+
+                    ${
+                      p.texto
+                        ? `
+                          <p class="post-text">
+                            ${escHtml(p.texto)}
+                          </p>
+                        `
+                        : ""
+                    }
+
+
+                    ${img}
+
+
+                    <div class="post-footer">
+
+                      <span>
+                        <i class="ri-heart-line"></i>
+                        ${p.totalLikes}
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                </article>
+
+              `;
+
+            })
+            .join("");
+
+      }
+
+
+
+      /* =====================================================
+         NO RESULTS
+      ====================================================== */
+
+      if (!html) {
+
+        html = `
+
+          <div class="explore-placeholder">
+
+            <div class="placeholder-icon">
+              <i class="ri-search-eye-line"></i>
             </div>
 
-          `;
+            <h3>
+              No encontramos nada
+            </h3>
 
-        }
-
-
-        box.innerHTML = html;
-
-
-      } catch (e) {
-
-        box.innerHTML = `
-
-          <div class="search-error">
-
-            <div class="error-icon">
-              <i class="ri-error-warning-line"></i>
-            </div>
-
-            <strong>
-              No se pudo realizar la búsqueda
-            </strong>
-
-            <span>
-              Inténtalo de nuevo en unos segundos.
-            </span>
+            <p>
+              Sin resultados para
+              "<strong>${escHtml(q)}</strong>"
+            </p>
 
           </div>
 
@@ -1013,37 +1044,75 @@
 
       }
 
+
+      box.innerHTML = html;
+
+
+    } catch (e) {
+
+      box.innerHTML = `
+
+        <div class="search-error">
+
+          <i class="ri-error-warning-line"></i>
+
+          <strong>
+            Error al buscar
+          </strong>
+
+          <span>
+            Inténtalo nuevamente.
+          </span>
+
+        </div>
+
+      `;
+
     }
 
+  }
 
 
-    /* =========================================================
-       FOLLOW
-    ========================================================== */
 
-    async function toggleFollowSearch(btn, userId) {
+  /* =========================================================
+     FOLLOW
+  ========================================================== */
 
-      try {
+  async function toggleFollowSearch(
+    btn,
+    userId
+  ) {
 
-        const res = await fetch(
+    try {
+
+      const res =
+        await fetch(
           `${API}/profile/${userId}/follow`,
           {
             method: "POST",
+
             headers: {
-              Authorization: `Bearer ${token}`
+              Authorization:
+                `Bearer ${token}`
             }
           }
         );
 
 
-        const data = await res.json();
+      const data =
+        await res.json();
 
 
-        btn.className =
-          `btn-follow-search ${data.sigues ? "siguiendo" : ""}`;
+      btn.className =
+        `btn-follow-search ${
+          data.sigues
+            ? "siguiendo"
+            : ""
+        }`;
 
 
-        btn.innerHTML = data.sigues
+      btn.innerHTML =
+        data.sigues
 
           ? `
             <i class="ri-user-follow-line"></i>
@@ -1056,294 +1125,555 @@
           `;
 
 
-      } catch (e) {}
+    } catch (e) {}
 
-    }
-
-
-
-    /* =========================================================
-       PROFILE FRAME
-    ========================================================== */
-
-    function getMarcoStyle(p) {
-
-      if (
-        !p ||
-        p.marco === "none" ||
-        !p.marco
-      ) {
-        return "";
-      }
+  }
 
 
-      if (p.marco === "color") {
 
-        return `
-          box-shadow:
-            0 0 0 2.5px ${p.marcoColor};
+  /* =========================================================
+     VIDEOS RECIENTES
+     — MISMA API DEL INDEX
+  ========================================================== */
+
+  async function cargarVideosRecientes() {
+
+    try {
+
+      const res =
+        await fetch(
+          "/api/videos?pagina=1&limite=3",
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`
+            }
+          }
+        );
+
+
+      const data =
+        await res.json();
+
+
+      const box =
+        document.getElementById(
+          "videosRecientesList"
+        );
+
+
+      if (!box) return;
+
+
+      if (!data.length) {
+
+        box.innerHTML = `
+          <p class="side-empty">
+            Sin videos aún
+          </p>
         `;
 
+        return;
+
       }
 
 
-      if (p.marco === "neon") {
+      box.innerHTML =
+        data.map(v => `
 
-        return `
-          box-shadow:
-            0 0 0 2px ${p.marcoColor},
-            0 0 10px ${p.marcoColor};
+          <div
+            class="recent-video"
+            onclick="
+              window.location.href='videos.html'
+            "
+          >
+
+            <div class="recent-video-thumb">
+
+              <video
+                src="${v.url}"
+                preload="metadata"
+                muted
+              ></video>
+
+              <span class="video-play">
+                <i class="ri-play-fill"></i>
+              </span>
+
+            </div>
+
+
+            <div class="recent-video-info">
+
+              <p>
+                ${
+                  escHtml(
+                    v.descripcion ||
+                    "@" + v.autor.handle
+                  )
+                }
+              </p>
+
+              <small>
+
+                <i class="ri-heart-fill"></i>
+                ${v.totalLikes}
+
+                ·
+
+                <i class="ri-eye-line"></i>
+                ${v.reproducciones}
+
+              </small>
+
+            </div>
+
+          </div>
+
+        `).join("");
+
+    } catch (e) {}
+
+  }
+
+
+
+  /* =========================================================
+     SUGERENCIAS
+     — MISMA API DEL INDEX
+  ========================================================== */
+
+  async function cargarSugerencias() {
+
+    try {
+
+      const res =
+        await fetch(
+          "/api/profile/sugerencias",
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`
+            }
+          }
+        );
+
+
+      const data =
+        await res.json();
+
+
+      const box =
+        document.getElementById(
+          "sugerenciasList"
+        );
+
+
+      if (!box) return;
+
+
+      if (!data.length) {
+
+        box.innerHTML = `
+          <p class="side-empty">
+            Sin sugerencias
+          </p>
         `;
 
-      }
-
-
-      if (p.marco === "gold") {
-
-        return `
-          box-shadow:
-            0 0 0 2.5px #ffd43b;
-        `;
+        return;
 
       }
 
 
-      if (p.marco === "dashed") {
+      box.innerHTML =
+        data.map(u => {
 
-        return `
-          outline:
-            2px dashed ${p.marcoColor};
+          const av =
+            u.avatarTipo === "video"
 
-          outline-offset:
-            2px;
-        `;
+              ? `
+                <video
+                  src="${u.avatar}"
+                  autoplay
+                  loop
+                  muted
+                  playsinline
+                  class="avatar-sm"
+                ></video>
+              `
 
-      }
+              : `
+                <img
+                  src="${u.avatar}"
+                  class="avatar-sm"
+                  alt=""
+                >
+              `;
 
 
+          return `
+
+            <div class="suggestion">
+
+              <div
+                class="suggestion-user"
+                onclick="
+                  window.location.href=
+                  'profile.html?handle=${encodeURIComponent(u.handle)}'
+                "
+              >
+
+                ${av}
+
+              </div>
+
+
+              <div
+                class="suggestion-info"
+                onclick="
+                  window.location.href=
+                  'profile.html?handle=${encodeURIComponent(u.handle)}'
+                "
+              >
+
+                <strong>
+                  ${escHtml(u.nombre)}
+                </strong>
+
+                <small>
+                  @${escHtml(u.handle)}
+                </small>
+
+              </div>
+
+
+              <button
+                class="btn-seguir"
+                onclick="
+                  seguirDesdeExplorer(
+                    '${u._id}',
+                    this
+                  )
+                "
+              >
+
+                <i class="ri-user-add-line"></i>
+
+              </button>
+
+            </div>
+
+          `;
+
+        }).join("");
+
+    } catch (e) {}
+
+  }
+
+
+
+  async function seguirDesdeExplorer(
+    userId,
+    btn
+  ) {
+
+    try {
+
+      const res =
+        await fetch(
+          `/api/profile/${userId}/follow`,
+          {
+            method: "POST",
+
+            headers: {
+              Authorization:
+                `Bearer ${token}`
+            }
+          }
+        );
+
+
+      const data =
+        await res.json();
+
+
+      btn.innerHTML =
+        data.sigues
+
+          ? `<i class="ri-user-follow-line"></i>`
+
+          : `<i class="ri-user-add-line"></i>`;
+
+
+      btn.classList.toggle(
+        "following",
+        data.sigues
+      );
+
+    } catch (e) {}
+
+  }
+
+
+
+  /* =========================================================
+     HELPERS
+  ========================================================== */
+
+  function getMarcoStyle(p) {
+
+    if (
+      !p ||
+      p.marco === "none" ||
+      !p.marco
+    ) {
       return "";
-
     }
 
 
-
-    /* =========================================================
-       NAME RENDER
-    ========================================================== */
-
-    function renderNombreHTML(autor) {
-
-      const p =
-        autor.personalizacion || {};
-
-
-      const badges = {
-
-        verified: `
-          <i
-            class="ri-verified-badge-fill badge-verified"
-          ></i>
-        `,
-
-        star: `
-          <i
-            class="ri-star-fill badge-star"
-          ></i>
-        `,
-
-        fire: `
-          <i
-            class="ri-fire-fill badge-fire"
-          ></i>
-        `,
-
-        crown: `
-          <i
-            class="ri-vip-crown-fill badge-crown"
-          ></i>
-        `,
-
-        dev: `
-          <i
-            class="ri-code-box-fill badge-dev"
-          ></i>
-        `,
-
-        vip: `
-          <span class="badge-vip">
-            VIP
-          </span>
-        `,
-
-        new: `
-          <span class="badge-new">
-            NEW
-          </span>
-        `
-
-      };
-
-
-      const badgeHTML =
-        p.badge && p.badge !== "none"
-          ? (badges[p.badge] || "")
-          : "";
-
-
-      let style =
-        "font-weight:700;font-size:.92rem;";
-
-
-      const ef =
-        p.nombreEfecto || "none";
-
-
-      const grads = {
-
-        "green-blue":
-          "linear-gradient(90deg,#5cdb6f,#4dabf7)",
-
-        fire:
-          "linear-gradient(90deg,#ff6b35,#ffd43b)",
-
-        purple:
-          "linear-gradient(90deg,#cc5de8,#845ef7)",
-
-        sunset:
-          "linear-gradient(90deg,#ff6b6b,#feca57)",
-
-        ocean:
-          "linear-gradient(90deg,#54a0ff,#5f27cd)",
-
-        custom:
-          `linear-gradient(
-            90deg,
-            ${p.gradColor1 || "#5cdb6f"},
-            ${p.gradColor2 || "#4dabf7"}
-          )`
-
-      };
-
-
-      if (ef === "gradient") {
-
-        const g =
-          grads[
-            p.nombreGradiente || "green-blue"
-          ];
-
-
-        style += `
-          background:${g};
-          -webkit-background-clip:text;
-          -webkit-text-fill-color:transparent;
-          background-clip:text;
-        `;
-
-      }
-
-
-      else if (ef === "glow") {
-
-        style += `
-          color:${p.nombreColor || "var(--green)"};
-          text-shadow:
-            0 0 10px
-            ${p.nombreColor || "var(--green)"};
-        `;
-
-      }
-
-
-      else if (ef === "neon") {
-
-        style += `
-          color:${p.nombreColor || "#fff"};
-          text-shadow:
-            0 0 7px
-            ${p.nombreColor || "var(--green)"},
-            0 0 20px
-            ${p.nombreColor || "var(--green)"};
-        `;
-
-      }
-
-
-      else if (ef === "color") {
-
-        style += `
-          color:
-            ${p.nombreColor || "inherit"};
-        `;
-
-      }
-
-
-      else if (ef === "shadow") {
-
-        style += `
-          text-shadow:
-            2px 2px 4px
-            rgba(0,0,0,.9);
-        `;
-
-      }
-
+    if (p.marco === "color") {
 
       return `
-        <strong style="${style}">
-          ${escHtml(autor.nombre)}
-        </strong>
-
-        ${badgeHTML}
+        box-shadow:
+        0 0 0 2.5px ${p.marcoColor};
       `;
 
     }
 
 
+    if (p.marco === "neon") {
 
-    /* =========================================================
-       HTML ESCAPE
-    ========================================================== */
-
-    function escHtml(s = "") {
-
-      return String(s)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+      return `
+        box-shadow:
+        0 0 0 2px ${p.marcoColor},
+        0 0 10px ${p.marcoColor};
+      `;
 
     }
 
 
+    if (p.marco === "gold") {
 
-    /* =========================================================
-       RELATIVE TIME
-    ========================================================== */
+      return `
+        box-shadow:
+        0 0 0 2.5px #ffd43b;
+      `;
 
-    function tiempoRelativo(f) {
-
-      const d =
-        (Date.now() - new Date(f)) / 1000;
-
-
-      if (d < 60) {
-        return "ahora";
-      }
+    }
 
 
-      if (d < 3600) {
-        return `${Math.floor(d / 60)}m`;
-      }
+    if (p.marco === "dashed") {
+
+      return `
+        outline:
+        2px dashed ${p.marcoColor};
+
+        outline-offset:
+        2px;
+      `;
+
+    }
 
 
-      if (d < 86400) {
-        return `${Math.floor(d / 3600)}h`;
-      }
+    return "";
+
+  }
 
 
-      return new Date(f).toLocaleDateString(
+
+  function renderNombreHTML(autor) {
+
+    const p =
+      autor.personalizacion || {};
+
+
+    const badges = {
+
+      verified:
+        `<i class="ri-verified-badge-fill badge-verified"></i>`,
+
+      star:
+        `<i class="ri-star-fill badge-star"></i>`,
+
+      fire:
+        `<i class="ri-fire-fill badge-fire"></i>`,
+
+      crown:
+        `<i class="ri-vip-crown-fill badge-crown"></i>`,
+
+      dev:
+        `<i class="ri-code-box-fill badge-dev"></i>`,
+
+      vip:
+        `<span class="badge-vip">VIP</span>`,
+
+      new:
+        `<span class="badge-new">NEW</span>`
+
+    };
+
+
+    const badgeHTML =
+      p.badge &&
+      p.badge !== "none"
+
+        ? badges[p.badge] || ""
+
+        : "";
+
+
+    let style =
+      "font-weight:700;font-size:.92rem;";
+
+
+    const ef =
+      p.nombreEfecto || "none";
+
+
+    const grads = {
+
+      "green-blue":
+        "linear-gradient(90deg,#5cdb6f,#4dabf7)",
+
+      fire:
+        "linear-gradient(90deg,#ff6b35,#ffd43b)",
+
+      purple:
+        "linear-gradient(90deg,#cc5de8,#845ef7)",
+
+      sunset:
+        "linear-gradient(90deg,#ff6b6b,#feca57)",
+
+      ocean:
+        "linear-gradient(90deg,#54a0ff,#5f27cd)",
+
+      custom:
+        `linear-gradient(
+          90deg,
+          ${p.gradColor1 || "#5cdb6f"},
+          ${p.gradColor2 || "#4dabf7"}
+        )`
+
+    };
+
+
+    if (ef === "gradient") {
+
+      const g =
+        grads[
+          p.nombreGradiente ||
+          "green-blue"
+        ];
+
+
+      style += `
+        background:${g};
+
+        -webkit-background-clip:text;
+
+        -webkit-text-fill-color:
+        transparent;
+
+        background-clip:text;
+      `;
+
+    }
+
+    else if (ef === "glow") {
+
+      style += `
+        color:${p.nombreColor || "var(--green)"};
+
+        text-shadow:
+        0 0 10px
+        ${p.nombreColor || "var(--green)"};
+      `;
+
+    }
+
+    else if (ef === "neon") {
+
+      style += `
+        color:${p.nombreColor || "#fff"};
+
+        text-shadow:
+        0 0 7px
+        ${p.nombreColor || "var(--green)"},
+        0 0 20px
+        ${p.nombreColor || "var(--green)"};
+      `;
+
+    }
+
+    else if (ef === "color") {
+
+      style += `
+        color:
+        ${p.nombreColor || "inherit"};
+      `;
+
+    }
+
+    else if (ef === "shadow") {
+
+      style += `
+        text-shadow:
+        2px 2px 4px
+        rgba(0,0,0,.9);
+      `;
+
+    }
+
+
+    return `
+      <strong style="${style}">
+        ${escHtml(autor.nombre)}
+      </strong>
+
+      ${badgeHTML}
+    `;
+
+  }
+
+
+
+  function escHtml(s = "") {
+
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+
+  }
+
+
+
+  function tiempoRelativo(f) {
+
+    const d =
+      (Date.now() -
+       new Date(f)) / 1000;
+
+
+    if (d < 60) {
+      return "ahora";
+    }
+
+
+    if (d < 3600) {
+      return `${Math.floor(d / 60)}m`;
+    }
+
+
+    if (d < 86400) {
+      return `${Math.floor(d / 3600)}h`;
+    }
+
+
+    return new Date(f)
+      .toLocaleDateString(
         "es",
         {
           day: "numeric",
@@ -1351,9 +1681,61 @@
         }
       );
 
-    }
+  }
 
-  </script>
+
+
+  /* =========================================================
+     URL ?q=
+  ========================================================== */
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  const initialQuery =
+    params.get("q");
+
+
+  if (initialQuery) {
+
+    inp.value =
+      initialQuery;
+
+    document
+      .getElementById("btnClearSearch")
+      .classList.remove("hidden");
+
+    buscar(
+      initialQuery,
+      "todo"
+    );
+
+  }
+
+
+
+  /* =========================================================
+     LOAD SIDEBAR DATA
+  ========================================================== */
+
+  window.addEventListener(
+    "load",
+    () => {
+
+      setTimeout(() => {
+
+        cargarSugerencias();
+
+        cargarVideosRecientes();
+
+      }, 500);
+
+    }
+  );
+
+</script>
 
 </body>
 </html>
