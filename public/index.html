@@ -1,1547 +1,1102 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="theme-color" content="#050505"/>
-  <title>Foro Ubre</title>
+    <meta charset="UTF-8"/>
 
-  <link
-    href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css"
-    rel="stylesheet"
-  />
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
 
-  <link rel="stylesheet" href="style.css"/>
+    <meta name="theme-color" content="#050606"/>
+
+    <title>Foro Ubre</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css"
+        rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="index.css"/>
 </head>
 
 <body>
 
 <div class="app-layout">
 
-  <!-- =========================================================
-       SIDEBAR
-       ========================================================= -->
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
 
-  <aside class="sidebar">
+    <aside class="sidebar">
 
-    <div class="logo">
-      <i class="ri-leaf-fill"></i>
-      <span>Foro Ubre</span>
-    </div>
+        <div class="sidebar-top">
 
-    <nav>
+            <div class="logo">
+                <span class="logo-mark">
+                    <i class="ri-leaf-fill"></i>
+                </span>
 
-      <a href="/" class="nav-item active">
-        <span class="nav-icon">
-          <i class="ri-home-5-fill"></i>
-        </span>
+                <span class="logo-text">
+                    Foro Ubre
+                </span>
+            </div>
 
-        <span>Inicio</span>
-      </a>
+            <nav>
 
-      <a href="explore.html" class="nav-item">
-        <span class="nav-icon">
-          <i class="ri-search-line"></i>
-        </span>
+                <a href="/" class="nav-item active">
+                    <span class="nav-icon">
+                        <i class="ri-home-5-fill"></i>
+                    </span>
 
-        <span>Explorar</span>
-      </a>
+                    <span>Inicio</span>
+                </a>
 
-      <a href="videos.html" class="nav-item">
-        <span class="nav-icon">
-          <i class="ri-video-line"></i>
-        </span>
+                <a href="explore.html" class="nav-item">
+                    <span class="nav-icon">
+                        <i class="ri-search-line"></i>
+                    </span>
 
-        <span>Videos</span>
-      </a>
+                    <span>Explorar</span>
+                </a>
 
-      <a href="messages.html" class="nav-item">
+                <a href="videos.html" class="nav-item">
+                    <span class="nav-icon">
+                        <i class="ri-video-line"></i>
+                    </span>
 
-        <span class="nav-icon">
-          <i class="ri-message-3-line"></i>
-        </span>
+                    <span>Videos</span>
+                </a>
 
-        <span>Mensajes</span>
+                <a href="messages.html" class="nav-item">
+                    <span class="nav-icon">
+                        <i class="ri-message-3-line"></i>
+                    </span>
 
-        <span
-          class="nav-badge hidden"
-          id="msgBadge"
-        ></span>
+                    <span>Mensajes</span>
 
-      </a>
+                    <span
+                        class="nav-badge hidden"
+                        id="msgBadge"
+                    ></span>
+                </a>
 
-      <a
-        href="#"
-        class="nav-item"
-        id="navPerfil"
-      >
-        <span class="nav-icon">
-          <i class="ri-user-3-line"></i>
-        </span>
+                <a
+                    href="#"
+                    class="nav-item"
+                    id="navPerfil"
+                >
+                    <span class="nav-icon">
+                        <i class="ri-user-3-line"></i>
+                    </span>
 
-        <span>Perfil</span>
-      </a>
+                    <span>Perfil</span>
+                </a>
 
-    </nav>
-
-    <button
-      class="btn-post-sidebar"
-      id="btnNuevoPostSidebar"
-      type="button"
-    >
-      <i class="ri-quill-pen-line"></i>
-      <span>Nuevo post</span>
-    </button>
-
-    <div
-      class="sidebar-user"
-      id="sidebarUser"
-    ></div>
-
-  </aside>
-
-
-  <!-- =========================================================
-       FEED PRINCIPAL
-       ========================================================= -->
-
-  <main class="feed">
-
-    <header class="feed-header">
-
-      <div>
-        <span class="feed-eyebrow">
-          COMUNIDAD
-        </span>
-
-        <h2>Inicio</h2>
-      </div>
-
-      <button
-        class="btn-logout"
-        id="btnLogout"
-        type="button"
-        title="Cerrar sesión"
-      >
-        <i class="ri-logout-box-r-line"></i>
-        <span>Salir</span>
-      </button>
-
-    </header>
-
-
-    <!-- =======================================================
-         NUEVO POST
-         ======================================================= -->
-
-    <section class="new-post">
-
-      <div
-        id="composerAvatarWrap"
-        style="flex-shrink:0"
-      ></div>
-
-      <div class="post-input-area">
-
-        <textarea
-          id="postInput"
-          placeholder="¿Qué está pasando?"
-          maxlength="280"
-          rows="3"
-        ></textarea>
-
-
-        <!-- PREVIEW IMAGEN -->
-
-        <div
-          id="imagePreviewBox"
-          class="image-preview-box hidden"
-        >
-
-          <button
-            class="remove-image"
-            id="btnRemoveImage"
-            type="button"
-            aria-label="Eliminar imagen"
-          >
-            <i class="ri-close-line"></i>
-          </button>
-
-          <img
-            id="imagePreview"
-            src=""
-            alt="Vista previa"
-          />
-
-        </div>
-
-
-        <!-- ACCIONES -->
-
-        <div class="post-actions">
-
-          <div class="post-actions-left">
-
-            <label
-              for="imageInput"
-              class="btn-icon"
-              title="Subir imagen"
-            >
-              <i class="ri-image-line"></i>
-            </label>
-
-            <input
-              type="file"
-              id="imageInput"
-              accept="image/jpeg,image/png,image/gif,image/webp"
-              hidden
-            />
-
+            </nav>
 
             <button
-              type="button"
-              class="btn-sticker"
-              onclick="abrirModalSticker()"
-              title="Sticker con IA"
+                class="btn-post-sidebar"
+                id="btnNuevoPostSidebar"
+                type="button"
             >
-              <i class="ri-sparkling-line"></i>
-              <span>Sticker IA</span>
+                <span>
+                    <i class="ri-quill-pen-line"></i>
+                </span>
+
+                <strong>Nuevo post</strong>
             </button>
 
+        </div>
 
-            <span
-              id="charCount"
-              class="char-count"
+
+        <div
+            class="sidebar-user"
+            id="sidebarUser"
+        ></div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN FEED
+         ===================================================== -->
+
+    <main class="feed">
+
+        <header class="feed-header">
+
+            <div class="feed-title">
+
+                <span class="feed-eyebrow">
+                    <span class="live-dot"></span>
+                    COMUNIDAD
+                </span>
+
+                <h1>Inicio</h1>
+
+            </div>
+
+            <button
+                class="btn-logout"
+                id="btnLogout"
+                type="button"
             >
-              280
-            </span>
+                <i class="ri-logout-box-r-line"></i>
 
-          </div>
+                <span>Salir</span>
+            </button>
 
-
-          <button
-            id="btnPost"
-            type="button"
-          >
-            <i class="ri-send-plane-fill"></i>
-            <span>Publicar</span>
-          </button>
-
-        </div>
-
-      </div>
-
-    </section>
+        </header>
 
 
-    <!-- =======================================================
-         FEED
-         ======================================================= -->
+        <!-- =================================================
+             COMPOSER
+             ================================================= -->
 
-    <div id="feed">
+        <section class="new-post">
 
-      <div class="loading">
-
-        <i class="ri-loader-4-line spin"></i>
-
-        <span>Cargando posts...</span>
-
-      </div>
-
-    </div>
+            <div
+                id="composerAvatarWrap"
+                class="composer-avatar-wrap"
+            ></div>
 
 
-    <!-- CARGAR MÁS -->
+            <div class="post-input-area">
 
-    <div
-      id="loadMoreBox"
-      class="load-more-box hidden"
-    >
+                <div class="composer-label">
+                    <span>Nuevo pensamiento</span>
 
-      <button
-        id="btnLoadMore"
-        type="button"
-      >
-        <i class="ri-arrow-down-line"></i>
-        <span>Cargar más</span>
-      </button>
+                    <i class="ri-quill-pen-line"></i>
+                </div>
 
-    </div>
-
-  </main>
+                <textarea
+                    id="postInput"
+                    placeholder="¿Qué está pasando?"
+                    maxlength="280"
+                    rows="3"
+                ></textarea>
 
 
-  <!-- =========================================================
-       COLUMNA DERECHA
-       ========================================================= -->
+                <!-- IMAGE PREVIEW -->
 
-  <aside class="trends">
+                <div
+                    id="imagePreviewBox"
+                    class="image-preview-box hidden"
+                >
 
+                    <button
+                        class="remove-image"
+                        id="btnRemoveImage"
+                        type="button"
+                    >
+                        <i class="ri-close-line"></i>
+                    </button>
 
-    <!-- =======================================================
-         TENDENCIAS
-         ======================================================= -->
+                    <img
+                        id="imagePreview"
+                        src=""
+                        alt="Vista previa"
+                    />
 
-    <section class="trends-box">
-
-      <div class="trends-title">
-
-        <div class="trends-title-icon">
-          <i class="ri-fire-line"></i>
-        </div>
-
-        <div>
-          <h3>Tendencias</h3>
-          <span>Lo que está pasando</span>
-        </div>
-
-      </div>
+                </div>
 
 
-      <ul>
+                <!-- ACTIONS -->
 
-        <li
-          onclick="window.location.href='explore.html?q=ForoUbre'"
+                <div class="post-actions">
+
+                    <div class="post-actions-left">
+
+                        <label
+                            for="imageInput"
+                            class="btn-icon"
+                            title="Subir imagen"
+                        >
+                            <i class="ri-image-line"></i>
+                        </label>
+
+                        <input
+                            type="file"
+                            id="imageInput"
+                            accept="image/jpeg,image/png,image/gif,image/webp"
+                            hidden
+                        />
+
+
+                        <button
+                            type="button"
+                            class="btn-sticker"
+                            onclick="abrirModalSticker()"
+                            title="Sticker con IA"
+                        >
+                            <i class="ri-sparkling-line"></i>
+
+                            <span>Sticker IA</span>
+                        </button>
+
+
+                        <span
+                            id="charCount"
+                            class="char-count"
+                        >
+                            280
+                        </span>
+
+                    </div>
+
+
+                    <button
+                        id="btnPost"
+                        type="button"
+                    >
+                        <span>Publicar</span>
+
+                        <i class="ri-arrow-up-line"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             FEED
+             ================================================= -->
+
+        <section id="feed">
+
+            <div class="loading">
+
+                <span class="loading-spinner">
+                    <i class="ri-loader-4-line"></i>
+                </span>
+
+                <span>
+                    Cargando posts...
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             LOAD MORE
+             ================================================= -->
+
+        <div
+            id="loadMoreBox"
+            class="load-more-box hidden"
         >
-          <div>
-            <span>#ForoUbre</span>
-            <small>1.2K posts</small>
-          </div>
 
-          <i class="ri-arrow-right-s-line"></i>
-        </li>
+            <button
+                id="btnLoadMore"
+                type="button"
+            >
+                <i class="ri-arrow-down-line"></i>
 
+                <span>Cargar más</span>
+            </button>
 
-        <li
-          onclick="window.location.href='explore.html?q=VacaViral'"
-        >
-          <div>
-            <span>#VacaViral</span>
-            <small>890 posts</small>
-          </div>
-
-          <i class="ri-arrow-right-s-line"></i>
-        </li>
-
-
-        <li
-          onclick="window.location.href='explore.html?q=Leche'"
-        >
-          <div>
-            <span>#Leche</span>
-            <small>540 posts</small>
-          </div>
-
-          <i class="ri-arrow-right-s-line"></i>
-        </li>
-
-
-        <li
-          onclick="window.location.href='explore.html?q=MuuuTech'"
-        >
-          <div>
-            <span>#MuuuTech</span>
-            <small>310 posts</small>
-          </div>
-
-          <i class="ri-arrow-right-s-line"></i>
-        </li>
-
-      </ul>
-
-    </section>
-
-
-    <!-- =======================================================
-         VIDEOS RECIENTES
-         ======================================================= -->
-
-    <section class="trends-box">
-
-      <div class="trends-title">
-
-        <div class="trends-title-icon">
-          <i class="ri-video-line"></i>
         </div>
 
-        <div>
-          <h3>Videos recientes</h3>
-          <span>Últimos videos</span>
-        </div>
-
-      </div>
+    </main>
 
 
-      <div id="videosRecientesList">
+    <!-- =====================================================
+         RIGHT PANEL
+         ===================================================== -->
 
-        <p
-          style="
-            color:var(--text-3);
-            font-size:.82rem;
-            padding:4px 0;
-          "
+    <aside class="trends">
+
+        <!-- TRENDS -->
+
+        <section class="trends-box">
+
+            <div class="panel-heading">
+
+                <div class="panel-heading-icon">
+                    <i class="ri-fire-line"></i>
+                </div>
+
+                <div>
+                    <span class="panel-kicker">
+                        AHORA
+                    </span>
+
+                    <h3>
+                        Tendencias
+                    </h3>
+                </div>
+
+            </div>
+
+
+            <ul class="trend-list">
+
+                <li
+                    onclick="window.location.href='explore.html?q=ForoUbre'"
+                >
+                    <div class="trend-number">
+                        01
+                    </div>
+
+                    <div class="trend-content">
+                        <strong>#ForoUbre</strong>
+                        <small>1.2K posts</small>
+                    </div>
+
+                    <i class="ri-arrow-right-up-line"></i>
+                </li>
+
+
+                <li
+                    onclick="window.location.href='explore.html?q=VacaViral'"
+                >
+                    <div class="trend-number">
+                        02
+                    </div>
+
+                    <div class="trend-content">
+                        <strong>#VacaViral</strong>
+                        <small>890 posts</small>
+                    </div>
+
+                    <i class="ri-arrow-right-up-line"></i>
+                </li>
+
+
+                <li
+                    onclick="window.location.href='explore.html?q=Leche'"
+                >
+                    <div class="trend-number">
+                        03
+                    </div>
+
+                    <div class="trend-content">
+                        <strong>#Leche</strong>
+                        <small>540 posts</small>
+                    </div>
+
+                    <i class="ri-arrow-right-up-line"></i>
+                </li>
+
+
+                <li
+                    onclick="window.location.href='explore.html?q=MuuuTech'"
+                >
+                    <div class="trend-number">
+                        04
+                    </div>
+
+                    <div class="trend-content">
+                        <strong>#MuuuTech</strong>
+                        <small>310 posts</small>
+                    </div>
+
+                    <i class="ri-arrow-right-up-line"></i>
+                </li>
+
+            </ul>
+
+        </section>
+
+
+        <!-- VIDEOS -->
+
+        <section class="trends-box">
+
+            <div class="panel-heading">
+
+                <div class="panel-heading-icon">
+                    <i class="ri-video-line"></i>
+                </div>
+
+                <div>
+                    <span class="panel-kicker">
+                        RECIENTES
+                    </span>
+
+                    <h3>
+                        Videos
+                    </h3>
+                </div>
+
+            </div>
+
+
+            <div
+                id="videosRecientesList"
+                class="recent-videos-list"
+            >
+
+                <p class="side-loading">
+
+                    <i class="ri-loader-4-line spin"></i>
+
+                    Cargando...
+
+                </p>
+
+            </div>
+
+
+            <a
+                href="videos.html"
+                class="view-all"
+            >
+                Ver todos los videos
+
+                <i class="ri-arrow-right-line"></i>
+            </a>
+
+        </section>
+
+
+        <!-- SUGGESTIONS -->
+
+        <section
+            class="trends-box"
+            id="sugerenciasBox"
         >
-          <i class="ri-loader-4-line spin"></i>
-          Cargando...
-        </p>
 
-      </div>
+            <div class="panel-heading">
 
+                <div class="panel-heading-icon">
+                    <i class="ri-user-follow-line"></i>
+                </div>
 
-      <a
-        href="videos.html"
-        class="trends-see-all"
-      >
-        Ver todos los videos
-        <i class="ri-arrow-right-line"></i>
-      </a>
+                <div>
+                    <span class="panel-kicker">
+                        DESCUBRE
+                    </span>
 
-    </section>
+                    <h3>
+                        A quién seguir
+                    </h3>
+                </div>
 
-
-    <!-- =======================================================
-         SUGERENCIAS
-         ======================================================= -->
-
-    <section
-      class="trends-box"
-      id="sugerenciasBox"
-    >
-
-      <div class="trends-title">
-
-        <div class="trends-title-icon">
-          <i class="ri-user-follow-line"></i>
-        </div>
-
-        <div>
-          <h3>A quién seguir</h3>
-          <span>Personas que quizá conozcas</span>
-        </div>
-
-      </div>
+            </div>
 
 
-      <div id="sugerenciasList">
+            <div
+                id="sugerenciasList"
+                class="suggestions-list"
+            >
 
-        <p
-          class="loading"
-          style="
-            padding:8px 0;
-            font-size:.82rem;
-          "
-        >
-          <i class="ri-loader-4-line spin"></i>
-          Cargando...
-        </p>
+                <p class="side-loading">
 
-      </div>
+                    <i class="ri-loader-4-line spin"></i>
 
-    </section>
+                    Cargando...
 
-  </aside>
+                </p>
+
+            </div>
+
+        </section>
+
+    </aside>
 
 </div>
 
 
-<!-- ===========================================================
-     BOTTOM NAV — MOBILE
-     =========================================================== -->
+<!-- =========================================================
+     MOBILE BOTTOM NAV
+     ========================================================= -->
 
 <nav class="bottom-nav">
 
-  <div class="bottom-nav-inner">
+    <div class="bottom-nav-inner">
 
-    <a
-      href="/"
-      class="bottom-nav-btn active"
-    >
-      <span class="bn-icon">
-        <i class="ri-home-5-fill"></i>
-      </span>
+        <a
+            href="/"
+            class="bottom-nav-btn active"
+        >
+            <span class="bn-icon">
+                <i class="ri-home-5-fill"></i>
+            </span>
 
-      <span>Inicio</span>
-    </a>
-
-
-    <a
-      href="explore.html"
-      class="bottom-nav-btn"
-    >
-      <span class="bn-icon">
-        <i class="ri-search-line"></i>
-      </span>
-
-      <span>Buscar</span>
-    </a>
+            <span>Inicio</span>
+        </a>
 
 
-    <a
-      href="videos.html"
-      class="bottom-nav-btn"
-    >
-      <span class="bn-icon">
-        <i class="ri-video-line"></i>
-      </span>
+        <a
+            href="explore.html"
+            class="bottom-nav-btn"
+        >
+            <span class="bn-icon">
+                <i class="ri-search-line"></i>
+            </span>
 
-      <span>Videos</span>
-    </a>
-
-
-    <a
-      href="messages.html"
-      class="bottom-nav-btn"
-    >
-      <span class="bn-icon">
-        <i class="ri-message-3-line"></i>
-      </span>
-
-      <span>Mensajes</span>
-    </a>
+            <span>Buscar</span>
+        </a>
 
 
-    <a
-      href="#"
-      class="bottom-nav-btn"
-      id="bnPerfil"
-    >
-      <span class="bn-icon">
-        <i class="ri-user-3-line"></i>
-      </span>
+        <a
+            href="videos.html"
+            class="bottom-nav-btn"
+        >
+            <span class="bn-icon">
+                <i class="ri-video-line"></i>
+            </span>
 
-      <span>Perfil</span>
-    </a>
+            <span>Videos</span>
+        </a>
 
-  </div>
+
+        <a
+            href="messages.html"
+            class="bottom-nav-btn"
+        >
+            <span class="bn-icon">
+                <i class="ri-message-3-line"></i>
+            </span>
+
+            <span>Mensajes</span>
+        </a>
+
+
+        <a
+            href="#"
+            class="bottom-nav-btn"
+            id="bnPerfil"
+        >
+            <span class="bn-icon">
+                <i class="ri-user-3-line"></i>
+            </span>
+
+            <span>Perfil</span>
+        </a>
+
+    </div>
 
 </nav>
 
 
-<!-- ===========================================================
-     MODAL — STICKER IA
-     =========================================================== -->
+<!-- =========================================================
+     STICKER MODAL
+     ========================================================= -->
 
 <div
-  class="modal-overlay hidden"
-  id="modalSticker"
+    class="modal-overlay hidden"
+    id="modalSticker"
 >
 
-  <div
-    class="modal-box"
-    style="max-width:500px"
-  >
-
-    <div class="modal-header">
-
-      <div>
-
-        <span class="modal-eyebrow">
-          INTELIGENCIA ARTIFICIAL
-        </span>
-
-        <h3>
-          <i class="ri-sparkling-line"></i>
-          Generar Sticker
-        </h3>
-
-      </div>
-
-      <button
-        class="btn-cerrar-modal"
-        onclick="cerrarModalSticker()"
-        type="button"
-        aria-label="Cerrar"
-      >
-        <i class="ri-close-line"></i>
-      </button>
-
-    </div>
-
-
-    <div class="form-group">
-
-      <label>
-
-        <i class="ri-quill-pen-line"></i>
-
-        Describe tu sticker
-
-        <small>
-          (en inglés da mejores resultados)
-        </small>
-
-      </label>
-
-
-      <input
-        type="text"
-        id="stickerPromptInput"
-        placeholder="ej: cute cat astronaut kawaii..."
-        maxlength="200"
-        onkeydown="if(event.key==='Enter') generarStickers()"
-      />
-
-    </div>
-
-
-    <button
-      class="btn-auth"
-      id="btnGenerarSticker"
-      onclick="generarStickers()"
-      type="button"
-    >
-      <i class="ri-sparkling-2-line"></i>
-      Generar 2 stickers
-    </button>
-
-
     <div
-      id="stickerResults"
-      class="sticker-results hidden"
-    ></div>
-
-
-    <div
-      id="stickerSeleccionado"
-      class="hidden"
+        class="modal-box sticker-modal"
     >
 
-      <div
-        style="
-          display:flex;
-          align-items:center;
-          gap:10px;
-          padding:12px;
-          background:var(--green-subtle);
-          border-radius:var(--radius);
-          border:1px solid var(--green);
-        "
-      >
+        <div class="modal-header">
 
-        <i
-          class="ri-checkbox-circle-fill"
-          style="
-            color:var(--green);
-            font-size:1.2rem
-          "
-        ></i>
+            <div class="modal-title">
+
+                <div class="modal-title-icon">
+                    <i class="ri-sparkling-line"></i>
+                </div>
+
+                <div>
+                    <span class="panel-kicker">
+                        INTELIGENCIA ARTIFICIAL
+                    </span>
+
+                    <h3>
+                        Generar Sticker
+                    </h3>
+                </div>
+
+            </div>
 
 
-        <span
-          style="
-            flex:1;
-            font-size:.87rem;
-            font-weight:600
-          "
-        >
-          Sticker seleccionado
-        </span>
+            <button
+                class="btn-cerrar-modal"
+                onclick="cerrarModalSticker()"
+                type="button"
+            >
+                <i class="ri-close-line"></i>
+            </button>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+
+                <i class="ri-quill-pen-line"></i>
+
+                Describe tu sticker
+
+                <small>
+                    en inglés da mejores resultados
+                </small>
+
+            </label>
+
+
+            <input
+                type="text"
+                id="stickerPromptInput"
+                placeholder="ej: cute cat astronaut kawaii..."
+                maxlength="200"
+                onkeydown="if(event.key==='Enter') generarStickers()"
+            />
+
+        </div>
 
 
         <button
-          class="btn-auth"
-          style="
-            width:auto;
-            padding:7px 18px;
-            font-size:.83rem
-          "
-          onclick="adjuntarStickerAPost()"
-          type="button"
+            class="btn-auth"
+            id="btnGenerarSticker"
+            onclick="generarStickers()"
+            type="button"
         >
-          <i class="ri-attachment-2"></i>
-          Usar en post
+            <i class="ri-sparkling-2-line"></i>
+
+            Generar 2 stickers
+
         </button>
 
-      </div>
+
+        <div
+            id="stickerResults"
+            class="sticker-results hidden"
+        ></div>
+
+
+        <div
+            id="stickerSeleccionado"
+            class="hidden"
+        >
+
+            <div class="sticker-selected">
+
+                <div class="sticker-selected-icon">
+                    <i class="ri-checkbox-circle-fill"></i>
+                </div>
+
+                <span>
+                    Sticker seleccionado
+                </span>
+
+                <button
+                    class="btn-use-sticker"
+                    onclick="adjuntarStickerAPost()"
+                    type="button"
+                >
+                    <i class="ri-attachment-2"></i>
+
+                    Usar
+
+                </button>
+
+            </div>
+
+        </div>
 
     </div>
 
-  </div>
-
 </div>
 
 
-<!-- ===========================================================
-     MODAL — IMAGEN
-     =========================================================== -->
+<!-- =========================================================
+     IMAGE MODAL
+     ========================================================= -->
 
 <div
-  class="modal-img"
-  id="modalImg"
-  onclick="cerrarModal()"
+    class="modal-img"
+    id="modalImg"
+    onclick="cerrarModal()"
 >
 
-  <img
-    id="modalImgSrc"
-    src=""
-    alt=""
-  />
+    <button
+        class="modal-img-close"
+        type="button"
+        onclick="event.stopPropagation(); cerrarModal();"
+    >
+        <i class="ri-close-line"></i>
+    </button>
+
+    <img
+        id="modalImgSrc"
+        src=""
+        alt=""
+    />
 
 </div>
 
 
-<!-- ===========================================================
-     APP.JS — ORIGINAL
-     =========================================================== -->
+<!-- =========================================================
+     APP JS
+     ========================================================= -->
 
 <script src="app.js"></script>
 
 
 <script>
-  /* ==========================================================
-     PERFIL
-     ========================================================== */
+/* ============================================================
+   PERFIL
+   ============================================================ */
 
-  const usuarioActual =
+const usuarioGuardado =
     JSON.parse(
-      localStorage.getItem("fu_usuario") || "{}"
+        localStorage.getItem("fu_usuario") || "{}"
     );
 
-  const handleActual =
-    usuarioActual.handle || "";
+const perfilHandle =
+    usuarioGuardado.handle || "";
 
-  document.getElementById("navPerfil").href =
-    `profile.html?handle=${handleActual}`;
+const navPerfil =
+    document.getElementById("navPerfil");
 
-  document.getElementById("bnPerfil").href =
-    `profile.html?handle=${handleActual}`;
+const bnPerfil =
+    document.getElementById("bnPerfil");
+
+if (perfilHandle) {
+
+    const perfilURL =
+        `profile.html?handle=${encodeURIComponent(perfilHandle)}`;
+
+    if (navPerfil) {
+        navPerfil.href = perfilURL;
+    }
+
+    if (bnPerfil) {
+        bnPerfil.href = perfilURL;
+    }
+}
 
 
-  const token =
+/* ============================================================
+   TOKEN
+   ============================================================ */
+
+const token =
     localStorage.getItem("fu_token");
 
 
-  /* ==========================================================
-     VIDEOS RECIENTES
-     ========================================================== */
+/* ============================================================
+   VIDEOS RECIENTES
+   ============================================================ */
 
-  async function cargarVideosRecientes() {
-
-    try {
-
-      const res =
-        await fetch(
-          "/api/videos?pagina=1&limite=3",
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`
-            }
-          }
-        );
-
-      const data =
-        await res.json();
-
-      const box =
-        document.getElementById(
-          "videosRecientesList"
-        );
-
-      if (!box) return;
-
-
-      if (!data.length) {
-
-        box.innerHTML = `
-          <p
-            style="
-              color:var(--text-3);
-              font-size:.82rem;
-              padding:4px 0
-            "
-          >
-            Sin videos aún
-          </p>
-        `;
-
-        return;
-      }
-
-
-      box.innerHTML =
-        data.map(v => `
-
-          <div
-            class="recent-video"
-            onclick="
-              window.location.href='videos.html'
-            "
-          >
-
-            <div class="recent-video-thumb">
-
-              <video
-                src="${v.url}"
-                preload="metadata"
-                muted
-              ></video>
-
-              <span class="recent-video-play">
-                <i class="ri-play-fill"></i>
-              </span>
-
-            </div>
-
-
-            <div class="recent-video-info">
-
-              <p>
-                ${v.descripcion || '@' + v.autor.handle}
-              </p>
-
-              <small>
-
-                <i
-                  class="ri-heart-fill"
-                  style="color:#ff4466"
-                ></i>
-
-                ${v.totalLikes}
-
-                <span>·</span>
-
-                <i class="ri-eye-line"></i>
-
-                ${v.reproducciones}
-
-              </small>
-
-            </div>
-
-          </div>
-
-        `).join("");
-
-    } catch(e) {}
-
-  }
-
-
-  /* ==========================================================
-     SUGERENCIAS
-     ========================================================== */
-
-  async function cargarSugerencias() {
+async function cargarVideosRecientes() {
 
     try {
 
-      const res =
-        await fetch(
-          "/api/profile/sugerencias",
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`
-            }
-          }
+        const res =
+            await fetch(
+                "/api/videos?pagina=1&limite=3",
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        const data =
+            await res.json();
+
+
+        const box =
+            document.getElementById(
+                "videosRecientesList"
+            );
+
+
+        if (!box) return;
+
+
+        if (!data.length) {
+
+            box.innerHTML = `
+                <p class="empty-side">
+                    Sin videos aún
+                </p>
+            `;
+
+            return;
+        }
+
+
+        box.innerHTML =
+            data.map(v => `
+
+                <div
+                    class="recent-video"
+                    onclick="window.location.href='videos.html'"
+                >
+
+                    <div class="recent-video-thumb">
+
+                        <video
+                            src="${v.url}"
+                            preload="metadata"
+                            muted
+                        ></video>
+
+                        <span class="recent-video-play">
+                            <i class="ri-play-fill"></i>
+                        </span>
+
+                    </div>
+
+
+                    <div class="recent-video-info">
+
+                        <p>
+                            ${v.descripcion || "@" + v.autor.handle}
+                        </p>
+
+                        <small>
+
+                            <span>
+                                <i class="ri-heart-fill"></i>
+                                ${v.totalLikes}
+                            </span>
+
+                            <span>
+                                <i class="ri-eye-line"></i>
+                                ${v.reproducciones}
+                            </span>
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+            `).join("");
+
+
+    } catch (e) {
+
+        console.error(
+            "Error cargando videos:",
+            e
         );
 
-      const data =
-        await res.json();
+    }
 
-      const box =
-        document.getElementById(
-          "sugerenciasList"
+}
+
+
+/* ============================================================
+   SUGERENCIAS
+   ============================================================ */
+
+async function cargarSugerencias() {
+
+    try {
+
+        const res =
+            await fetch(
+                "/api/profile/sugerencias",
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        const data =
+            await res.json();
+
+
+        const box =
+            document.getElementById(
+                "sugerenciasList"
+            );
+
+
+        if (!box) return;
+
+
+        if (!data.length) {
+
+            box.innerHTML = `
+                <p class="empty-side">
+                    Sin sugerencias
+                </p>
+            `;
+
+            return;
+        }
+
+
+        box.innerHTML =
+            data.map(u => {
+
+                const av =
+                    u.avatarTipo === "video"
+
+                        ? `
+                            <video
+                                src="${u.avatar}"
+                                autoplay
+                                loop
+                                muted
+                                playsinline
+                                class="avatar-sm"
+                            ></video>
+                          `
+
+                        : `
+                            <img
+                                src="${u.avatar}"
+                                class="avatar-sm"
+                                alt=""
+                            />
+                          `;
+
+
+                return `
+
+                    <div class="suggestion">
+
+                        <div
+                            class="suggestion-avatar"
+                            onclick="
+                                window.location.href='profile.html?handle=${u.handle}'
+                            "
+                        >
+                            ${av}
+                        </div>
+
+
+                        <div
+                            class="suggestion-info"
+                            onclick="
+                                window.location.href='profile.html?handle=${u.handle}'
+                            "
+                        >
+
+                            <strong>
+                                ${u.nombre}
+                            </strong>
+
+                            <small>
+                                @${u.handle}
+                            </small>
+
+                        </div>
+
+
+                        <button
+                            class="btn-seguir"
+                            onclick="
+                                seguirDesdeIndex(
+                                    '${u._id}',
+                                    this
+                                )
+                            "
+                            type="button"
+                        >
+                            <i class="ri-user-add-line"></i>
+                        </button>
+
+                    </div>
+
+                `;
+
+            }).join("");
+
+
+    } catch (e) {
+
+        console.error(
+            "Error cargando sugerencias:",
+            e
         );
 
-      if (!box) return;
+    }
+
+}
 
 
-      if (!data.length) {
+/* ============================================================
+   SEGUIR DESDE INDEX
+   ============================================================ */
 
-        box.innerHTML = `
-          <p
-            style="
-              color:var(--text-3);
-              font-size:.82rem;
-              padding:8px 0
-            "
-          >
-            Sin sugerencias
-          </p>
-        `;
-
-        return;
-      }
-
-
-      box.innerHTML =
-        data.map(u => {
-
-          const av =
-            u.avatarTipo === "video"
-
-              ? `
-                <video
-                  src="${u.avatar}"
-                  autoplay
-                  loop
-                  muted
-                  playsinline
-                  class="avatar-sm"
-                ></video>
-              `
-
-              : `
-                <img
-                  src="${u.avatar}"
-                  class="avatar-sm"
-                  alt=""
-                />
-              `;
-
-
-          return `
-
-            <div class="suggestion">
-
-              <div
-                class="suggestion-avatar"
-                onclick="
-                  window.location.href=
-                  'profile.html?handle=${u.handle}'
-                "
-              >
-                ${av}
-              </div>
-
-
-              <div
-                class="suggestion-info"
-                onclick="
-                  window.location.href=
-                  'profile.html?handle=${u.handle}'
-                "
-              >
-
-                <strong>
-                  ${u.nombre}
-                </strong>
-
-                <small>
-                  @${u.handle}
-                </small>
-
-              </div>
-
-
-              <button
-                class="btn-seguir"
-                onclick="
-                  seguirDesdeIndex(
-                    '${u._id}',
-                    this
-                  )
-                "
-                type="button"
-                title="Seguir"
-              >
-                <i class="ri-user-add-line"></i>
-              </button>
-
-            </div>
-
-          `;
-
-        }).join("");
-
-    } catch(e) {}
-
-  }
-
-
-  /* ==========================================================
-     SEGUIR DESDE INDEX
-     ========================================================== */
-
-  async function seguirDesdeIndex(
+async function seguirDesdeIndex(
     userId,
     btn
-  ) {
+) {
 
     try {
 
-      const res =
-        await fetch(
-          `/api/profile/${userId}/follow`,
-          {
-            method: "POST",
+        const res =
+            await fetch(
+                `/api/profile/${userId}/follow`,
+                {
+                    method: "POST",
 
-            headers: {
-              Authorization:
-                `Bearer ${token}`
-            }
-          }
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        const data =
+            await res.json();
+
+
+        btn.innerHTML =
+            data.sigues
+
+                ? `<i class="ri-user-follow-line"></i>`
+
+                : `<i class="ri-user-add-line"></i>`;
+
+
+        btn.classList.toggle(
+            "following",
+            Boolean(data.sigues)
         );
 
 
-      const data =
-        await res.json();
+    } catch (e) {
+
+        console.error(
+            "Error siguiendo usuario:",
+            e
+        );
+
+    }
+
+}
 
 
-      btn.innerHTML =
-        data.sigues
+/* ============================================================
+   CARGA INICIAL
+   ============================================================ */
 
-          ? `<i class="ri-user-follow-line"></i>`
-
-          : `<i class="ri-user-add-line"></i>`;
-
-
-      btn.style.opacity =
-        data.sigues
-          ? "0.5"
-          : "1";
-
-    } catch(e) {}
-
-  }
-
-
-  /* ==========================================================
-     CARGA INICIAL
-     ========================================================== */
-
-  window.addEventListener(
+window.addEventListener(
     "load",
     () => {
 
-      setTimeout(
-        () => {
+        setTimeout(
+            () => {
 
-          cargarSugerencias();
-          cargarVideosRecientes();
+                cargarSugerencias();
 
-        },
-        800
-      );
+                cargarVideosRecientes();
+
+            },
+            800
+        );
 
     }
-  );
-
+);
 </script>
-
-
-<!-- ===========================================================
-     ESTILOS ESPECÍFICOS DEL INDEX
-     =========================================================== -->
-
-<style>
-
-  .feed-eyebrow {
-    display: block;
-
-    margin-bottom: 2px;
-
-    color: var(--text-3);
-
-    font-size: .63rem;
-    font-weight: 800;
-
-    letter-spacing: .13em;
-  }
-
-
-  .trends-title {
-    display: flex;
-    align-items: center;
-
-    gap: 10px;
-
-    margin-bottom: 15px;
-  }
-
-
-  .trends-title-icon {
-    width: 34px;
-    height: 34px;
-
-    display: grid;
-    place-items: center;
-
-    flex-shrink: 0;
-
-    border-radius: 11px;
-
-    color: #f0f0f2;
-
-    background:
-      rgba(255,255,255,.055);
-
-    border:
-      1px solid rgba(255,255,255,.07);
-  }
-
-
-  .trends-title h3 {
-    margin: 0;
-
-    font-size: .9rem;
-
-    letter-spacing: -.015em;
-  }
-
-
-  .trends-title span {
-    display: block;
-
-    margin-top: 2px;
-
-    color: var(--text-3);
-
-    font-size: .68rem;
-  }
-
-
-  .trends-box ul {
-    margin: 0;
-    padding: 0;
-
-    list-style: none;
-  }
-
-
-  .trends-box li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 10px;
-
-    padding: 10px 8px;
-
-    border-radius: 12px;
-
-    cursor: pointer;
-
-    transition:
-      background .2s ease,
-      transform .25s cubic-bezier(.22,1,.36,1);
-  }
-
-
-  .trends-box li:hover {
-    background:
-      rgba(255,255,255,.035);
-
-    transform:
-      translateX(2px);
-  }
-
-
-  .trends-box li > div {
-    min-width: 0;
-  }
-
-
-  .trends-box li span {
-    display: block;
-
-    color: var(--text);
-
-    font-size: .82rem;
-    font-weight: 700;
-  }
-
-
-  .trends-box li small {
-    display: block;
-
-    margin-top: 3px;
-
-    color: var(--text-3);
-
-    font-size: .68rem;
-  }
-
-
-  .trends-box li > i {
-    color: var(--text-3);
-
-    font-size: .95rem;
-  }
-
-
-  .trends-see-all {
-    display: flex !important;
-    align-items: center;
-    justify-content: space-between;
-
-    margin-top: 8px;
-
-    padding: 9px 8px;
-
-    color: var(--green);
-
-    font-size: .76rem;
-    font-weight: 750;
-
-    text-decoration: none;
-
-    border-radius: 11px;
-
-    transition:
-      background .2s ease;
-  }
-
-
-  .trends-see-all:hover {
-    background:
-      rgba(99,232,121,.055);
-  }
-
-
-  .recent-video {
-    display: flex;
-    align-items: center;
-
-    gap: 9px;
-
-    padding: 7px 5px;
-
-    border-bottom:
-      1px solid var(--border);
-
-    cursor: pointer;
-
-    transition:
-      background .2s ease,
-      border-radius .2s ease;
-  }
-
-
-  .recent-video:hover {
-    background:
-      rgba(255,255,255,.03);
-
-    border-radius: 11px;
-  }
-
-
-  .recent-video-thumb {
-    position: relative;
-
-    width: 52px;
-    height: 52px;
-
-    flex-shrink: 0;
-
-    overflow: hidden;
-
-    border-radius: 12px;
-
-    background: #111;
-
-    border:
-      1px solid rgba(255,255,255,.06);
-  }
-
-
-  .recent-video-thumb video {
-    width: 100%;
-    height: 100%;
-
-    display: block;
-
-    object-fit: cover;
-  }
-
-
-  .recent-video-play {
-    position: absolute;
-
-    left: 50%;
-    top: 50%;
-
-    width: 23px;
-    height: 23px;
-
-    display: grid;
-    place-items: center;
-
-    transform:
-      translate(-50%,-50%);
-
-    color: #fff;
-
-    background:
-      rgba(0,0,0,.58);
-
-    border:
-      1px solid rgba(255,255,255,.14);
-
-    border-radius: 50%;
-
-    backdrop-filter:
-      blur(7px);
-  }
-
-
-  .recent-video-play i {
-    font-size: .72rem;
-    margin-left: 1px;
-  }
-
-
-  .recent-video-info {
-    min-width: 0;
-    flex: 1;
-  }
-
-
-  .recent-video-info p {
-    margin: 0 0 4px;
-
-    color: var(--text);
-
-    font-size: .78rem;
-    font-weight: 650;
-
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-
-  .recent-video-info small {
-    color: var(--text-3);
-
-    font-size: .68rem;
-  }
-
-
-  .recent-video-info small span {
-    margin: 0 2px;
-  }
-
-
-  .suggestion {
-    display: flex;
-    align-items: center;
-
-    gap: 9px;
-
-    padding: 8px 5px;
-
-    border-radius: 13px;
-
-    transition:
-      background .2s ease;
-  }
-
-
-  .suggestion:hover {
-    background:
-      rgba(255,255,255,.03);
-  }
-
-
-  .suggestion-avatar {
-    width: 38px;
-    height: 38px;
-
-    flex-shrink: 0;
-
-    overflow: hidden;
-
-    border-radius: 50%;
-
-    cursor: pointer;
-
-    background: #151516;
-
-    border:
-      1px solid rgba(255,255,255,.08);
-  }
-
-
-  .suggestion-avatar img,
-  .suggestion-avatar video {
-    width: 100%;
-    height: 100%;
-
-    display: block;
-
-    object-fit: cover;
-  }
-
-
-  .suggestion-info {
-    min-width: 0;
-    flex: 1;
-
-    cursor: pointer;
-  }
-
-
-  .suggestion-info strong {
-    display: block;
-
-    color: var(--text);
-
-    font-size: .82rem;
-
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-
-  .suggestion-info small {
-    display: block;
-
-    margin-top: 2px;
-
-    color: var(--text-3);
-
-    font-size: .68rem;
-  }
-
-
-  .btn-seguir {
-    width: 32px;
-    height: 32px;
-
-    display: grid;
-    place-items: center;
-
-    flex-shrink: 0;
-
-    padding: 0;
-
-    color: var(--text);
-
-    background:
-      rgba(255,255,255,.055);
-
-    border:
-      1px solid rgba(255,255,255,.07);
-
-    border-radius: 10px;
-
-    cursor: pointer;
-
-    transition:
-      transform .2s ease,
-      background .2s ease,
-      border-color .2s ease;
-  }
-
-
-  .btn-seguir:hover {
-    background:
-      rgba(255,255,255,.09);
-
-    border-color:
-      rgba(255,255,255,.12);
-
-    transform:
-      scale(1.05);
-  }
-
-
-  .char-count {
-    min-width: 28px;
-
-    padding: 0 4px;
-
-    color: var(--text-3);
-
-    font-size: .78rem;
-    font-weight: 600;
-
-    text-align: center;
-  }
-
-
-  .nav-badge {
-    min-width: 18px;
-    height: 18px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    margin-left: auto;
-    padding: 0 5px;
-
-    color: #050505;
-
-    background:
-      var(--green);
-
-    border-radius:
-      var(--radius-full);
-
-    font-size: .65rem;
-    font-weight: 900;
-  }
-
-
-  .spin {
-    display: inline-block;
-
-    animation:
-      spin .8s linear infinite;
-  }
-
-
-  @keyframes spin {
-
-    to {
-      transform: rotate(360deg);
-    }
-
-  }
-
-
-  .modal-eyebrow {
-    display: block;
-
-    margin-bottom: 2px;
-
-    color: var(--text-3);
-
-    font-size: .6rem;
-    font-weight: 800;
-
-    letter-spacing: .12em;
-  }
-
-
-  @media (max-width: 768px) {
-
-    .feed-eyebrow {
-      display: none;
-    }
-
-    .recent-video {
-      padding-top: 6px;
-      padding-bottom: 6px;
-    }
-
-  }
-
-
-  @media (max-width: 480px) {
-
-    .btn-sticker span {
-      display: none;
-    }
-
-    #btnPost span {
-      display: none;
-    }
-
-    #btnPost {
-      width: 42px;
-      padding: 0;
-      justify-content: center;
-    }
-
-  }
-
-</style>
 
 </body>
 </html>
