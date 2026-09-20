@@ -3,79 +3,220 @@ const bcrypt   = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
-    nombre:   { type: String, required: true, trim: true, minlength: 2, maxlength: 50 },
-    handle:   { type: String, required: true, unique: true, lowercase: true, trim: true, minlength: 3, maxlength: 20, match: [/^[a-zA-Z0-9_]+$/, "Handle inválido"] },
-    email:    { type: String, required: true, unique: true, lowercase: true, maxlength: 100 },
-    password: { type: String, required: true },
-    avatar:   { type: String, default: "" },
-    avatarTipo: { type: String, default: "imagen" },
-    bio:      { type: String, default: "", maxlength: 160 },
-    seguidores: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    siguiendo:  [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    nombre: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 50
+    },
 
-    // ── Personalización ──
+    handle: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      minlength: 3,
+      maxlength: 20,
+      match: [/^[a-zA-Z0-9_]+$/, "Handle inválido"]
+    },
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      maxlength: 100
+    },
+
+    password: {
+      type: String,
+      required: true
+    },
+
+    avatar: {
+      type: String,
+      default: ""
+    },
+
+    avatarTipo: {
+      type: String,
+      default: "imagen"
+    },
+
+    bio: {
+      type: String,
+      default: "",
+      maxlength: 160
+    },
+
+    seguidores: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ],
+
+    siguiendo: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ],
+
+    // ══════════════════════════════════════════════
+    // PERSONALIZACIÓN DEL PERFIL
+    // ══════════════════════════════════════════════
+
     personalizacion: {
-      // Marco de avatar
-      marco:       { type: String, default: "none" }, // none|color|neon|gold|rainbow|animated|dashed|doble
-      marcoColor:  { type: String, default: "#5cdb6f" },
 
-      // Banner
-      bannerPreset: { type: String, default: "default" }, // default|purple|blue|sunset|ocean|fire|neon|custom
-      bannerColor1: { type: String, default: "#0d2010" },
-      bannerColor2: { type: String, default: "#1a3a14" },
-      bannerUrl:    { type: String, default: "" },
-      bannerTipo:   { type: String, default: "imagen" },
-      bannerPublicId: { type: String, default: "" },
+      // ────────────────────────────────────────────
+      // MARCO DEL AVATAR
+      // ────────────────────────────────────────────
 
-      // Nombre
-      nombreEfecto:    { type: String, default: "none" }, // none|gradient|glow|neon|color|shadow
-      nombreGradiente: { type: String, default: "green-blue" }, // green-blue|fire|purple|sunset|ocean|custom
-      nombreColor:     { type: String, default: "#f0f0f0" },
-      gradColor1:      { type: String, default: "#5cdb6f" },
-      gradColor2:      { type: String, default: "#4dabf7" },
+      marco: {
+        type: String,
+        default: "none"
+      },
 
-      // Badge
-      badge: { type: String, default: "none" }, // none|verified|star|fire|crown|dev|new|vip
+      marcoColor: {
+        type: String,
+        default: "#5cdb6f"
+      },
 
-      // Tema
-      temaColor: { type: String, default: "#5cdb6f" },
+      // ────────────────────────────────────────────
+      // BANNER
+      // ────────────────────────────────────────────
+
+      bannerPreset: {
+        type: String,
+        default: "default"
+      },
+
+      bannerColor1: {
+        type: String,
+        default: "#0d2010"
+      },
+
+      bannerColor2: {
+        type: String,
+        default: "#1a3a14"
+      },
+
+      // ────────────────────────────────────────────
+      // ESTILO VISUAL DEL PERFIL
+      // ────────────────────────────────────────────
+
+      /*
+        normal
+        vitrina
+        water
+        frosted
+      */
+      bannerEstilo: {
+        type: String,
+        default: "normal"
+      },
+
+      /*
+        normal
+        water
+        water-drop
+      */
+      avatarEstilo: {
+        type: String,
+        default: "normal"
+      },
+
+      // Profundidad / sombras
+      profundidad: {
+        type: Boolean,
+        default: true
+      },
+
+      // Reflejos de cristal
+      reflejo: {
+        type: Boolean,
+        default: true
+      },
+
+      // Glow ambiental
+      brillo: {
+        type: Boolean,
+        default: true
+      },
+
+      // Tema general del perfil
       tema: {
-  type: String,
-  default: "carbon"
-},
+        type: String,
+        default: "carbon"
+      },
 
-bannerEstilo: {
-  type: String,
-  default: "normal"
-},
+      // Color principal
+      temaColor: {
+        type: String,
+        default: "#5cdb6f"
+      },
 
-avatarEstilo: {
-  type: String,
-  default: "normal"
-},
+      // ────────────────────────────────────────────
+      // NOMBRE
+      // ────────────────────────────────────────────
 
-profundidad: {
-  type: Boolean,
-  default: true
-},
+      nombreEfecto: {
+        type: String,
+        default: "none"
+      },
 
-reflejo: {
-  type: Boolean,
-  default: true
-},
+      nombreGradiente: {
+        type: String,
+        default: "green-blue"
+      },
 
-brillo: {
-  type: Boolean,
-  default: true
-}
+      nombreColor: {
+        type: String,
+        default: "#f0f0f0"
+      },
+
+      gradColor1: {
+        type: String,
+        default: "#5cdb6f"
+      },
+
+      gradColor2: {
+        type: String,
+        default: "#4dabf7"
+      },
+
+      // ────────────────────────────────────────────
+      // BADGE
+      // ────────────────────────────────────────────
+
+      badge: {
+        type: String,
+        default: "none"
+      }
+    }
   },
-  { timestamps: true }
+
+  {
+    timestamps: true
+  }
 );
+
+// ══════════════════════════════════════════════
+// HASH DE CONTRASEÑA
+// ══════════════════════════════════════════════
 
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
+
   this.password = await bcrypt.hash(this.password, 12);
 });
+
+// ══════════════════════════════════════════════
+// COMPARAR CONTRASEÑA
+// ══════════════════════════════════════════════
 
 userSchema.methods.compararPassword = function (c) {
   return bcrypt.compare(c, this.password);
