@@ -35,12 +35,30 @@ const userSchema = new mongoose.Schema(
       required: true
     },
 
+    // ══════════════════════════════════════════════
+    // AVATAR
+    // ══════════════════════════════════════════════
+
     avatar: {
       type: String,
       default: ""
     },
 
     avatarTipo: {
+      type: String,
+      default: "imagen"
+    },
+
+    // ══════════════════════════════════════════════
+    // BANNER
+    // ══════════════════════════════════════════════
+
+    banner: {
+      type: String,
+      default: ""
+    },
+
+    bannerTipo: {
       type: String,
       default: "imagen"
     },
@@ -66,7 +84,7 @@ const userSchema = new mongoose.Schema(
     ],
 
     // ══════════════════════════════════════════════
-    // PERSONALIZACIÓN DEL PERFIL
+    // PERSONALIZACIÓN
     // ══════════════════════════════════════════════
 
     personalizacion: {
@@ -86,7 +104,7 @@ const userSchema = new mongoose.Schema(
       },
 
       // ────────────────────────────────────────────
-      // BANNER
+      // BANNER PRESETS
       // ────────────────────────────────────────────
 
       bannerPreset: {
@@ -105,58 +123,37 @@ const userSchema = new mongoose.Schema(
       },
 
       // ────────────────────────────────────────────
-      // ESTILO VISUAL DEL PERFIL
+      // ESTILO VISUAL NUEVO
       // ────────────────────────────────────────────
 
-      /*
-        normal
-        vitrina
-        water
-        frosted
-      */
       bannerEstilo: {
         type: String,
         default: "normal"
       },
 
-      /*
-        normal
-        water
-        water-drop
-      */
       avatarEstilo: {
         type: String,
         default: "normal"
       },
 
-      // Profundidad / sombras
       profundidad: {
         type: Boolean,
         default: true
       },
 
-      // Reflejos de cristal
       reflejo: {
         type: Boolean,
         default: true
       },
 
-      // Glow ambiental
       brillo: {
         type: Boolean,
         default: true
       },
 
-      // Tema general del perfil
       tema: {
         type: String,
         default: "carbon"
-      },
-
-      // Color principal
-      temaColor: {
-        type: String,
-        default: "#5cdb6f"
       },
 
       // ────────────────────────────────────────────
@@ -195,6 +192,15 @@ const userSchema = new mongoose.Schema(
       badge: {
         type: String,
         default: "none"
+      },
+
+      // ────────────────────────────────────────────
+      // COLOR PRINCIPAL
+      // ────────────────────────────────────────────
+
+      temaColor: {
+        type: String,
+        default: "#5cdb6f"
       }
     }
   },
@@ -205,7 +211,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // ══════════════════════════════════════════════
-// HASH DE CONTRASEÑA
+// PASSWORD
 // ══════════════════════════════════════════════
 
 userSchema.pre("save", async function () {
@@ -215,7 +221,7 @@ userSchema.pre("save", async function () {
 });
 
 // ══════════════════════════════════════════════
-// COMPARAR CONTRASEÑA
+// COMPARAR PASSWORD
 // ══════════════════════════════════════════════
 
 userSchema.methods.compararPassword = function (c) {
