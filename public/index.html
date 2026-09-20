@@ -1,1102 +1,1238 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    />
+  <title>Foro Ubre</title>
 
-    <meta name="theme-color" content="#050606"/>
+  <link
+    href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css"
+    rel="stylesheet"
+  >
 
-    <title>Foro Ubre</title>
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css"
-        rel="stylesheet"
-    />
-
-    <link rel="stylesheet" href="index.css"/>
+  <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
 
-<div class="app-layout">
+  <!-- =========================================================
+       APP
+  ========================================================== -->
 
-    <!-- =====================================================
+  <div class="app-layout">
+
+    <!-- =======================================================
          SIDEBAR
-         ===================================================== -->
+    ======================================================== -->
 
     <aside class="sidebar">
 
-        <div class="sidebar-top">
+      <div class="sidebar-top">
 
-            <div class="logo">
-                <span class="logo-mark">
-                    <i class="ri-leaf-fill"></i>
-                </span>
+        <a href="/" class="brand">
+          <div class="brand-icon">
+            <i class="ri-leaf-fill"></i>
+          </div>
 
-                <span class="logo-text">
-                    Foro Ubre
-                </span>
-            </div>
+          <div class="brand-text">
+            <strong>Foro Ubre</strong>
+            <span>Comunidad</span>
+          </div>
+        </a>
 
-            <nav>
+        <nav class="main-nav">
 
-                <a href="/" class="nav-item active">
-                    <span class="nav-icon">
-                        <i class="ri-home-5-fill"></i>
-                    </span>
+          <a href="/" class="nav-item active">
+            <span class="nav-icon">
+              <i class="ri-home-5-fill"></i>
+            </span>
 
-                    <span>Inicio</span>
-                </a>
+            <span class="nav-label">
+              Inicio
+            </span>
+          </a>
 
-                <a href="explore.html" class="nav-item">
-                    <span class="nav-icon">
-                        <i class="ri-search-line"></i>
-                    </span>
+          <a href="explore.html" class="nav-item">
+            <span class="nav-icon">
+              <i class="ri-search-line"></i>
+            </span>
 
-                    <span>Explorar</span>
-                </a>
+            <span class="nav-label">
+              Explorar
+            </span>
+          </a>
 
-                <a href="videos.html" class="nav-item">
-                    <span class="nav-icon">
-                        <i class="ri-video-line"></i>
-                    </span>
+          <a href="videos.html" class="nav-item">
+            <span class="nav-icon">
+              <i class="ri-video-line"></i>
+            </span>
 
-                    <span>Videos</span>
-                </a>
+            <span class="nav-label">
+              Videos
+            </span>
+          </a>
 
-                <a href="messages.html" class="nav-item">
-                    <span class="nav-icon">
-                        <i class="ri-message-3-line"></i>
-                    </span>
+          <a href="messages.html" class="nav-item">
 
-                    <span>Mensajes</span>
+            <span class="nav-icon">
+              <i class="ri-message-3-line"></i>
+            </span>
 
-                    <span
-                        class="nav-badge hidden"
-                        id="msgBadge"
-                    ></span>
-                </a>
+            <span class="nav-label">
+              Mensajes
+            </span>
 
-                <a
-                    href="#"
-                    class="nav-item"
-                    id="navPerfil"
-                >
-                    <span class="nav-icon">
-                        <i class="ri-user-3-line"></i>
-                    </span>
+            <span
+              class="nav-badge hidden"
+              id="msgBadge"
+            ></span>
 
-                    <span>Perfil</span>
-                </a>
+          </a>
 
-            </nav>
+          <a
+            href="#"
+            class="nav-item"
+            id="navPerfil"
+          >
 
-            <button
-                class="btn-post-sidebar"
-                id="btnNuevoPostSidebar"
-                type="button"
-            >
-                <span>
-                    <i class="ri-quill-pen-line"></i>
-                </span>
+            <span class="nav-icon">
+              <i class="ri-user-3-line"></i>
+            </span>
 
-                <strong>Nuevo post</strong>
-            </button>
+            <span class="nav-label">
+              Perfil
+            </span>
 
-        </div>
+          </a>
+
+        </nav>
+
+        <button
+          class="btn-post-sidebar"
+          id="btnNuevoPostSidebar"
+          type="button"
+        >
+
+          <span class="post-button-icon">
+            <i class="ri-quill-pen-line"></i>
+          </span>
+
+          <span>
+            Nuevo post
+          </span>
+
+          <kbd>
+            N
+          </kbd>
+
+        </button>
+
+      </div>
 
 
-        <div
-            class="sidebar-user"
-            id="sidebarUser"
-        ></div>
+      <!-- USUARIO -->
+
+      <div
+        class="sidebar-user"
+        id="sidebarUser"
+      ></div>
 
     </aside>
 
 
-    <!-- =====================================================
-         MAIN FEED
-         ===================================================== -->
+    <!-- =======================================================
+         FEED
+    ======================================================== -->
 
     <main class="feed">
 
-        <header class="feed-header">
+      <!-- HEADER -->
 
-            <div class="feed-title">
+      <header class="feed-header">
 
-                <span class="feed-eyebrow">
-                    <span class="live-dot"></span>
-                    COMUNIDAD
-                </span>
+        <div class="feed-title">
 
-                <h1>Inicio</h1>
+          <span class="feed-eyebrow">
+            <span class="live-dot"></span>
+            Comunidad
+          </span>
 
-            </div>
-
-            <button
-                class="btn-logout"
-                id="btnLogout"
-                type="button"
-            >
-                <i class="ri-logout-box-r-line"></i>
-
-                <span>Salir</span>
-            </button>
-
-        </header>
-
-
-        <!-- =================================================
-             COMPOSER
-             ================================================= -->
-
-        <section class="new-post">
-
-            <div
-                id="composerAvatarWrap"
-                class="composer-avatar-wrap"
-            ></div>
-
-
-            <div class="post-input-area">
-
-                <div class="composer-label">
-                    <span>Nuevo pensamiento</span>
-
-                    <i class="ri-quill-pen-line"></i>
-                </div>
-
-                <textarea
-                    id="postInput"
-                    placeholder="¿Qué está pasando?"
-                    maxlength="280"
-                    rows="3"
-                ></textarea>
-
-
-                <!-- IMAGE PREVIEW -->
-
-                <div
-                    id="imagePreviewBox"
-                    class="image-preview-box hidden"
-                >
-
-                    <button
-                        class="remove-image"
-                        id="btnRemoveImage"
-                        type="button"
-                    >
-                        <i class="ri-close-line"></i>
-                    </button>
-
-                    <img
-                        id="imagePreview"
-                        src=""
-                        alt="Vista previa"
-                    />
-
-                </div>
-
-
-                <!-- ACTIONS -->
-
-                <div class="post-actions">
-
-                    <div class="post-actions-left">
-
-                        <label
-                            for="imageInput"
-                            class="btn-icon"
-                            title="Subir imagen"
-                        >
-                            <i class="ri-image-line"></i>
-                        </label>
-
-                        <input
-                            type="file"
-                            id="imageInput"
-                            accept="image/jpeg,image/png,image/gif,image/webp"
-                            hidden
-                        />
-
-
-                        <button
-                            type="button"
-                            class="btn-sticker"
-                            onclick="abrirModalSticker()"
-                            title="Sticker con IA"
-                        >
-                            <i class="ri-sparkling-line"></i>
-
-                            <span>Sticker IA</span>
-                        </button>
-
-
-                        <span
-                            id="charCount"
-                            class="char-count"
-                        >
-                            280
-                        </span>
-
-                    </div>
-
-
-                    <button
-                        id="btnPost"
-                        type="button"
-                    >
-                        <span>Publicar</span>
-
-                        <i class="ri-arrow-up-line"></i>
-                    </button>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             FEED
-             ================================================= -->
-
-        <section id="feed">
-
-            <div class="loading">
-
-                <span class="loading-spinner">
-                    <i class="ri-loader-4-line"></i>
-                </span>
-
-                <span>
-                    Cargando posts...
-                </span>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             LOAD MORE
-             ================================================= -->
-
-        <div
-            id="loadMoreBox"
-            class="load-more-box hidden"
-        >
-
-            <button
-                id="btnLoadMore"
-                type="button"
-            >
-                <i class="ri-arrow-down-line"></i>
-
-                <span>Cargar más</span>
-            </button>
+          <h1>
+            Inicio
+          </h1>
 
         </div>
+
+        <button
+          class="btn-logout"
+          id="btnLogout"
+          type="button"
+        >
+
+          <i class="ri-logout-box-r-line"></i>
+
+          <span>
+            Salir
+          </span>
+
+        </button>
+
+      </header>
+
+
+      <!-- =====================================================
+           COMPOSER
+      ====================================================== -->
+
+      <section class="new-post">
+
+        <div
+          id="composerAvatarWrap"
+          class="composer-avatar"
+        ></div>
+
+
+        <div class="post-input-area">
+
+          <div class="composer-top">
+
+            <span class="composer-label">
+              ¿Qué está pasando?
+            </span>
+
+            <span class="composer-limit">
+              280 caracteres
+            </span>
+
+          </div>
+
+
+          <textarea
+            id="postInput"
+            placeholder="Comparte algo con la comunidad..."
+            maxlength="280"
+            rows="3"
+          ></textarea>
+
+
+          <!-- PREVIEW IMAGEN -->
+
+          <div
+            id="imagePreviewBox"
+            class="image-preview-box hidden"
+          >
+
+            <button
+              class="remove-image"
+              id="btnRemoveImage"
+              type="button"
+              aria-label="Eliminar imagen"
+            >
+              <i class="ri-close-line"></i>
+            </button>
+
+            <img
+              id="imagePreview"
+              src=""
+              alt="Vista previa"
+            >
+
+          </div>
+
+
+          <!-- ACTIONS -->
+
+          <div class="post-actions">
+
+            <div class="post-actions-left">
+
+              <label
+                for="imageInput"
+                class="composer-action"
+                title="Subir imagen"
+              >
+
+                <i class="ri-image-line"></i>
+
+                <span>
+                  Imagen
+                </span>
+
+              </label>
+
+              <input
+                type="file"
+                id="imageInput"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                hidden
+              >
+
+
+              <button
+                type="button"
+                class="composer-action sticker-action"
+                onclick="abrirModalSticker()"
+                title="Crear sticker con IA"
+              >
+
+                <i class="ri-sparkling-2-line"></i>
+
+                <span>
+                  Sticker IA
+                </span>
+
+              </button>
+
+
+              <span
+                id="charCount"
+                class="char-count"
+              >
+                280
+              </span>
+
+            </div>
+
+
+            <button
+              id="btnPost"
+              class="btn-publish"
+              type="button"
+            >
+
+              <span>
+                Publicar
+              </span>
+
+              <i class="ri-arrow-up-line"></i>
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           POSTS
+      ====================================================== -->
+
+      <section
+        id="feed"
+        class="posts-feed"
+      >
+
+        <div class="loading">
+
+          <span class="loading-spinner">
+            <i class="ri-loader-4-line"></i>
+          </span>
+
+          <span>
+            Cargando posts...
+          </span>
+
+        </div>
+
+      </section>
+
+
+      <!-- LOAD MORE -->
+
+      <div
+        id="loadMoreBox"
+        class="load-more-box hidden"
+      >
+
+        <button
+          id="btnLoadMore"
+          type="button"
+        >
+
+          <i class="ri-arrow-down-line"></i>
+
+          <span>
+            Cargar más
+          </span>
+
+        </button>
+
+      </div>
 
     </main>
 
 
-    <!-- =====================================================
-         RIGHT PANEL
-         ===================================================== -->
+    <!-- =======================================================
+         RIGHT SIDEBAR
+    ======================================================== -->
 
     <aside class="trends">
 
-        <!-- TRENDS -->
 
-        <section class="trends-box">
+      <!-- TENDENCIAS -->
 
-            <div class="panel-heading">
+      <section class="glass-card trends-box">
 
-                <div class="panel-heading-icon">
-                    <i class="ri-fire-line"></i>
-                </div>
+        <div class="card-heading">
 
-                <div>
-                    <span class="panel-kicker">
-                        AHORA
-                    </span>
+          <div class="card-heading-icon">
+            <i class="ri-fire-line"></i>
+          </div>
 
-                    <h3>
-                        Tendencias
-                    </h3>
-                </div>
-
-            </div>
-
-
-            <ul class="trend-list">
-
-                <li
-                    onclick="window.location.href='explore.html?q=ForoUbre'"
-                >
-                    <div class="trend-number">
-                        01
-                    </div>
-
-                    <div class="trend-content">
-                        <strong>#ForoUbre</strong>
-                        <small>1.2K posts</small>
-                    </div>
-
-                    <i class="ri-arrow-right-up-line"></i>
-                </li>
-
-
-                <li
-                    onclick="window.location.href='explore.html?q=VacaViral'"
-                >
-                    <div class="trend-number">
-                        02
-                    </div>
-
-                    <div class="trend-content">
-                        <strong>#VacaViral</strong>
-                        <small>890 posts</small>
-                    </div>
-
-                    <i class="ri-arrow-right-up-line"></i>
-                </li>
-
-
-                <li
-                    onclick="window.location.href='explore.html?q=Leche'"
-                >
-                    <div class="trend-number">
-                        03
-                    </div>
-
-                    <div class="trend-content">
-                        <strong>#Leche</strong>
-                        <small>540 posts</small>
-                    </div>
-
-                    <i class="ri-arrow-right-up-line"></i>
-                </li>
-
-
-                <li
-                    onclick="window.location.href='explore.html?q=MuuuTech'"
-                >
-                    <div class="trend-number">
-                        04
-                    </div>
-
-                    <div class="trend-content">
-                        <strong>#MuuuTech</strong>
-                        <small>310 posts</small>
-                    </div>
-
-                    <i class="ri-arrow-right-up-line"></i>
-                </li>
-
-            </ul>
-
-        </section>
-
-
-        <!-- VIDEOS -->
-
-        <section class="trends-box">
-
-            <div class="panel-heading">
-
-                <div class="panel-heading-icon">
-                    <i class="ri-video-line"></i>
-                </div>
-
-                <div>
-                    <span class="panel-kicker">
-                        RECIENTES
-                    </span>
-
-                    <h3>
-                        Videos
-                    </h3>
-                </div>
-
-            </div>
-
-
-            <div
-                id="videosRecientesList"
-                class="recent-videos-list"
-            >
-
-                <p class="side-loading">
-
-                    <i class="ri-loader-4-line spin"></i>
-
-                    Cargando...
-
-                </p>
-
-            </div>
-
-
-            <a
-                href="videos.html"
-                class="view-all"
-            >
-                Ver todos los videos
-
-                <i class="ri-arrow-right-line"></i>
-            </a>
-
-        </section>
-
-
-        <!-- SUGGESTIONS -->
-
-        <section
-            class="trends-box"
-            id="sugerenciasBox"
-        >
-
-            <div class="panel-heading">
-
-                <div class="panel-heading-icon">
-                    <i class="ri-user-follow-line"></i>
-                </div>
-
-                <div>
-                    <span class="panel-kicker">
-                        DESCUBRE
-                    </span>
-
-                    <h3>
-                        A quién seguir
-                    </h3>
-                </div>
-
-            </div>
-
-
-            <div
-                id="sugerenciasList"
-                class="suggestions-list"
-            >
-
-                <p class="side-loading">
-
-                    <i class="ri-loader-4-line spin"></i>
-
-                    Cargando...
-
-                </p>
-
-            </div>
-
-        </section>
-
-    </aside>
-
-</div>
-
-
-<!-- =========================================================
-     MOBILE BOTTOM NAV
-     ========================================================= -->
-
-<nav class="bottom-nav">
-
-    <div class="bottom-nav-inner">
-
-        <a
-            href="/"
-            class="bottom-nav-btn active"
-        >
-            <span class="bn-icon">
-                <i class="ri-home-5-fill"></i>
+          <div>
+            <span>
+              Comunidad
             </span>
 
-            <span>Inicio</span>
-        </a>
-
-
-        <a
-            href="explore.html"
-            class="bottom-nav-btn"
-        >
-            <span class="bn-icon">
-                <i class="ri-search-line"></i>
-            </span>
-
-            <span>Buscar</span>
-        </a>
-
-
-        <a
-            href="videos.html"
-            class="bottom-nav-btn"
-        >
-            <span class="bn-icon">
-                <i class="ri-video-line"></i>
-            </span>
-
-            <span>Videos</span>
-        </a>
-
-
-        <a
-            href="messages.html"
-            class="bottom-nav-btn"
-        >
-            <span class="bn-icon">
-                <i class="ri-message-3-line"></i>
-            </span>
-
-            <span>Mensajes</span>
-        </a>
-
-
-        <a
-            href="#"
-            class="bottom-nav-btn"
-            id="bnPerfil"
-        >
-            <span class="bn-icon">
-                <i class="ri-user-3-line"></i>
-            </span>
-
-            <span>Perfil</span>
-        </a>
-
-    </div>
-
-</nav>
-
-
-<!-- =========================================================
-     STICKER MODAL
-     ========================================================= -->
-
-<div
-    class="modal-overlay hidden"
-    id="modalSticker"
->
-
-    <div
-        class="modal-box sticker-modal"
-    >
-
-        <div class="modal-header">
-
-            <div class="modal-title">
-
-                <div class="modal-title-icon">
-                    <i class="ri-sparkling-line"></i>
-                </div>
-
-                <div>
-                    <span class="panel-kicker">
-                        INTELIGENCIA ARTIFICIAL
-                    </span>
-
-                    <h3>
-                        Generar Sticker
-                    </h3>
-                </div>
-
-            </div>
-
-
-            <button
-                class="btn-cerrar-modal"
-                onclick="cerrarModalSticker()"
-                type="button"
-            >
-                <i class="ri-close-line"></i>
-            </button>
+            <h3>
+              Tendencias
+            </h3>
+          </div>
 
         </div>
 
 
-        <div class="form-group">
+        <ul class="trends-list">
 
-            <label>
+          <li
+            onclick="window.location.href='explore.html?q=ForoUbre'"
+          >
 
-                <i class="ri-quill-pen-line"></i>
+            <div>
+              <strong>
+                #ForoUbre
+              </strong>
 
-                Describe tu sticker
+              <small>
+                Comunidad
+              </small>
+            </div>
 
-                <small>
-                    en inglés da mejores resultados
-                </small>
+            <span>
+              1.2K
+            </span>
 
-            </label>
+          </li>
 
 
-            <input
-                type="text"
-                id="stickerPromptInput"
-                placeholder="ej: cute cat astronaut kawaii..."
-                maxlength="200"
-                onkeydown="if(event.key==='Enter') generarStickers()"
-            />
+          <li
+            onclick="window.location.href='explore.html?q=VacaViral'"
+          >
+
+            <div>
+              <strong>
+                #VacaViral
+              </strong>
+
+              <small>
+                Tendencia
+              </small>
+            </div>
+
+            <span>
+              890
+            </span>
+
+          </li>
+
+
+          <li
+            onclick="window.location.href='explore.html?q=Leche'"
+          >
+
+            <div>
+              <strong>
+                #Leche
+              </strong>
+
+              <small>
+                Comunidad
+              </small>
+            </div>
+
+            <span>
+              540
+            </span>
+
+          </li>
+
+
+          <li
+            onclick="window.location.href='explore.html?q=MuuuTech'"
+          >
+
+            <div>
+              <strong>
+                #MuuuTech
+              </strong>
+
+              <small>
+                Tecnología
+              </small>
+            </div>
+
+            <span>
+              310
+            </span>
+
+          </li>
+
+        </ul>
+
+      </section>
+
+
+      <!-- =====================================================
+           VIDEOS
+      ====================================================== -->
+
+      <section class="glass-card trends-box">
+
+        <div class="card-heading">
+
+          <div class="card-heading-icon video-icon">
+            <i class="ri-video-line"></i>
+          </div>
+
+          <div>
+
+            <span>
+              Multimedia
+            </span>
+
+            <h3>
+              Videos recientes
+            </h3>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="videosRecientesList"
+          class="recent-videos"
+        >
+
+          <div class="mini-loading">
+
+            <i class="ri-loader-4-line"></i>
+
+            <span>
+              Cargando...
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <a
+          href="videos.html"
+          class="see-all"
+        >
+
+          Ver todos
+
+          <i class="ri-arrow-right-line"></i>
+
+        </a>
+
+      </section>
+
+
+      <!-- =====================================================
+           SUGERENCIAS
+      ====================================================== -->
+
+      <section
+        class="glass-card trends-box"
+        id="sugerenciasBox"
+      >
+
+        <div class="card-heading">
+
+          <div class="card-heading-icon people-icon">
+            <i class="ri-user-follow-line"></i>
+          </div>
+
+          <div>
+
+            <span>
+              Comunidad
+            </span>
+
+            <h3>
+              A quién seguir
+            </h3>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="sugerenciasList"
+          class="suggestions-list"
+        >
+
+          <div class="mini-loading">
+
+            <i class="ri-loader-4-line"></i>
+
+            <span>
+              Cargando...
+            </span>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </aside>
+
+  </div>
+
+
+  <!-- =========================================================
+       MOBILE NAV
+  ========================================================== -->
+
+  <nav class="bottom-nav">
+
+    <div class="bottom-nav-inner">
+
+      <a
+        href="/"
+        class="bottom-nav-btn active"
+      >
+
+        <span class="bn-icon">
+          <i class="ri-home-5-fill"></i>
+        </span>
+
+        <span>
+          Inicio
+        </span>
+
+      </a>
+
+
+      <a
+        href="explore.html"
+        class="bottom-nav-btn"
+      >
+
+        <span class="bn-icon">
+          <i class="ri-search-line"></i>
+        </span>
+
+        <span>
+          Buscar
+        </span>
+
+      </a>
+
+
+      <a
+        href="videos.html"
+        class="bottom-nav-btn"
+      >
+
+        <span class="bn-icon">
+          <i class="ri-video-line"></i>
+        </span>
+
+        <span>
+          Videos
+        </span>
+
+      </a>
+
+
+      <a
+        href="messages.html"
+        class="bottom-nav-btn"
+      >
+
+        <span class="bn-icon">
+          <i class="ri-message-3-line"></i>
+        </span>
+
+        <span>
+          Mensajes
+        </span>
+
+      </a>
+
+
+      <a
+        href="#"
+        class="bottom-nav-btn"
+        id="bnPerfil"
+      >
+
+        <span class="bn-icon">
+          <i class="ri-user-3-line"></i>
+        </span>
+
+        <span>
+          Perfil
+        </span>
+
+      </a>
+
+    </div>
+
+  </nav>
+
+
+  <!-- =========================================================
+       STICKER MODAL
+  ========================================================== -->
+
+  <div
+    class="modal-overlay hidden"
+    id="modalSticker"
+  >
+
+    <div
+      class="modal-box sticker-modal"
+    >
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-eyebrow">
+            Inteligencia artificial
+          </span>
+
+          <h3>
+
+            <i class="ri-sparkling-2-line"></i>
+
+            Generar sticker
+
+          </h3>
 
         </div>
 
 
         <button
-            class="btn-auth"
-            id="btnGenerarSticker"
-            onclick="generarStickers()"
-            type="button"
+          class="btn-cerrar-modal"
+          onclick="cerrarModalSticker()"
+          type="button"
         >
-            <i class="ri-sparkling-2-line"></i>
 
-            Generar 2 stickers
+          <i class="ri-close-line"></i>
 
         </button>
 
-
-        <div
-            id="stickerResults"
-            class="sticker-results hidden"
-        ></div>
+      </div>
 
 
-        <div
-            id="stickerSeleccionado"
-            class="hidden"
+      <div class="form-group">
+
+        <label for="stickerPromptInput">
+
+          <i class="ri-quill-pen-line"></i>
+
+          Describe tu sticker
+
+          <small>
+            En inglés suele dar mejores resultados
+          </small>
+
+        </label>
+
+
+        <input
+          type="text"
+          id="stickerPromptInput"
+          placeholder="cute cat astronaut kawaii..."
+          maxlength="200"
+          onkeydown="if(event.key==='Enter') generarStickers()"
         >
 
-            <div class="sticker-selected">
+      </div>
 
-                <div class="sticker-selected-icon">
-                    <i class="ri-checkbox-circle-fill"></i>
-                </div>
 
-                <span>
-                    Sticker seleccionado
-                </span>
+      <button
+        class="btn-auth"
+        id="btnGenerarSticker"
+        onclick="generarStickers()"
+        type="button"
+      >
 
-                <button
-                    class="btn-use-sticker"
-                    onclick="adjuntarStickerAPost()"
-                    type="button"
-                >
-                    <i class="ri-attachment-2"></i>
+        <i class="ri-sparkling-2-line"></i>
 
-                    Usar
+        Generar 2 stickers
 
-                </button>
+      </button>
 
-            </div>
+
+      <div
+        id="stickerResults"
+        class="sticker-results hidden"
+      ></div>
+
+
+      <div
+        id="stickerSeleccionado"
+        class="hidden sticker-selected"
+      >
+
+        <div class="selected-icon">
+
+          <i class="ri-checkbox-circle-fill"></i>
 
         </div>
 
+        <span>
+          Sticker seleccionado
+        </span>
+
+        <button
+          class="btn-use-sticker"
+          onclick="adjuntarStickerAPost()"
+          type="button"
+        >
+
+          Usar en post
+
+        </button>
+
+      </div>
+
     </div>
 
-</div>
+  </div>
 
 
-<!-- =========================================================
-     IMAGE MODAL
-     ========================================================= -->
+  <!-- =========================================================
+       IMAGE MODAL
+  ========================================================== -->
 
-<div
+  <div
     class="modal-img"
     id="modalImg"
     onclick="cerrarModal()"
->
+  >
 
     <button
-        class="modal-img-close"
-        type="button"
-        onclick="event.stopPropagation(); cerrarModal();"
+      class="image-modal-close"
+      type="button"
+      onclick="cerrarModal()"
     >
-        <i class="ri-close-line"></i>
+
+      <i class="ri-close-line"></i>
+
     </button>
 
     <img
-        id="modalImgSrc"
-        src=""
-        alt=""
-    />
+      id="modalImgSrc"
+      src=""
+      alt=""
+    >
 
-</div>
-
-
-<!-- =========================================================
-     APP JS
-     ========================================================= -->
-
-<script src="app.js"></script>
+  </div>
 
 
-<script>
-/* ============================================================
-   PERFIL
-   ============================================================ */
+  <!-- =========================================================
+       EXISTING APP.JS
+  ========================================================== -->
 
-const usuarioGuardado =
-    JSON.parse(
-        localStorage.getItem("fu_usuario") || "{}"
-    );
-
-const perfilHandle =
-    usuarioGuardado.handle || "";
-
-const navPerfil =
-    document.getElementById("navPerfil");
-
-const bnPerfil =
-    document.getElementById("bnPerfil");
-
-if (perfilHandle) {
-
-    const perfilURL =
-        `profile.html?handle=${encodeURIComponent(perfilHandle)}`;
-
-    if (navPerfil) {
-        navPerfil.href = perfilURL;
-    }
-
-    if (bnPerfil) {
-        bnPerfil.href = perfilURL;
-    }
-}
+  <script src="app.js"></script>
 
 
-/* ============================================================
-   TOKEN
-   ============================================================ */
+  <!-- =========================================================
+       INDEX-ONLY LOGIC
+  ========================================================== -->
 
-const token =
-    localStorage.getItem("fu_token");
+  <script>
+
+    /*
+     * IMPORTANTE:
+     * No usamos "const token" aquí porque app.js
+     * ya declara esa variable.
+     */
+
+    const indexToken = localStorage.getItem("fu_token");
 
 
-/* ============================================================
-   VIDEOS RECIENTES
-   ============================================================ */
-
-async function cargarVideosRecientes() {
+    /* =========================================================
+       PERFIL
+    ========================================================== */
 
     try {
 
-        const res =
-            await fetch(
-                "/api/videos?pagina=1&limite=3",
-                {
-                    headers: {
-                        Authorization:
-                            `Bearer ${token}`
-                    }
-                }
-            );
+      const storedUser =
+        JSON.parse(
+          localStorage.getItem("fu_usuario") || "{}"
+        );
+
+      if (storedUser.handle) {
+
+        const profileUrl =
+          `profile.html?handle=${encodeURIComponent(storedUser.handle)}`;
+
+        const navPerfil =
+          document.getElementById("navPerfil");
+
+        const bnPerfil =
+          document.getElementById("bnPerfil");
+
+        if (navPerfil) {
+          navPerfil.href = profileUrl;
+        }
+
+        if (bnPerfil) {
+          bnPerfil.href = profileUrl;
+        }
+
+      }
+
+    } catch (error) {
+      console.warn("No se pudo cargar el perfil:", error);
+    }
 
 
-        const data =
-            await res.json();
+    /* =========================================================
+       VIDEOS RECIENTES
+    ========================================================== */
 
+    async function cargarVideosRecientes() {
+
+      try {
+
+        const res = await fetch(
+          "/api/videos?pagina=1&limite=3",
+          {
+            headers: {
+              Authorization: `Bearer ${indexToken}`
+            }
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error("No se pudieron cargar los videos");
+        }
+
+        const data = await res.json();
 
         const box =
-            document.getElementById(
-                "videosRecientesList"
-            );
-
+          document.getElementById(
+            "videosRecientesList"
+          );
 
         if (!box) return;
 
 
-        if (!data.length) {
+        if (!Array.isArray(data) || !data.length) {
 
-            box.innerHTML = `
-                <p class="empty-side">
-                    Sin videos aún
-                </p>
-            `;
+          box.innerHTML = `
+            <div class="mini-empty">
+              <i class="ri-video-off-line"></i>
+              <span>Sin videos aún</span>
+            </div>
+          `;
 
-            return;
+          return;
         }
 
 
-        box.innerHTML =
-            data.map(v => `
+        box.innerHTML = data.map(v => `
 
-                <div
-                    class="recent-video"
-                    onclick="window.location.href='videos.html'"
+          <div
+            class="recent-video"
+            onclick="window.location.href='videos.html'"
+          >
+
+            <div class="recent-video-thumb">
+
+              <video
+                src="${v.url}"
+                preload="metadata"
+                muted
+              ></video>
+
+              <span class="video-play">
+                <i class="ri-play-fill"></i>
+              </span>
+
+            </div>
+
+
+            <div class="recent-video-info">
+
+              <strong>
+                ${
+                  v.descripcion ||
+                  "@" + v.autor.handle
+                }
+              </strong>
+
+              <small>
+
+                <i class="ri-heart-fill"></i>
+
+                ${v.totalLikes}
+
+                <span>·</span>
+
+                <i class="ri-eye-line"></i>
+
+                ${v.reproducciones}
+
+              </small>
+
+            </div>
+
+          </div>
+
+        `).join("");
+
+
+      } catch (error) {
+
+        const box =
+          document.getElementById(
+            "videosRecientesList"
+          );
+
+        if (box) {
+
+          box.innerHTML = `
+            <div class="mini-empty">
+              <i class="ri-error-warning-line"></i>
+              <span>No se pudieron cargar</span>
+            </div>
+          `;
+
+        }
+
+      }
+
+    }
+
+
+    /* =========================================================
+       SUGERENCIAS
+    ========================================================== */
+
+    async function cargarSugerencias() {
+
+      try {
+
+        const res = await fetch(
+          "/api/profile/sugerencias",
+          {
+            headers: {
+              Authorization: `Bearer ${indexToken}`
+            }
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error("No se pudieron cargar sugerencias");
+        }
+
+        const data = await res.json();
+
+        const box =
+          document.getElementById(
+            "sugerenciasList"
+          );
+
+        if (!box) return;
+
+
+        if (!Array.isArray(data) || !data.length) {
+
+          box.innerHTML = `
+            <div class="mini-empty">
+              <i class="ri-user-unfollow-line"></i>
+              <span>Sin sugerencias</span>
+            </div>
+          `;
+
+          return;
+        }
+
+
+        box.innerHTML = data.map(u => {
+
+          const av =
+            u.avatarTipo === "video"
+
+              ? `
+                <video
+                  src="${u.avatar}"
+                  autoplay
+                  loop
+                  muted
+                  playsinline
+                  class="avatar-sm"
+                ></video>
+              `
+
+              : `
+                <img
+                  src="${u.avatar}"
+                  class="avatar-sm"
+                  alt=""
+                  loading="lazy"
                 >
-
-                    <div class="recent-video-thumb">
-
-                        <video
-                            src="${v.url}"
-                            preload="metadata"
-                            muted
-                        ></video>
-
-                        <span class="recent-video-play">
-                            <i class="ri-play-fill"></i>
-                        </span>
-
-                    </div>
+              `;
 
 
-                    <div class="recent-video-info">
+          return `
 
-                        <p>
-                            ${v.descripcion || "@" + v.autor.handle}
-                        </p>
+            <div class="suggestion">
 
-                        <small>
-
-                            <span>
-                                <i class="ri-heart-fill"></i>
-                                ${v.totalLikes}
-                            </span>
-
-                            <span>
-                                <i class="ri-eye-line"></i>
-                                ${v.reproducciones}
-                            </span>
-
-                        </small>
-
-                    </div>
-
-                </div>
-
-            `).join("");
+              <div
+                class="suggestion-avatar-wrap"
+                onclick="window.location.href='profile.html?handle=${encodeURIComponent(u.handle)}'"
+              >
+                ${av}
+              </div>
 
 
-    } catch (e) {
+              <div
+                class="suggestion-user"
+                onclick="window.location.href='profile.html?handle=${encodeURIComponent(u.handle)}'"
+              >
 
-        console.error(
-            "Error cargando videos:",
-            e
-        );
+                <strong>
+                  ${u.nombre}
+                </strong>
 
-    }
+                <small>
+                  @${u.handle}
+                </small>
 
-}
-
-
-/* ============================================================
-   SUGERENCIAS
-   ============================================================ */
-
-async function cargarSugerencias() {
-
-    try {
-
-        const res =
-            await fetch(
-                "/api/profile/sugerencias",
-                {
-                    headers: {
-                        Authorization:
-                            `Bearer ${token}`
-                    }
-                }
-            );
+              </div>
 
 
-        const data =
-            await res.json();
+              <button
+                class="btn-seguir"
+                onclick="seguirDesdeIndex('${u._id}', this)"
+                type="button"
+                aria-label="Seguir"
+              >
 
+                <i class="ri-user-add-line"></i>
+
+              </button>
+
+            </div>
+
+          `;
+
+        }).join("");
+
+
+      } catch (error) {
 
         const box =
-            document.getElementById(
-                "sugerenciasList"
-            );
+          document.getElementById(
+            "sugerenciasList"
+          );
 
+        if (box) {
 
-        if (!box) return;
+          box.innerHTML = `
+            <div class="mini-empty">
+              <i class="ri-error-warning-line"></i>
+              <span>No se pudieron cargar</span>
+            </div>
+          `;
 
-
-        if (!data.length) {
-
-            box.innerHTML = `
-                <p class="empty-side">
-                    Sin sugerencias
-                </p>
-            `;
-
-            return;
         }
 
-
-        box.innerHTML =
-            data.map(u => {
-
-                const av =
-                    u.avatarTipo === "video"
-
-                        ? `
-                            <video
-                                src="${u.avatar}"
-                                autoplay
-                                loop
-                                muted
-                                playsinline
-                                class="avatar-sm"
-                            ></video>
-                          `
-
-                        : `
-                            <img
-                                src="${u.avatar}"
-                                class="avatar-sm"
-                                alt=""
-                            />
-                          `;
-
-
-                return `
-
-                    <div class="suggestion">
-
-                        <div
-                            class="suggestion-avatar"
-                            onclick="
-                                window.location.href='profile.html?handle=${u.handle}'
-                            "
-                        >
-                            ${av}
-                        </div>
-
-
-                        <div
-                            class="suggestion-info"
-                            onclick="
-                                window.location.href='profile.html?handle=${u.handle}'
-                            "
-                        >
-
-                            <strong>
-                                ${u.nombre}
-                            </strong>
-
-                            <small>
-                                @${u.handle}
-                            </small>
-
-                        </div>
-
-
-                        <button
-                            class="btn-seguir"
-                            onclick="
-                                seguirDesdeIndex(
-                                    '${u._id}',
-                                    this
-                                )
-                            "
-                            type="button"
-                        >
-                            <i class="ri-user-add-line"></i>
-                        </button>
-
-                    </div>
-
-                `;
-
-            }).join("");
-
-
-    } catch (e) {
-
-        console.error(
-            "Error cargando sugerencias:",
-            e
-        );
+      }
 
     }
 
-}
 
+    /* =========================================================
+       SEGUIR
+    ========================================================== */
 
-/* ============================================================
-   SEGUIR DESDE INDEX
-   ============================================================ */
+    async function seguirDesdeIndex(userId, btn) {
 
-async function seguirDesdeIndex(
-    userId,
-    btn
-) {
+      if (!btn) return;
 
-    try {
+      btn.disabled = true;
 
-        const res =
-            await fetch(
-                `/api/profile/${userId}/follow`,
-                {
-                    method: "POST",
+      try {
 
-                    headers: {
-                        Authorization:
-                            `Bearer ${token}`
-                    }
-                }
-            );
+        const res = await fetch(
+          `/api/profile/${userId}/follow`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${indexToken}`
+            }
+          }
+        );
 
+        const data = await res.json();
 
-        const data =
-            await res.json();
+        btn.innerHTML = data.sigues
 
+          ? `<i class="ri-user-follow-fill"></i>`
 
-        btn.innerHTML =
-            data.sigues
-
-                ? `<i class="ri-user-follow-line"></i>`
-
-                : `<i class="ri-user-add-line"></i>`;
-
+          : `<i class="ri-user-add-line"></i>`;
 
         btn.classList.toggle(
-            "following",
-            Boolean(data.sigues)
+          "following",
+          !!data.sigues
         );
 
+      } catch (error) {
 
-    } catch (e) {
-
-        console.error(
-            "Error siguiendo usuario:",
-            e
+        console.warn(
+          "No se pudo seguir al usuario:",
+          error
         );
+
+      } finally {
+
+        btn.disabled = false;
+
+      }
 
     }
 
-}
 
+    /* =========================================================
+       CARGA LATERAL
+    ========================================================== */
 
-/* ============================================================
-   CARGA INICIAL
-   ============================================================ */
-
-window.addEventListener(
-    "load",
-    () => {
+    window.addEventListener(
+      "load",
+      () => {
 
         setTimeout(
-            () => {
+          () => {
 
-                cargarSugerencias();
+            cargarSugerencias();
+            cargarVideosRecientes();
 
-                cargarVideosRecientes();
-
-            },
-            800
+          },
+          600
         );
 
-    }
-);
-</script>
+      }
+    );
+
+  </script>
 
 </body>
 </html>
