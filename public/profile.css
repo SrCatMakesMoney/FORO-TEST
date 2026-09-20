@@ -65,6 +65,7 @@ body::after{content:"";position:fixed;inset:0;z-index:-9;pointer-events:none;opa
    ============================================================ */
 #profileContent{margin-top:12px}
 .profile-banner{position:relative;height:185px;border:1px solid var(--border);border-radius:25px;overflow:hidden;background:linear-gradient(135deg,#0d2010,#1a3a14,#0f2808);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 20px 55px rgba(0,0,0,.25)}
+.profile-banner-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}.profile-banner-media::after{content:""}.profile-banner.has-media::after{background:linear-gradient(180deg,rgba(255,255,255,.04),transparent 35%,rgba(0,0,0,.3))}
 .profile-banner::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 35%,rgba(0,0,0,.28));pointer-events:none}
 .profile-info{position:relative;margin-top:-48px;padding:0 22px 22px;border:1px solid var(--border);border-top-color:rgba(255,255,255,.06);border-radius:0 0 25px 25px;background:linear-gradient(145deg,rgba(23,26,24,.82),rgba(10,12,11,.86));box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 22px 55px rgba(0,0,0,.25);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 .profile-avatar-wrap{width:96px;height:96px;margin-top:-48px;border-radius:50%;padding:3px;background:#090b09;border:5px solid #090b09;box-shadow:0 0 0 1px rgba(255,255,255,.13),0 16px 40px rgba(0,0,0,.38);overflow:visible}
@@ -196,3 +197,5 @@ body::after{content:"";position:fixed;inset:0;z-index:-9;pointer-events:none;opa
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.10);border-radius:99px}::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.17)}
+
+.banner-upload-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}.banner-upload-info{flex:1;min-width:180px;color:var(--text-3);font-size:.75rem;line-height:1.45}.banner-upload-preview{width:100%;height:88px;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--glass-soft);display:none}.banner-upload-preview.active{display:block}.banner-upload-preview img{width:100%;height:100%;object-fit:cover;display:block}.btn-remove-banner{display:none}.btn-remove-banner.active{display:inline-flex}
