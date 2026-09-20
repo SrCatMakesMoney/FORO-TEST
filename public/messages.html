@@ -898,6 +898,9 @@
       destinatarioId =
         otroId;
 
+      // En móvil, mostrar el panel del chat a pantalla completa.
+      document.body.classList.add("chat-open");
+
 
       document
         .querySelectorAll(".conv-item")
@@ -958,6 +961,15 @@
       ).innerHTML = `
 
         <div class="chat-header">
+
+          <button
+            class="chat-back"
+            type="button"
+            aria-label="Volver a conversaciones"
+            onclick="cerrarChatMobile()"
+          >
+            <i class="ri-arrow-left-line"></i>
+          </button>
 
           <div class="chat-person">
 
@@ -1153,6 +1165,30 @@
         `?conv=${convId}`
       );
 
+    }
+
+
+
+    /* =========================================================
+       CERRAR CHAT EN MÓVIL
+    ========================================================== */
+
+    function cerrarChatMobile() {
+
+      document.body.classList.remove("chat-open");
+
+      convActiva = null;
+      destinatarioId = null;
+
+      history.replaceState(
+        {},
+        "",
+        "messages.html"
+      );
+
+      document
+        .querySelectorAll(".conv-item")
+        .forEach(el => el.classList.remove("activa"));
     }
 
 
