@@ -2876,3 +2876,69 @@ a {
   background:
     rgba(114,242,139,.7);
 }
+
+
+/* ============================================================
+   FORO UBRE — MOBILE NAV / NOTIFICATIONS FIX
+   iPhone 11 / 12 / 13 / 14 and narrow Android screens
+   ============================================================ */
+.notification-nav { position:relative; min-width:0; }
+.notification-nav .nav-icon { position:relative; }
+
+@media (max-width:700px) {
+  .sidebar {
+    padding-left:max(8px, env(safe-area-inset-left));
+    padding-right:max(8px, env(safe-area-inset-right));
+    padding-top:max(8px, env(safe-area-inset-top));
+    height:calc(64px + env(safe-area-inset-top));
+  }
+
+  .messages-main { padding-top:calc(64px + env(safe-area-inset-top)); }
+
+  .main-nav {
+    flex:1;
+    min-width:0;
+    margin-left:auto;
+    display:grid;
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    gap:2px;
+    max-width:270px;
+  }
+
+  .main-nav .nav-item,
+  .main-nav .notification-nav {
+    width:auto;
+    min-width:0;
+    max-width:none;
+    height:40px;
+    min-height:40px;
+    padding:0;
+    display:grid;
+    place-items:center;
+    overflow:visible;
+  }
+
+  .main-nav .nav-icon {
+    width:34px;
+    height:34px;
+    margin:0;
+  }
+
+  .notification-badge {
+    top:2px;
+    right:calc(50% - 19px);
+    min-width:15px;
+    height:15px;
+    padding:0 4px;
+    font-size:9px;
+    box-shadow:0 0 0 2px rgba(7,9,11,.92),0 4px 12px rgba(255,77,103,.28);
+  }
+}
+
+@media (max-width:430px) {
+  .sidebar { padding-left:max(6px,env(safe-area-inset-left)); padding-right:max(6px,env(safe-area-inset-right)); }
+  .main-nav { max-width:252px; grid-template-columns:repeat(6,minmax(0,1fr)); gap:0; }
+  .main-nav .nav-item,.main-nav .notification-nav { height:38px; min-height:38px; }
+  .main-nav .nav-icon { width:32px; height:32px; font-size:18px; border-radius:11px; }
+  .notification-badge { right:calc(50% - 17px); top:1px; }
+}
