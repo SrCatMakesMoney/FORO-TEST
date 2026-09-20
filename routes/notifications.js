@@ -1,11 +1,8 @@
 const express = require("express");
-
 const Notification = require("../models/Notification");
-
 const auth = require("../middleware/authMiddleware");
 
 const router = express.Router();
-
 
 // ============================================================
 // GET /api/notifications
@@ -18,25 +15,22 @@ router.get("/", auth, async (req, res) => {
       50
     );
 
-    const notifications =
-      await Notification.find({
-        receptor: req.usuario._id
-      })
-        .sort({ createdAt: -1 })
-        .limit(limite)
-        .populate(
-          "emisor",
-          "nombre handle avatar avatarTipo personalizacion"
-        )
-        .lean();
+    const notifications = await Notification.find({
+      receptor: req.usuario._id
+    })
+      .sort({ createdAt: -1 })
+      .limit(limite)
+      .populate(
+        "emisor",
+        "nombre handle avatar avatarTipo personalizacion"
+      )
+      .lean();
 
     res.json(notifications);
-
-  } catch (error) {
-
+  } catch (err) {
     console.error(
       "Error obteniendo notificaciones:",
-      error
+      err
     );
 
     res.status(500).json({
@@ -45,27 +39,20 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-
 // ============================================================
 // GET /api/notifications/count
 // ============================================================
 
 router.get("/count", auth, async (req, res) => {
   try {
-
-    const count =
-      await Notification.countDocuments({
-        receptor: req.usuario._id,
-        leida: false
-      });
-
-    res.json({
-      count
+    const count = await Notification.countDocuments({
+      receptor: req.usuario._id,
+      leida: false
     });
 
-  } catch (error) {
-
-    console.error(error);
+    res.json({ count });
+  } catch (err) {
+    console.error(err);
 
     res.status(500).json({
       mensaje: "Error"
@@ -73,14 +60,12 @@ router.get("/count", auth, async (req, res) => {
   }
 });
 
-
 // ============================================================
 // PUT /api/notifications/:id/read
 // ============================================================
 
 router.put("/:id/read", auth, async (req, res) => {
   try {
-
     const notification =
       await Notification.findOneAndUpdate(
         {
@@ -106,10 +91,8 @@ router.put("/:id/read", auth, async (req, res) => {
     res.json({
       ok: true
     });
-
-  } catch (error) {
-
-    console.error(error);
+  } catch (err) {
+    console.error(err);
 
     res.status(500).json({
       mensaje: "Error"
@@ -117,14 +100,12 @@ router.put("/:id/read", auth, async (req, res) => {
   }
 });
 
-
 // ============================================================
 // PUT /api/notifications/read-all
 // ============================================================
 
 router.put("/read-all", auth, async (req, res) => {
   try {
-
     await Notification.updateMany(
       {
         receptor: req.usuario._id,
@@ -140,10 +121,8 @@ router.put("/read-all", auth, async (req, res) => {
     res.json({
       ok: true
     });
-
-  } catch (error) {
-
-    console.error(error);
+  } catch (err) {
+    console.error(err);
 
     res.status(500).json({
       mensaje: "Error"
@@ -151,14 +130,12 @@ router.put("/read-all", auth, async (req, res) => {
   }
 });
 
-
 // ============================================================
 // DELETE /api/notifications/:id
 // ============================================================
 
 router.delete("/:id", auth, async (req, res) => {
   try {
-
     await Notification.deleteOne({
       _id: req.params.id,
       receptor: req.usuario._id
@@ -167,16 +144,13 @@ router.delete("/:id", auth, async (req, res) => {
     res.json({
       ok: true
     });
-
-  } catch (error) {
-
-    console.error(error);
+  } catch (err) {
+    console.error(err);
 
     res.status(500).json({
       mensaje: "Error"
     });
   }
 });
-
 
 module.exports = router;
