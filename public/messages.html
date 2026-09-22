@@ -528,7 +528,8 @@
       peer: null,
       localStream: null,
       remoteStream: null,
-      pendingCandidates: []
+      pendingCandidates: [],
+      timeout: null
     };
 
 
@@ -540,10 +541,14 @@
     const socket = io();
 
 
-    socket.emit(
-      "registrar",
-      yo._id
-    );
+    function registrarSocket() {
+      if (yo?._id && socket?.connected) {
+        socket.emit("registrar", String(yo._id));
+      }
+    }
+
+    socket.on("connect", registrarSocket);
+    registrarSocket();
 
 
     socket.on(
@@ -691,7 +696,8 @@
         peer: null,
         localStream: null,
         remoteStream: null,
-        pendingCandidates: []
+        pendingCandidates: [],
+        timeout: null
       };
 
       mostrarPanelLlamada("incoming");
@@ -703,7 +709,11 @@
 
       try {
         actualizarEstadoLlamada("Conectando…");
-        await prepararPeer(true);
+
+        // IMPORTANTE: el caller NO pide cámara/micrófono antes de que
+        // el receptor acepte. Así la llamada entrante puede llegar
+        // aunque el dispositivo receptor todavía no haya dado permisos.
+        await prepararPeer(false, true);
 
         const offer = await llamada.peer.createOffer();
         await llamada.peer.setLocalDescription(offer);
@@ -711,11 +721,14 @@
         socket.emit("llamada:signal", {
           destinatarioId: receiverId,
           callId: llamada.callId,
-          signal: { type: "offer", sdp: offer }
+          signal: {
+            type: "offer",
+            sdp: llamada.peer.localDescription
+          }
         });
       } catch (error) {
         console.error("Llamada:", error);
-        finalizarLlamadaLocal("No se pudo iniciar la llamada.");
+        finalizarLlamadaLocal(mediaErrorMessage(error), true);
       }
     });
 
@@ -763,15 +776,16 @@
         }
 
         if (signal.type === "candidate") {
-          if (!llamada.peer) return;
-
           const candidate = new RTCIceCandidate(signal.candidate);
 
-          if (llamada.peer.remoteDescription) {
-            await llamada.peer.addIceCandidate(candidate);
-          } else {
+          // Un candidato puede llegar antes que el offer/peer.
+          // Lo guardamos en vez de perderlo.
+          if (!llamada.peer || !llamada.peer.remoteDescription) {
             llamada.pendingCandidates.push(candidate);
+            return;
           }
+
+          await llamada.peer.addIceCandidate(candidate);
         }
       } catch (error) {
         console.error("WebRTC signal:", error);
@@ -1466,47 +1480,114 @@
         peer: null,
         localStream: null,
         remoteStream: null,
-        pendingCandidates: []
+        pendingCandidates: [],
+        timeout: null
       };
 
       mostrarPanelLlamada("outgoing");
+      actualizarEstadoLlamada("Llamando…");
 
-      try {
-        await prepararPeer(false, true);
-
-        socket.emit("llamada:invitar", {
-          destinatarioId: String(destinatarioId),
-          callId,
-          tipo: llamada.tipo,
-          callerName: yo.nombre,
-          callerAvatar: yo.avatar,
-          callerAvatarTipo: yo.avatarTipo || "imagen"
-        });
-      } catch (error) {
-        console.error("Media:", error);
-        finalizarLlamadaLocal("No se pudo acceder al micrófono o cámara.");
+      // NO pedimos cámara/micrófono todavía. Primero enviamos la
+      // invitación. Esto evita que una falta de permisos en el iPhone
+      // o tablet mate la llamada antes de que llegue al otro usuario.
+      if (!socket.connected) {
+        actualizarEstadoLlamada("Conectando con Foro Ubre…");
+        await esperarSocket(5000);
       }
+
+      if (!socket.connected) {
+        finalizarLlamadaLocal("No hay conexión con el servidor.", false);
+        return;
+      }
+
+      socket.emit("llamada:invitar", {
+        destinatarioId: String(destinatarioId),
+        callId,
+        tipo: llamada.tipo,
+        callerName: yo.nombre,
+        callerAvatar: yo.avatar,
+        callerAvatarTipo: yo.avatarTipo || "imagen"
+      }, (respuesta) => {
+        if (respuesta?.ok === false && llamada.activa && llamada.callId === callId) {
+          finalizarLlamadaLocal(respuesta.mensaje || "El usuario no está disponible.", false);
+        }
+      });
+
+      // Si el receptor nunca responde, no dejamos una llamada colgada.
+      clearTimeout(llamada.timeout);
+      llamada.timeout = setTimeout(() => {
+        if (llamada.activa && llamada.callId === callId && llamada.role === "caller") {
+          finalizarLlamadaLocal("No respondió.", true);
+        }
+      }, 30000);
+    }
+
+    function esperarSocket(timeout = 5000) {
+      if (socket.connected) return Promise.resolve(true);
+
+      return new Promise(resolve => {
+        let terminado = false;
+        const done = (value) => {
+          if (terminado) return;
+          terminado = true;
+          clearTimeout(timer);
+          socket.off("connect", onConnect);
+          resolve(value);
+        };
+        const onConnect = () => {
+          registrarSocket();
+          done(true);
+        };
+        const timer = setTimeout(() => done(false), timeout);
+        socket.once("connect", onConnect);
+      });
+    }
+
+    function mediaErrorMessage(error) {
+      const name = error?.name || "";
+      if (name === "NotAllowedError" || name === "PermissionDeniedError") {
+        return "Permiso de micrófono/cámara bloqueado. Actívalo en los ajustes del navegador.";
+      }
+      if (name === "NotFoundError" || name === "DevicesNotFoundError") {
+        return "No se encontró un micrófono o cámara disponible.";
+      }
+      if (name === "NotReadableError" || name === "TrackStartError") {
+        return "El micrófono o cámara está siendo usado por otra aplicación.";
+      }
+      if (name === "SecurityError") {
+        return "El navegador bloqueó el acceso al micrófono/cámara por seguridad.";
+      }
+      return "No se pudo acceder al micrófono o cámara.";
     }
 
     async function aceptarLlamada() {
       if (!llamada.activa || llamada.role !== "receiver") return;
 
+      const peerId = llamada.peerId;
+      const callId = llamada.callId;
+      clearTimeout(llamada.timeout);
+
       try {
-        await prepararPeer(false);
         mostrarPanelLlamada("active");
+        actualizarEstadoLlamada("Solicitando micrófono/cámara…");
+
+        // El clic de Aceptar es una acción del usuario, ideal para que
+        // Safari/iOS/Android permitan getUserMedia().
+        await prepararPeer(false, true);
+
         actualizarEstadoLlamada("Conectando…");
 
         socket.emit("llamada:aceptar", {
-          callerId: llamada.peerId,
-          callId: llamada.callId
+          callerId: peerId,
+          callId
         });
       } catch (error) {
         console.error("Aceptar llamada:", error);
         socket.emit("llamada:rechazar", {
-          callerId: llamada.peerId,
-          callId: llamada.callId
+          callerId: peerId,
+          callId
         });
-        finalizarLlamadaLocal("No se pudo acceder al micrófono o cámara.");
+        finalizarLlamadaLocal(mediaErrorMessage(error), false);
       }
     }
 
@@ -1571,7 +1652,7 @@
         };
       }
 
-      if (!llamada.localStream && (getMedia || llamada.role === "receiver")) {
+      if (!llamada.localStream && getMedia) {
         llamada.localStream = await navigator.mediaDevices.getUserMedia({
           audio: true,
           video: llamada.tipo === "video"
@@ -1636,6 +1717,8 @@
       const peerId = llamada.peerId;
       const callId = llamada.callId;
 
+      clearTimeout(llamada.timeout);
+
       if (avisar && peerId && callId) {
         socket.emit("llamada:finalizar", {
           destinatarioId: peerId,
@@ -1676,7 +1759,8 @@
         peer: null,
         localStream: null,
         remoteStream: null,
-        pendingCandidates: []
+        pendingCandidates: [],
+        timeout: null
       };
     }
 
