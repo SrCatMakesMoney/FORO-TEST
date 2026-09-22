@@ -10,7 +10,8 @@ const { initBucket } = require("./utils/gridfs");
 
 const app = express();
 
-// Permite que getUserMedia funcione desde la propia web en navegadores móviles.
+// Permitir que WebRTC solicite micrófono y cámara desde el mismo origen.
+// Algunos navegadores móviles son más estrictos con Permissions-Policy.
 app.use((req, res, next) => {
   res.setHeader("Permissions-Policy", "camera=(self), microphone=(self)");
   next();
@@ -254,18 +255,6 @@ app.use(
 // SOCKET.IO
 // ============================================================
 
-
-// ============================================================
-// LLAMADAS WEBRTC — SEÑALIZACIÓN
-// ============================================================
-// Socket.IO no transporta audio/video. Solo coordina la llamada.
-// El audio/video viaja por WebRTC entre los dos navegadores.
-
-function emitirAlUsuario(userId, evento, data = {}) {
-  if (!userId) return;
-  io.to(`user_${String(userId)}`).emit(evento, data);
-}
-
 const usuariosOnline = new Map();
 
 io.on("connection", (socket) => {
@@ -285,6 +274,8 @@ io.on("connection", (socket) => {
 
     const id = String(userId);
 
+    socket.data.userId = id;
+
     usuariosOnline.set(
       id,
       socket.id
@@ -294,62 +285,6 @@ io.on("connection", (socket) => {
       `user_${id}`
     );
 
-  });
-
-
-  // ----------------------------------------------------------
-  // LLAMADAS — INVITACIÓN
-  // ----------------------------------------------------------
-  socket.on("llamada:invitar", ({ destinatarioId, convId, tipo, emisor }) => {
-    if (!destinatarioId || !convId || !["audio", "video"].includes(tipo)) return;
-
-    emitirAlUsuario(destinatarioId, "llamada:entrante", {
-      convId,
-      tipo,
-      emisor: {
-        _id: emisor?._id || null,
-        nombre: emisor?.nombre || "Usuario",
-        handle: emisor?.handle || "",
-        avatar: emisor?.avatar || ""
-      },
-      callerSocketId: socket.id
-    });
-  });
-
-  // ----------------------------------------------------------
-  // LLAMADAS — RESPUESTA
-  // ----------------------------------------------------------
-  socket.on("llamada:respuesta", ({ callerSocketId, convId, aceptada, motivo }) => {
-    if (!callerSocketId) return;
-    io.to(callerSocketId).emit("llamada:respuesta", {
-      convId,
-      aceptada: !!aceptada,
-      motivo: motivo || ""
-    });
-  });
-
-  // ----------------------------------------------------------
-  // LLAMADAS — WEBRTC SIGNALING
-  // ----------------------------------------------------------
-  socket.on("llamada:signal", ({ targetSocketId, kind, data, convId }) => {
-    if (!targetSocketId || !kind || data == null) return;
-    io.to(targetSocketId).emit("llamada:signal", {
-      kind,
-      data,
-      convId,
-      fromSocketId: socket.id
-    });
-  });
-
-  // ----------------------------------------------------------
-  // LLAMADAS — FINALIZAR
-  // ----------------------------------------------------------
-  socket.on("llamada:finalizar", ({ targetSocketId, convId, motivo }) => {
-    if (!targetSocketId) return;
-    io.to(targetSocketId).emit("llamada:finalizada", {
-      convId,
-      motivo: motivo || "finalizada"
-    });
   });
 
   // ----------------------------------------------------------
@@ -429,6 +364,86 @@ io.on("connection", (socket) => {
   );
 
   // ----------------------------------------------------------
+  // LLAMADAS / WEBRTC
+  // ----------------------------------------------------------
+
+  // El servidor solo hace señalización. El audio/video viaja
+  // directamente entre navegadores mediante WebRTC.
+
+  socket.on("llamada:invitar", ({ destinatarioId, callId, tipo, callerName, callerAvatar, callerAvatarTipo, convId }, ack) => {
+    const responder = typeof ack === "function" ? ack : () => {};
+
+    if (!destinatarioId || !callId) {
+      responder({ ok: false, mensaje: "Solicitud de llamada inválida." });
+      return;
+    }
+
+    const callerId = socket.data.userId;
+    if (!callerId) {
+      responder({ ok: false, mensaje: "Tu sesión de llamadas no está registrada." });
+      return;
+    }
+
+    const room = `user_${String(destinatarioId)}`;
+    const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
+
+    if (roomSize === 0) {
+      responder({ ok: false, mensaje: "El usuario no está conectado en este momento." });
+      return;
+    }
+
+    io.to(room).emit("llamada:entrante", {
+      callId: String(callId),
+      convId: convId ? String(convId) : null,
+      tipo: tipo === "video" ? "video" : "audio",
+      callerId: String(callerId),
+      callerName: callerName || "Usuario",
+      callerAvatar: callerAvatar || "",
+      callerAvatarTipo: callerAvatarTipo || "imagen"
+    });
+
+    responder({ ok: true });
+  });
+
+  socket.on("llamada:aceptar", ({ callerId, callId }) => {
+    if (!callerId || !callId || !socket.data.userId) return;
+
+    io.to(`user_${String(callerId)}`).emit("llamada:aceptada", {
+      callId: String(callId),
+      receiverId: String(socket.data.userId)
+    });
+  });
+
+  socket.on("llamada:rechazar", ({ callerId, callId }) => {
+    if (!callerId || !callId || !socket.data.userId) return;
+
+    io.to(`user_${String(callerId)}`).emit("llamada:rechazada", {
+      callId: String(callId),
+      receiverId: String(socket.data.userId)
+    });
+  });
+
+  socket.on("llamada:finalizar", ({ destinatarioId, callId, razon }) => {
+    if (!destinatarioId || !callId || !socket.data.userId) return;
+
+    io.to(`user_${String(destinatarioId)}`).emit("llamada:finalizada", {
+      callId: String(callId),
+      fromId: String(socket.data.userId),
+      razon: razon || "finalizada"
+    });
+  });
+
+  socket.on("llamada:signal", ({ destinatarioId, callId, signal }) => {
+    if (!destinatarioId || !callId || !signal || !socket.data.userId) return;
+
+    io.to(`user_${String(destinatarioId)}`).emit("llamada:signal", {
+      callId: String(callId),
+      fromId: String(socket.data.userId),
+      signal
+    });
+  });
+
+  // ----------------------------------------------------------
   // DESCONECTAR
   // ----------------------------------------------------------
 
@@ -438,6 +453,11 @@ io.on("connection", (socket) => {
       "🔌 Socket desconectado:",
       socket.id
     );
+
+    const disconnectedUserId = socket.data.userId;
+    if (disconnectedUserId && usuariosOnline.get(String(disconnectedUserId)) === socket.id) {
+      usuariosOnline.delete(String(disconnectedUserId));
+    }
 
     for (
       const [uid, sid]
