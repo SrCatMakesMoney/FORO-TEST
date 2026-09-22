@@ -363,13 +363,29 @@ io.on("connection", (socket) => {
   // El servidor solo hace señalización. El audio/video viaja
   // directamente entre navegadores mediante WebRTC.
 
-  socket.on("llamada:invitar", ({ destinatarioId, callId, tipo, callerName, callerAvatar, callerAvatarTipo }) => {
-    if (!destinatarioId || !callId) return;
+  socket.on("llamada:invitar", ({ destinatarioId, callId, tipo, callerName, callerAvatar, callerAvatarTipo }, ack) => {
+    const responder = typeof ack === "function" ? ack : () => {};
+
+    if (!destinatarioId || !callId) {
+      responder({ ok: false, mensaje: "Solicitud de llamada inválida." });
+      return;
+    }
 
     const callerId = socket.data.userId;
-    if (!callerId) return;
+    if (!callerId) {
+      responder({ ok: false, mensaje: "Tu sesión de llamadas no está registrada." });
+      return;
+    }
 
-    io.to(`user_${String(destinatarioId)}`).emit("llamada:entrante", {
+    const room = `user_${String(destinatarioId)}`;
+    const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
+
+    if (roomSize === 0) {
+      responder({ ok: false, mensaje: "El usuario no está conectado en este momento." });
+      return;
+    }
+
+    io.to(room).emit("llamada:entrante", {
       callId: String(callId),
       tipo: tipo === "video" ? "video" : "audio",
       callerId: String(callerId),
@@ -377,6 +393,8 @@ io.on("connection", (socket) => {
       callerAvatar: callerAvatar || "",
       callerAvatarTipo: callerAvatarTipo || "imagen"
     });
+
+    responder({ ok: true });
   });
 
   socket.on("llamada:aceptar", ({ callerId, callId }) => {
@@ -427,6 +445,11 @@ io.on("connection", (socket) => {
       "🔌 Socket desconectado:",
       socket.id
     );
+
+    const disconnectedUserId = socket.data.userId;
+    if (disconnectedUserId && usuariosOnline.get(String(disconnectedUserId)) === socket.id) {
+      usuariosOnline.delete(String(disconnectedUserId));
+    }
 
     for (
       const [uid, sid]
