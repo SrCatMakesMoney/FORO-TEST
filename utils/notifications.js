@@ -1,5 +1,4 @@
 const Notification = require("../models/Notification");
-const { enviarPushAUsuario } = require("./push");
 const { trigger, channelForUser } = require("./pusher");
 
 const TEXTOS_PUSH = {
@@ -49,20 +48,7 @@ async function crearNotificacion({
     console.error("Error enviando notificación por Pusher:", realtimeError);
   }
 
-  const emisorData = completa?.emisor || {};
-  const nombre = emisorData.nombre || "Alguien";
-  const titulo = tipo === "mensaje" ? "Nuevo mensaje" : "Foro Ubre";
-  const accion = TEXTOS_PUSH[tipo] || "tuvo una interacci贸n contigo";
-
-  await enviarPushAUsuario(receptor, {
-    title: titulo,
-    body: `${nombre} ${accion}`,
-    icon: "/generated-icon.png",
-    badge: "/generated-icon.png",
-    url: url || "/",
-    notificationId: String(notification._id),
-    tag: `foro-ubre-${tipo}-${String(notification._id)}`
-  });
+  // Web Push nativo desactivado: las notificaciones en tiempo real se entregan exclusivamente por Pusher.
 
   return completa;
 }
