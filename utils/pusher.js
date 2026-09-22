@@ -79,3 +79,4 @@ function channelForUser(userId) {
 
 module.exports = { getConfig, trigger, authenticate, channelForUser };
 
+
