@@ -693,6 +693,7 @@
         nombre: data.callerName || info.nombre || "Usuario",
         avatar: data.callerAvatar || info.avatar || "",
         avatarTipo: data.callerAvatarTipo || info.avatarTipo || "imagen",
+        convId: data.convId || null,
         peer: null,
         localStream: null,
         remoteStream: null,
@@ -700,6 +701,7 @@
         timeout: null
       };
 
+      insertarEventoLlamada("incoming", data.convId || convActiva, data.callId, data.tipo, data.callerName || "Usuario");
       mostrarPanelLlamada("incoming");
     });
 
@@ -709,6 +711,7 @@
 
       try {
         actualizarEstadoLlamada("Conectando…");
+        actualizarEventoLlamada(callId, "conectando");
 
         // IMPORTANTE: el caller NO pide cámara/micrófono antes de que
         // el receptor acepte. Así la llamada entrante puede llegar
@@ -734,11 +737,13 @@
 
     socket.on("llamada:rechazada", ({ callId }) => {
       if (!llamada.activa || llamada.callId !== String(callId)) return;
+      actualizarEventoLlamada(callId, "rechazada");
       finalizarLlamadaLocal("Llamada rechazada", false);
     });
 
     socket.on("llamada:finalizada", ({ callId, razon }) => {
       if (!llamada.activa || llamada.callId !== String(callId)) return;
+      actualizarEventoLlamada(callId, razon === "rechazada" ? "rechazada" : "finalizada");
       finalizarLlamadaLocal(
         razon === "rechazada" ? "Llamada rechazada" : "Llamada finalizada",
         false
@@ -1473,6 +1478,7 @@
         callId,
         tipo: tipo === "video" ? "video" : "audio",
         role: "caller",
+        convId: convActiva,
         peerId: String(destinatarioId),
         nombre: info.nombre || "Usuario",
         avatar: info.avatar || "",
@@ -1485,11 +1491,37 @@
       };
 
       mostrarPanelLlamada("outgoing");
+      insertarEventoLlamada("outgoing", convActiva, callId, llamada.tipo, llamada.nombre);
       actualizarEstadoLlamada("Llamando…");
 
-      // NO pedimos cámara/micrófono todavía. Primero enviamos la
-      // invitación. Esto evita que una falta de permisos en el iPhone
-      // o tablet mate la llamada antes de que llegue al otro usuario.
+      // IMPORTANTE EN ANDROID: getUserMedia debe ejecutarse como consecuencia
+      // directa del toque del usuario. Si esperamos al evento Socket.IO
+      // "llamada:aceptada", algunos navegadores móviles pueden bloquear el
+      // prompt de permisos porque ya no existe un gesto del usuario.
+      try {
+        if (!window.isSecureContext) {
+          throw new Error("SECURE_CONTEXT_REQUIRED");
+        }
+
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error("MEDIA_DEVICES_UNAVAILABLE");
+        }
+
+        actualizarEstadoLlamada(
+          llamada.tipo === "video"
+            ? "Solicitando cámara y micrófono…"
+            : "Solicitando micrófono…"
+        );
+
+        await prepararPeer(false, true);
+      } catch (error) {
+        console.error("Permisos multimedia al iniciar:", error);
+        finalizarLlamadaLocal(mediaErrorMessage(error), false);
+        return;
+      }
+
+      actualizarEstadoLlamada("Llamando…");
+
       if (!socket.connected) {
         actualizarEstadoLlamada("Conectando con Foro Ubre…");
         await esperarSocket(5000);
@@ -1506,7 +1538,8 @@
         tipo: llamada.tipo,
         callerName: yo.nombre,
         callerAvatar: yo.avatar,
-        callerAvatarTipo: yo.avatarTipo || "imagen"
+        callerAvatarTipo: yo.avatarTipo || "imagen",
+        convId: convActiva
       }, (respuesta) => {
         if (respuesta?.ok === false && llamada.activa && llamada.callId === callId) {
           finalizarLlamadaLocal(respuesta.mensaje || "El usuario no está disponible.", false);
@@ -1544,9 +1577,17 @@
     }
 
     function mediaErrorMessage(error) {
+      if (error?.message === "SECURE_CONTEXT_REQUIRED" || !window.isSecureContext) {
+        return "Foro Ubre necesita HTTPS para usar el micrófono y la cámara. Abre la versión segura del sitio (https://).";
+      }
+
+      if (error?.message === "MEDIA_DEVICES_UNAVAILABLE" || !navigator.mediaDevices?.getUserMedia) {
+        return "Este navegador no permite usar micrófono/cámara en esta página.";
+      }
+
       const name = error?.name || "";
       if (name === "NotAllowedError" || name === "PermissionDeniedError") {
-        return "Permiso de micrófono/cámara bloqueado. Actívalo en los ajustes del navegador.";
+        return "Permiso bloqueado. En Android toca el candado de la barra de direcciones → Permisos → Micrófono/Cámara → Permitir y vuelve a cargar Foro Ubre.";
       }
       if (name === "NotFoundError" || name === "DevicesNotFoundError") {
         return "No se encontró un micrófono o cámara disponible.";
@@ -1569,13 +1610,18 @@
 
       try {
         mostrarPanelLlamada("active");
-        actualizarEstadoLlamada("Solicitando micrófono/cámara…");
+        actualizarEstadoLlamada(
+          llamada.tipo === "video"
+            ? "Solicitando cámara y micrófono…"
+            : "Solicitando micrófono…"
+        );
 
-        // El clic de Aceptar es una acción del usuario, ideal para que
-        // Safari/iOS/Android permitan getUserMedia().
+        // Este getUserMedia ocurre dentro del clic de Aceptar.
+        // Es el momento más compatible con Android/iOS para mostrar permisos.
         await prepararPeer(false, true);
 
         actualizarEstadoLlamada("Conectando…");
+        actualizarEventoLlamada(callId, "conectando");
 
         socket.emit("llamada:aceptar", {
           callerId: peerId,
@@ -1639,6 +1685,7 @@
           }
 
           actualizarEstadoLlamada("Conectado");
+          actualizarEventoLlamada(llamada.callId, "conectada");
         };
 
         llamada.peer.onconnectionstatechange = () => {
@@ -1646,6 +1693,7 @@
 
           if (state === "connected") {
             actualizarEstadoLlamada("Conectado");
+            actualizarEventoLlamada(llamada.callId, "conectada");
           } else if (["failed", "disconnected", "closed"].includes(state)) {
             if (state !== "closed") finalizarLlamadaLocal("Se perdió la conexión.");
           }
@@ -1756,6 +1804,7 @@
         nombre: "",
         avatar: "",
         avatarTipo: "imagen",
+        convId: null,
         peer: null,
         localStream: null,
         remoteStream: null,
@@ -1997,6 +2046,51 @@
     }
 
 
+
+    /* =========================================================
+       EVENTO DE LLAMADA EN EL CHAT
+    ========================================================= */
+
+    function insertarEventoLlamada(modo, convId, callId, tipo = "audio", nombre = "Usuario") {
+      if (!convId || !callId) return;
+      if (convActiva !== String(convId)) return;
+
+      const container = document.getElementById("chatMessages");
+      if (!container) return;
+
+      const id = `call-event-${String(callId).replace(/[^a-zA-Z0-9_-]/g, "")}`;
+      if (document.getElementById(id)) return;
+
+      const video = tipo === "video";
+      const el = document.createElement("div");
+      el.className = "mensaje-llamada";
+      el.id = id;
+      el.dataset.callId = String(callId);
+      el.innerHTML = `
+        <div class="mensaje-llamada-icon"><i class="${video ? "ri-video-chat-fill" : "ri-phone-fill"}"></i></div>
+        <div class="mensaje-llamada-copy">
+          <strong>${modo === "incoming" ? "Llamada entrante" : video ? "Videollamada" : "Llamada de voz"}</strong>
+          <span>${modo === "incoming" ? `${escHtml(nombre)} te está llamando` : "Llamando…"}</span>
+        </div>
+        <div class="mensaje-llamada-status">•</div>
+      `;
+      container.appendChild(el);
+      scrollChat();
+    }
+
+    function actualizarEventoLlamada(callId, estado) {
+      if (!callId) return;
+      const safe = String(callId).replace(/[^a-zA-Z0-9_-]/g, "");
+      const el = document.getElementById(`call-event-${safe}`);
+      if (!el) return;
+
+      const copy = el.querySelector(".mensaje-llamada-copy span");
+      const status = el.querySelector(".mensaje-llamada-status");
+      const textos = { conectando: "Conectando…", conectada: "Llamada conectada", rechazada: "Llamada rechazada", finalizada: "Llamada finalizada" };
+      if (copy) copy.textContent = textos[estado] || estado;
+      if (status) status.textContent = estado === "conectada" ? "✓" : estado === "rechazada" ? "×" : "";
+      el.classList.toggle("finalizada", estado === "rechazada" || estado === "finalizada");
+    }
 
     /* =========================================================
        SCROLL
