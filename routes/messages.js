@@ -4,6 +4,7 @@ const Message      = require("../models/Message");
 const User         = require("../models/User");
 const auth         = require("../middleware/authMiddleware");
 const { crearNotificacion } = require("../utils/notifications");
+const { trigger, channelForUser } = require("../utils/pusher");
 
 const router = express.Router();
 
@@ -138,6 +139,15 @@ router.post("/:convId/send", auth, async (req, res) => {
 
     if (destinatarioId) {
       try {
+        await trigger(channelForUser(destinatarioId), "nuevoMensaje", {
+          convId: String(conv._id),
+          mensaje: populated
+        });
+      } catch (realtimeError) {
+        console.error("Error enviando mensaje por Pusher:", realtimeError);
+      }
+
+      try {
         await crearNotificacion({
           io: req.app.get("io"),
           receptor: destinatarioId,
@@ -149,19 +159,6 @@ router.post("/:convId/send", auth, async (req, res) => {
         });
       } catch (notifyError) {
         console.error("閳跨媴绗� Error creando notificaci璐竛 de mensaje:", notifyError);
-      }
-    }
-
-    // Entrega el mensaje en tiempo real DESDE EL SERVIDOR.
-    // As铆 no dependemos de que el navegador del remitente vuelva a emitirlo
-    // despu茅s del POST y evitamos p茅rdidas/duplicados.
-    if (destinatarioId) {
-      const io = req.app.get("io");
-      if (io) {
-        io.to(`user_${String(destinatarioId)}`).emit("nuevoMensaje", {
-          convId: String(conv._id),
-          mensaje: populated
-        });
       }
     }
 
