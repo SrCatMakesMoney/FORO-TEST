@@ -2,6 +2,7 @@
    La API pública conserva los nombres usados por messages.html,
    pero Pusher recibe nombres HTTP válidos.
 */
+
 (() => {
   const token = localStorage.getItem("fu_token");
   const usuario = JSON.parse(localStorage.getItem("fu_usuario") || "null");
