@@ -656,23 +656,22 @@
 
 
     // =========================================================
-    // EVENTOS DE LLAMADA
+    // EVENTOS DE LLAMADA / SEÑALIZACIÓN WEBRTC
     // =========================================================
 
     socket.on("llamada:entrante", (data) => {
       if (!data?.callId || !data?.callerId) return;
 
-      // Si ya estamos en otra llamada, rechazamos automáticamente.
       if (llamada.activa) {
-        socket.emit("llamada:rechazar", {
-          callerId: data.callerId,
-          callId: data.callId
+        socket.emit("llamada:rechazada", {
+          destinatarioId: String(data.callerId),
+          callId: String(data.callId),
+          razon: "ocupado"
         });
         return;
       }
 
       const info = usuariosLlamada.get(String(data.callerId)) || {};
-
       llamada = {
         ...llamada,
         activa: true,
@@ -688,7 +687,12 @@
         localStream: null,
         remoteStream: null,
         pendingCandidates: [],
-        timeout: null
+        remoteDescriptionSet: false,
+        timeout: setTimeout(() => {
+          if (llamada.activa && llamada.role === "receiver") {
+            finalizarLlamadaLocal("La llamada expiró.", true);
+          }
+        }, 45000)
       };
 
       insertarEventoLlamada("incoming", data.convId || convActiva, data.callId, data.tipo, data.callerName || "Usuario");
@@ -696,98 +700,101 @@
     });
 
     socket.on("llamada:aceptada", async ({ callId, receiverId }) => {
-      if (!llamada.activa || llamada.callId !== String(callId)) return;
-      if (llamada.role !== "caller") return;
+      if (!llamada.activa || llamada.callId !== String(callId) || llamada.role !== "caller") return;
 
       try {
+        clearTimeout(llamada.timeout);
         actualizarEstadoLlamada("Conectando…");
         actualizarEventoLlamada(callId, "conectando");
 
-        // IMPORTANTE: el caller NO pide cámara/micrófono antes de que
-        // el receptor acepte. Así la llamada entrante puede llegar
-        // aunque el dispositivo receptor todavía no haya dado permisos.
+        // El caller obtiene sus dispositivos después de que el receptor
+        // aceptó. Esto evita pedir permisos al abrir la llamada.
         await prepararPeer(false, true);
 
         const offer = await llamada.peer.createOffer();
         await llamada.peer.setLocalDescription(offer);
 
-        socket.emit("llamada:signal", {
-          destinatarioId: receiverId,
+        const result = await socket.emit("llamada:signal", {
+          destinatarioId: String(receiverId || llamada.peerId),
           callId: llamada.callId,
           signal: {
-            type: "offer",
-            sdp: llamada.peer.localDescription
+            type: "description",
+            description: llamada.peer.localDescription
           }
         });
+
+        if (result?.ok === false) throw new Error(result.mensaje || "No se pudo enviar la oferta.");
       } catch (error) {
-        console.error("Llamada:", error);
+        console.error("Llamada aceptada:", error);
         finalizarLlamadaLocal(mediaErrorMessage(error), true);
       }
     });
 
-    socket.on("llamada:rechazada", ({ callId }) => {
+    socket.on("llamada:rechazada", ({ callId, razon }) => {
       if (!llamada.activa || llamada.callId !== String(callId)) return;
       actualizarEventoLlamada(callId, "rechazada");
-      finalizarLlamadaLocal("Llamada rechazada", false);
+      finalizarLlamadaLocal(razon === "ocupado" ? "El usuario está ocupado." : "Llamada rechazada", false);
     });
 
     socket.on("llamada:finalizada", ({ callId, razon }) => {
       if (!llamada.activa || llamada.callId !== String(callId)) return;
-      actualizarEventoLlamada(callId, razon === "rechazada" ? "rechazada" : "finalizada");
-      finalizarLlamadaLocal(
-        razon === "rechazada" ? "Llamada rechazada" : "Llamada finalizada",
-        false
-      );
+      actualizarEventoLlamada(callId, "finalizada");
+      finalizarLlamadaLocal(razon === "rechazada" ? "Llamada rechazada" : "Llamada finalizada", false);
     });
 
     socket.on("llamada:signal", async ({ callId, signal }) => {
       if (!llamada.activa || llamada.callId !== String(callId) || !signal) return;
 
       try {
-        if (signal.type === "offer") {
-          await prepararPeer(false);
-          await llamada.peer.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-          await procesarCandidatosPendientes();
+        if (signal.type === "description" && signal.description) {
+          await prepararPeer(false, false);
+          const description = signal.description;
 
-          const answer = await llamada.peer.createAnswer();
-          await llamada.peer.setLocalDescription(answer);
+          if (description.type === "offer") {
+            await llamada.peer.setRemoteDescription(description);
+            llamada.remoteDescriptionSet = true;
+            await procesarCandidatosPendientes();
 
-          socket.emit("llamada:signal", {
-            destinatarioId: llamada.peerId,
-            callId: llamada.callId,
-            signal: { type: "answer", sdp: answer }
-          });
+            // WebRTC genera la respuesta apropiada para el offer recibido.
+            const answer = await llamada.peer.createAnswer();
+            await llamada.peer.setLocalDescription(answer);
 
-          actualizarEstadoLlamada("Conectando…");
-          return;
-        }
-
-        if (signal.type === "answer") {
-          if (!llamada.peer) return;
-          await llamada.peer.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-          await procesarCandidatosPendientes();
-          actualizarEstadoLlamada("Conectado");
-          return;
-        }
-
-        if (signal.type === "candidate") {
-          const candidate = new RTCIceCandidate(signal.candidate);
-
-          // Un candidato puede llegar antes que el offer/peer.
-          // Lo guardamos en vez de perderlo.
-          if (!llamada.peer || !llamada.peer.remoteDescription) {
-            llamada.pendingCandidates.push(candidate);
+            const result = await socket.emit("llamada:signal", {
+              destinatarioId: llamada.peerId,
+              callId: llamada.callId,
+              signal: {
+                type: "description",
+                description: llamada.peer.localDescription
+              }
+            });
+            if (result?.ok === false) throw new Error(result.mensaje || "No se pudo enviar la respuesta.");
+            actualizarEstadoLlamada("Conectando…");
             return;
           }
 
+          if (description.type === "answer") {
+            if (llamada.peer.signalingState !== "have-local-offer") return;
+            await llamada.peer.setRemoteDescription(description);
+            llamada.remoteDescriptionSet = true;
+            await procesarCandidatosPendientes();
+            actualizarEstadoLlamada("Conectando…");
+            return;
+          }
+        }
+
+        if (signal.type === "candidate" && signal.candidate) {
+          const candidate = new RTCIceCandidate(signal.candidate);
+          if (!llamada.peer || !llamada.remoteDescriptionSet) {
+            llamada.pendingCandidates.push(candidate);
+            return;
+          }
           await llamada.peer.addIceCandidate(candidate);
         }
       } catch (error) {
         console.error("WebRTC signal:", error);
-        finalizarLlamadaLocal("Se perdió la conexión.");
+        finalizarLlamadaLocal("No se pudo establecer la conexión.", true);
       }
     });
-
 
     /* =========================================================
        CARGAR CONVERSACIONES
@@ -1477,6 +1484,7 @@
         localStream: null,
         remoteStream: null,
         pendingCandidates: [],
+        remoteDescriptionSet: false,
         timeout: null
       };
 
@@ -1520,25 +1528,12 @@
       }, 30000);
     }
 
-    function esperarSocket(timeout = 5000) {
-      if (socket.connected) return Promise.resolve(true);
-
-      return new Promise(resolve => {
-        let terminado = false;
-        const done = (value) => {
-          if (terminado) return;
-          terminado = true;
-          clearTimeout(timer);
-          socket.off("connect", onConnect);
-          resolve(value);
-        };
-        const onConnect = () => {
-          registrarSocket();
-          done(true);
-        };
-        const timer = setTimeout(() => done(false), timeout);
-        socket.once("connect", onConnect);
-      });
+    async function esperarSocket(timeout = 8000) {
+      if (socket.connected) return true;
+      if (typeof socket.waitUntilReady === "function") {
+        return socket.waitUntilReady(timeout);
+      }
+      return false;
     }
 
     function mediaErrorMessage(error) {
@@ -1576,15 +1571,16 @@
         actualizarEstadoLlamada("Conectando…");
         actualizarEventoLlamada(callId, "conectando");
 
-        socket.emit("llamada:aceptar", {
-          callerId: peerId,
+        socket.emit("llamada:aceptada", {
+          destinatarioId: peerId,
           callId
         });
       } catch (error) {
         console.error("Aceptar llamada:", error);
-        socket.emit("llamada:rechazar", {
-          callerId: peerId,
-          callId
+        socket.emit("llamada:rechazada", {
+          destinatarioId: peerId,
+          callId,
+          razon: "rechazada"
         });
         finalizarLlamadaLocal(mediaErrorMessage(error), false);
       }
@@ -1593,9 +1589,10 @@
     function rechazarLlamada() {
       if (!llamada.activa) return;
 
-      socket.emit("llamada:rechazar", {
-        callerId: llamada.peerId,
-        callId: llamada.callId
+      socket.emit("llamada:rechazada", {
+        destinatarioId: llamada.peerId,
+        callId: llamada.callId,
+        razon: "rechazada"
       });
 
       finalizarLlamadaLocal("Llamada rechazada", false);
@@ -1721,7 +1718,7 @@
       clearTimeout(llamada.timeout);
 
       if (avisar && peerId && callId) {
-        socket.emit("llamada:finalizar", {
+        socket.emit("llamada:finalizada", {
           destinatarioId: peerId,
           callId,
           razon: "finalizada"
@@ -1762,6 +1759,7 @@
         localStream: null,
         remoteStream: null,
         pendingCandidates: [],
+        remoteDescriptionSet: false,
         timeout: null
       };
     }
