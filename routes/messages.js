@@ -7,7 +7,7 @@ const { crearNotificacion } = require("../utils/notifications");
 
 const router = express.Router();
 
-// 鈹€鈹€ GET /api/messages 鈹€鈹€ Listar conversaciones
+// 閳光偓閳光偓 GET /api/messages 閳光偓閳光偓 Listar conversaciones
 router.get("/", auth, async (req, res) => {
   try {
     const convs = await Conversation.find({
@@ -21,7 +21,7 @@ router.get("/", auth, async (req, res) => {
       })
       .lean();
 
-    // A帽adir cantidad de mensajes no le铆dos
+    // A甯絘dir cantidad de mensajes no le閾哾os
     const resultado = await Promise.all(
       convs.map(async (c) => {
         const noLeidos = await Message.countDocuments({
@@ -40,7 +40,7 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-// 鈹€鈹€ POST /api/messages 鈹€鈹€ Crear o abrir conversaci贸n con un usuario
+// 閳光偓閳光偓 POST /api/messages 閳光偓閳光偓 Crear o abrir conversaci璐竛 con un usuario
 router.post("/", auth, async (req, res) => {
   try {
     const { usuarioId } = req.body;
@@ -55,7 +55,7 @@ router.post("/", auth, async (req, res) => {
     if (!otroUsuario)
       return res.status(404).json({ mensaje: "Usuario no encontrado" });
 
-    // Buscar si ya existe una conversaci贸n
+    // Buscar si ya existe una conversaci璐竛
     let conv = await Conversation.findOne({
       participantes: { $all: [req.usuario._id, usuarioId], $size: 2 }
     }).populate("participantes", "nombre handle avatar avatarTipo");
@@ -70,26 +70,26 @@ router.post("/", auth, async (req, res) => {
     res.json(conv);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ mensaje: "Error al crear conversaci贸n" });
+    res.status(500).json({ mensaje: "Error al crear conversaci璐竛" });
   }
 });
 
-// 鈹€鈹€ GET /api/messages/:convId 鈹€鈹€ Obtener mensajes de una conversaci贸n
+// 閳光偓閳光偓 GET /api/messages/:convId 閳光偓閳光偓 Obtener mensajes de una conversaci璐竛
 router.get("/:convId", auth, async (req, res) => {
   try {
     const conv = await Conversation.findById(req.params.convId);
     if (!conv)
-      return res.status(404).json({ mensaje: "Conversaci贸n no encontrada" });
+      return res.status(404).json({ mensaje: "Conversaci璐竛 no encontrada" });
 
     if (!conv.participantes.includes(req.usuario._id))
-      return res.status(403).json({ mensaje: "No tienes acceso a esta conversaci贸n" });
+      return res.status(403).json({ mensaje: "No tienes acceso a esta conversaci璐竛" });
 
     const mensajes = await Message.find({ conversacion: req.params.convId })
       .sort({ createdAt: 1 })
       .populate("remitente", "nombre handle avatar avatarTipo")
       .lean();
 
-    // Marcar como le铆dos los mensajes del otro
+    // Marcar como le閾哾os los mensajes del otro
     await Message.updateMany(
       { conversacion: req.params.convId, remitente: { $ne: req.usuario._id }, leido: false },
       { $set: { leido: true } }
@@ -102,19 +102,19 @@ router.get("/:convId", auth, async (req, res) => {
   }
 });
 
-// 鈹€鈹€ POST /api/messages/:convId/send 鈹€鈹€ Enviar mensaje
+// 閳光偓閳光偓 POST /api/messages/:convId/send 閳光偓閳光偓 Enviar mensaje
 router.post("/:convId/send", auth, async (req, res) => {
   try {
     const { contenido } = req.body;
     if (!contenido?.trim())
-      return res.status(400).json({ mensaje: "El mensaje no puede estar vac铆o" });
+      return res.status(400).json({ mensaje: "El mensaje no puede estar vac閾唎" });
 
     if (contenido.length > 1000)
-      return res.status(400).json({ mensaje: "M谩ximo 1000 caracteres" });
+      return res.status(400).json({ mensaje: "M璋﹛imo 1000 caracteres" });
 
     const conv = await Conversation.findById(req.params.convId);
     if (!conv)
-      return res.status(404).json({ mensaje: "Conversaci贸n no encontrada" });
+      return res.status(404).json({ mensaje: "Conversaci璐竛 no encontrada" });
 
     if (!conv.participantes.map(String).includes(req.usuario._id.toString()))
       return res.status(403).json({ mensaje: "No tienes acceso" });
@@ -148,7 +148,20 @@ router.post("/:convId/send", auth, async (req, res) => {
           url: `/messages.html?conv=${encodeURIComponent(String(conv._id))}`
         });
       } catch (notifyError) {
-        console.error("鈿狅笍 Error creando notificaci贸n de mensaje:", notifyError);
+        console.error("閳跨媴绗� Error creando notificaci璐竛 de mensaje:", notifyError);
+      }
+    }
+
+    // Entrega el mensaje en tiempo real DESDE EL SERVIDOR.
+    // As铆 no dependemos de que el navegador del remitente vuelva a emitirlo
+    // despu茅s del POST y evitamos p茅rdidas/duplicados.
+    if (destinatarioId) {
+      const io = req.app.get("io");
+      if (io) {
+        io.to(`user_${String(destinatarioId)}`).emit("nuevoMensaje", {
+          convId: String(conv._id),
+          mensaje: populated
+        });
       }
     }
 
