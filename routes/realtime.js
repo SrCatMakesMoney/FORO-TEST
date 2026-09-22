@@ -46,19 +46,25 @@ router.post("/trigger", auth, async (req, res) => {
       return res.status(400).json({ mensaje: "Evento no permitido." });
     }
 
-    const payload = { ...(data || {}) };
     const yo = String(req.usuario._id);
+    const receptor = String(destinatarioId);
+    const payload = { ...(data || {}) };
 
-    if (event === "llamada:signal") payload.fromId = yo;
+    if (event === "llamada:invitar") payload.callerId = yo;
     if (event === "llamada:aceptada" || event === "llamada:rechazada") payload.receiverId = yo;
     if (event === "llamada:finalizada") payload.fromId = yo;
-    if (event === "llamada:invitar") payload.callerId = yo;
+    if (event === "llamada:signal") payload.fromId = yo;
 
-    // Pusher solo permite nombres de evento alfanuméricos, "_" y "-".
-    // La app conserva nombres Socket.IO como "llamada:signal".
-    const pusherEvent = String(event).replace(/[^A-Za-z0-9_-]/g, "-");
+    // "invitar" es un evento de salida; el receptor recibe "entrante".
+    // El resto mantiene el mismo nombre lógico en ambos extremos.
+    const recipientEvent = event === "llamada:invitar"
+      ? "llamada:entrante"
+      : event;
 
-    await trigger(channelForUser(destinatarioId), pusherEvent, payload);
+    // Pusher HTTP no acepta ":" en nombres de evento.
+    const pusherEvent = String(recipientEvent).replace(/[^A-Za-z0-9_-]/g, "-");
+
+    await trigger(channelForUser(receptor), pusherEvent, payload);
     res.json({ ok: true });
   } catch (error) {
     console.error("Pusher trigger:", error);
