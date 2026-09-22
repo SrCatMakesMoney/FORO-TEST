@@ -9,6 +9,13 @@ const path = require("path");
 const { initBucket } = require("./utils/gridfs");
 
 const app = express();
+
+// Permitir que WebRTC solicite micrófono y cámara desde el mismo origen.
+// Algunos navegadores móviles son más estrictos con Permissions-Policy.
+app.use((req, res, next) => {
+  res.setHeader("Permissions-Policy", "camera=(self), microphone=(self)");
+  next();
+});
 const server = http.createServer(app);
 
 // ============================================================
@@ -363,7 +370,7 @@ io.on("connection", (socket) => {
   // El servidor solo hace señalización. El audio/video viaja
   // directamente entre navegadores mediante WebRTC.
 
-  socket.on("llamada:invitar", ({ destinatarioId, callId, tipo, callerName, callerAvatar, callerAvatarTipo }, ack) => {
+  socket.on("llamada:invitar", ({ destinatarioId, callId, tipo, callerName, callerAvatar, callerAvatarTipo, convId }, ack) => {
     const responder = typeof ack === "function" ? ack : () => {};
 
     if (!destinatarioId || !callId) {
@@ -387,6 +394,7 @@ io.on("connection", (socket) => {
 
     io.to(room).emit("llamada:entrante", {
       callId: String(callId),
+      convId: convId ? String(convId) : null,
       tipo: tipo === "video" ? "video" : "audio",
       callerId: String(callerId),
       callerName: callerName || "Usuario",
