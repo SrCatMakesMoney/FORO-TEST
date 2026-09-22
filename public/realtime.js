@@ -10,13 +10,18 @@
   let channel = null;
   let ready = false;
 
+  // Pusher no acepta ":" en nombres de eventos publicados por HTTP.
+  // Conservamos la API antigua de Foro Ubre y traducimos internamente:
+  // "llamada:entrante" -> "llamada-entrante".
+  const wireEvent = (event) => String(event || "").replace(/[^A-Za-z0-9_-]/g, "-");
+
   const adapter = {
     connected: true,
 
     on(event, fn) {
       if (!handlers.has(event)) handlers.set(event, new Set());
       handlers.get(event).add(fn);
-      if (ready && channel) channel.bind(event, fn);
+      if (ready && channel) channel.bind(wireEvent(event), fn);
       return adapter;
     },
 
@@ -34,8 +39,8 @@
       if (fn) set.delete(fn);
       else set.clear();
       if (ready && channel) {
-        if (fn) channel.unbind(event, fn);
-        else channel.unbind(event);
+        if (fn) channel.unbind(wireEvent(event), fn);
+        else channel.unbind(wireEvent(event));
       }
       return adapter;
     },
@@ -106,7 +111,7 @@
       channel.bind("pusher:subscription_succeeded", () => {
         ready = true;
         for (const [event, set] of handlers) {
-          for (const fn of set) channel.bind(event, fn);
+          for (const fn of set) channel.bind(wireEvent(event), fn);
         }
         window.dispatchEvent(new CustomEvent("foro-realtime-ready"));
       });
