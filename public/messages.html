@@ -13,17 +13,6 @@
 
   <link rel="stylesheet" href="messages.css">
   <link rel="stylesheet" href="notifications.css">
-
-<style id="foroubre-call-base">
-.chat-call-actions{display:flex;align-items:center;gap:6px;margin-left:auto}
-.chat-call-btn,.chat-more{width:38px;height:38px;border:0;border-radius:12px;background:rgba(255,255,255,.055);color:#e9edf2;display:grid;place-items:center;cursor:pointer;font-size:18px;transition:.18s ease}
-.chat-call-btn:hover,.chat-more:hover{background:rgba(255,255,255,.11);transform:translateY(-1px)}
-.call-overlay{position:fixed;inset:0;z-index:99999;background:rgba(3,5,7,.78);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);display:grid;place-items:center;padding:18px}
-.call-card{width:min(520px,100%);border:1px solid rgba(255,255,255,.1);border-radius:28px;background:linear-gradient(145deg,rgba(27,30,34,.98),rgba(8,10,12,.98));box-shadow:0 30px 100px rgba(0,0,0,.6);padding:22px;color:#fff}
-.call-card.video{width:min(760px,100%);padding:12px;overflow:hidden}
-.call-top{display:flex;align-items:center;gap:12px}.call-avatar{width:54px;height:54px;border-radius:17px;object-fit:cover;background:#171a1e}.call-name{font-weight:800}.call-status{font-size:12px;color:#9da4ad;margin-top:3px}.call-video-wrap{position:relative;aspect-ratio:16/10;background:#050607;border-radius:22px;overflow:hidden}.call-remote{width:100%;height:100%;object-fit:cover;background:#050607}.call-local{position:absolute;right:14px;bottom:14px;width:130px;aspect-ratio:3/4;object-fit:cover;border-radius:16px;border:1px solid rgba(255,255,255,.18);background:#111}.call-controls{display:flex;justify-content:center;gap:10px;margin-top:18px}.call-control{width:48px;height:48px;border:0;border-radius:16px;background:rgba(255,255,255,.08);color:#fff;font-size:19px;cursor:pointer}.call-control.end{background:#d83d55}.call-incoming-actions{display:flex;justify-content:center;gap:10px;margin-top:22px}.call-action{border:0;border-radius:14px;padding:12px 18px;font-weight:800;cursor:pointer}.call-action.reject{background:#292d33;color:#fff}.call-action.accept{background:#67df80;color:#07100a}.call-message{margin:10px 0;padding:12px 14px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.035);border-radius:15px;color:#aeb4bc;font-size:12px}.call-message strong{display:block;color:#e9edf2;font-size:13px;margin-bottom:3px}
-@media(max-width:700px){.call-overlay{padding:10px}.call-card{border-radius:22px}.call-card.video{padding:8px}.call-local{width:105px;right:10px;bottom:10px}.chat-call-btn,.chat-more{width:34px;height:34px}}
-</style>
 </head>
 <script src="notifications.js"></script>
 <body>
@@ -518,6 +507,31 @@
 
     let escribiendoTimer = null;
 
+    // =========================================================
+    // LLAMADAS / WEBRTC
+    // =========================================================
+    const usuariosLlamada = new Map();
+    const ICE_SERVERS = [
+      { urls: "stun:stun.l.google.com:19302" },
+      { urls: "stun:stun1.l.google.com:19302" }
+    ];
+
+    let llamada = {
+      activa: false,
+      callId: null,
+      tipo: null,
+      role: null,
+      peerId: null,
+      nombre: "",
+      avatar: "",
+      avatarTipo: "imagen",
+      peer: null,
+      localStream: null,
+      remoteStream: null,
+      pendingCandidates: [],
+      timeout: null
+    };
+
 
 
     /* =========================================================
@@ -527,10 +541,14 @@
     const socket = io();
 
 
-    socket.emit(
-      "registrar",
-      yo._id
-    );
+    function registrarSocket() {
+      if (yo?._id && socket?.connected) {
+        socket.emit("registrar", String(yo._id));
+      }
+    }
+
+    socket.on("connect", registrarSocket);
+    registrarSocket();
 
 
     socket.on(
@@ -647,6 +665,139 @@
     );
 
 
+    // =========================================================
+    // EVENTOS DE LLAMADA
+    // =========================================================
+
+    socket.on("llamada:entrante", (data) => {
+      if (!data?.callId || !data?.callerId) return;
+
+      // Si ya estamos en otra llamada, rechazamos automáticamente.
+      if (llamada.activa) {
+        socket.emit("llamada:rechazar", {
+          callerId: data.callerId,
+          callId: data.callId
+        });
+        return;
+      }
+
+      const info = usuariosLlamada.get(String(data.callerId)) || {};
+
+      llamada = {
+        ...llamada,
+        activa: true,
+        callId: String(data.callId),
+        tipo: data.tipo === "video" ? "video" : "audio",
+        role: "receiver",
+        peerId: String(data.callerId),
+        nombre: data.callerName || info.nombre || "Usuario",
+        avatar: data.callerAvatar || info.avatar || "",
+        avatarTipo: data.callerAvatarTipo || info.avatarTipo || "imagen",
+        convId: data.convId || null,
+        peer: null,
+        localStream: null,
+        remoteStream: null,
+        pendingCandidates: [],
+        timeout: null
+      };
+
+      insertarEventoLlamada("incoming", data.convId || convActiva, data.callId, data.tipo, data.callerName || "Usuario");
+      mostrarPanelLlamada("incoming");
+    });
+
+    socket.on("llamada:aceptada", async ({ callId, receiverId }) => {
+      if (!llamada.activa || llamada.callId !== String(callId)) return;
+      if (llamada.role !== "caller") return;
+
+      try {
+        actualizarEstadoLlamada("Conectando…");
+        actualizarEventoLlamada(callId, "conectando");
+
+        // IMPORTANTE: el caller NO pide cámara/micrófono antes de que
+        // el receptor acepte. Así la llamada entrante puede llegar
+        // aunque el dispositivo receptor todavía no haya dado permisos.
+        await prepararPeer(false, true);
+
+        const offer = await llamada.peer.createOffer();
+        await llamada.peer.setLocalDescription(offer);
+
+        socket.emit("llamada:signal", {
+          destinatarioId: receiverId,
+          callId: llamada.callId,
+          signal: {
+            type: "offer",
+            sdp: llamada.peer.localDescription
+          }
+        });
+      } catch (error) {
+        console.error("Llamada:", error);
+        finalizarLlamadaLocal(mediaErrorMessage(error), true);
+      }
+    });
+
+    socket.on("llamada:rechazada", ({ callId }) => {
+      if (!llamada.activa || llamada.callId !== String(callId)) return;
+      actualizarEventoLlamada(callId, "rechazada");
+      finalizarLlamadaLocal("Llamada rechazada", false);
+    });
+
+    socket.on("llamada:finalizada", ({ callId, razon }) => {
+      if (!llamada.activa || llamada.callId !== String(callId)) return;
+      actualizarEventoLlamada(callId, razon === "rechazada" ? "rechazada" : "finalizada");
+      finalizarLlamadaLocal(
+        razon === "rechazada" ? "Llamada rechazada" : "Llamada finalizada",
+        false
+      );
+    });
+
+    socket.on("llamada:signal", async ({ callId, signal }) => {
+      if (!llamada.activa || llamada.callId !== String(callId) || !signal) return;
+
+      try {
+        if (signal.type === "offer") {
+          await prepararPeer(false);
+          await llamada.peer.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+          await procesarCandidatosPendientes();
+
+          const answer = await llamada.peer.createAnswer();
+          await llamada.peer.setLocalDescription(answer);
+
+          socket.emit("llamada:signal", {
+            destinatarioId: llamada.peerId,
+            callId: llamada.callId,
+            signal: { type: "answer", sdp: answer }
+          });
+
+          actualizarEstadoLlamada("Conectando…");
+          return;
+        }
+
+        if (signal.type === "answer") {
+          if (!llamada.peer) return;
+          await llamada.peer.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+          await procesarCandidatosPendientes();
+          actualizarEstadoLlamada("Conectado");
+          return;
+        }
+
+        if (signal.type === "candidate") {
+          const candidate = new RTCIceCandidate(signal.candidate);
+
+          // Un candidato puede llegar antes que el offer/peer.
+          // Lo guardamos en vez de perderlo.
+          if (!llamada.peer || !llamada.peer.remoteDescription) {
+            llamada.pendingCandidates.push(candidate);
+            return;
+          }
+
+          await llamada.peer.addIceCandidate(candidate);
+        }
+      } catch (error) {
+        console.error("WebRTC signal:", error);
+        finalizarLlamadaLocal("Se perdió la conexión.");
+      }
+    });
+
 
     /* =========================================================
        CARGAR CONVERSACIONES
@@ -744,6 +895,12 @@
 
           if (!otro) return "";
 
+          usuariosLlamada.set(String(otro._id), {
+            nombre: otro.nombre || "Usuario",
+            avatar: otro.avatar || "",
+            avatarTipo: otro.avatarTipo || "imagen",
+            handle: otro.handle || ""
+          });
 
           const ult =
             c.ultimoMensaje;
@@ -1006,16 +1163,36 @@
 
 
           <div class="chat-call-actions">
-            <button class="chat-call-btn" id="btnLlamadaAudio" type="button" title="Llamada de voz" aria-label="Llamada de voz">
+
+            <button
+              class="chat-call-btn"
+              type="button"
+              title="Llamada de voz"
+              aria-label="Llamada de voz"
+              onclick="iniciarLlamada('audio')"
+            >
               <i class="ri-phone-line"></i>
             </button>
-            <button class="chat-call-btn" id="btnLlamadaVideo" type="button" title="Videollamada" aria-label="Videollamada">
-              <i class="ri-vidicon-line"></i>
+
+            <button
+              class="chat-call-btn"
+              type="button"
+              title="Videollamada"
+              aria-label="Videollamada"
+              onclick="iniciarLlamada('video')"
+            >
+              <i class="ri-video-add-line"></i>
             </button>
-            <button class="chat-more" type="button" aria-label="Opciones">
-              <i class="ri-more-2-fill"></i>
-            </button>
+
           </div>
+
+          <button
+            class="chat-more"
+            type="button"
+            aria-label="Opciones"
+          >
+            <i class="ri-more-2-fill"></i>
+          </button>
 
         </div>
 
@@ -1058,10 +1235,6 @@
       `;
 
 
-
-
-      document.getElementById("btnLlamadaAudio")?.addEventListener("click", () => iniciarLlamada("audio"));
-      document.getElementById("btnLlamadaVideo")?.addEventListener("click", () => iniciarLlamada("video"));
 
       /* INPUT */
 
@@ -1189,6 +1362,458 @@
 
 
 
+    // =========================================================
+    // INTERFAZ + WEBRTC
+    // =========================================================
+
+    function asegurarPanelLlamada() {
+      let panel = document.getElementById("callOverlay");
+      if (panel) return panel;
+
+      panel = document.createElement("div");
+      panel.id = "callOverlay";
+      panel.className = "call-overlay";
+      panel.innerHTML = `
+        <div class="call-window">
+          <div class="call-topbar">
+            <div class="call-status-wrap">
+              <span class="call-status-dot"></span>
+              <span id="callStatus">Llamando…</span>
+            </div>
+            <button type="button" class="call-close-mini" id="callMinimize" aria-label="Minimizar">
+              <i class="ri-subtract-line"></i>
+            </button>
+          </div>
+
+          <div class="call-stage" id="callStage">
+            <div class="call-remote-placeholder" id="callRemotePlaceholder">
+              <div class="call-avatar-wrap" id="callAvatarWrap"></div>
+              <strong id="callName">Usuario</strong>
+              <span id="callTypeLabel">Llamada de voz</span>
+            </div>
+
+            <video id="remoteCallVideo" class="call-remote-video" autoplay playsinline></video>
+            <video id="localCallVideo" class="call-local-video" autoplay muted playsinline></video>
+
+            <div class="call-incoming-actions" id="callIncomingActions">
+              <button type="button" class="call-action reject" id="callRejectBtn">
+                <i class="ri-close-line"></i>
+                <span>Rechazar</span>
+              </button>
+              <button type="button" class="call-action accept" id="callAcceptBtn">
+                <i class="ri-phone-fill"></i>
+                <span>Aceptar</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="call-controls" id="callControls">
+            <button type="button" class="call-control" id="callMuteBtn" title="Silenciar">
+              <i class="ri-mic-line"></i>
+            </button>
+            <button type="button" class="call-control video-only" id="callCameraBtn" title="Cámara">
+              <i class="ri-camera-line"></i>
+            </button>
+            <button type="button" class="call-control hangup" id="callHangupBtn" title="Colgar">
+              <i class="ri-phone-fill"></i>
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(panel);
+
+      panel.querySelector("#callAcceptBtn").addEventListener("click", aceptarLlamada);
+      panel.querySelector("#callRejectBtn").addEventListener("click", rechazarLlamada);
+      panel.querySelector("#callHangupBtn").addEventListener("click", () => finalizarLlamadaLocal("Llamada finalizada"));
+      panel.querySelector("#callMuteBtn").addEventListener("click", alternarMute);
+      panel.querySelector("#callCameraBtn").addEventListener("click", alternarCamara);
+      panel.querySelector("#callMinimize").addEventListener("click", () => panel.classList.toggle("minimized"));
+
+      return panel;
+    }
+
+    function mostrarPanelLlamada(mode) {
+      const panel = asegurarPanelLlamada();
+      const videoCall = llamada.tipo === "video";
+      const incoming = mode === "incoming";
+
+      panel.classList.remove("hidden", "minimized");
+      panel.classList.toggle("audio-call", !videoCall);
+      panel.classList.toggle("video-call", videoCall);
+      panel.classList.toggle("incoming", incoming);
+
+      panel.querySelector("#callName").textContent = llamada.nombre || "Usuario";
+      panel.querySelector("#callTypeLabel").textContent =
+        incoming
+          ? (videoCall ? "Videollamada entrante" : "Llamada entrante")
+          : (videoCall ? "Videollamada" : "Llamada de voz");
+
+      panel.querySelector("#callIncomingActions").style.display = incoming ? "flex" : "none";
+      panel.querySelector("#callControls").style.display = incoming ? "none" : "flex";
+      panel.querySelector("#callCameraBtn").style.display = videoCall ? "grid" : "none";
+      panel.querySelector("#remoteCallVideo").style.display = videoCall ? "block" : "none";
+      panel.querySelector("#localCallVideo").style.display = videoCall ? "block" : "none";
+
+      const avatarWrap = panel.querySelector("#callAvatarWrap");
+      avatarWrap.innerHTML = llamada.avatarTipo === "video"
+        ? `<video src="${escHtml(llamada.avatar)}" autoplay muted loop playsinline></video>`
+        : `<img src="${escHtml(llamada.avatar || "https://api.dicebear.com/7.x/thumbs/svg?seed=default")}" alt="">`;
+
+      actualizarEstadoLlamada(incoming ? "Llamada entrante" : "Llamando…");
+    }
+
+    function actualizarEstadoLlamada(texto) {
+      document.getElementById("callStatus")?.replaceChildren(document.createTextNode(texto));
+    }
+
+    async function iniciarLlamada(tipo) {
+      if (!destinatarioId || llamada.activa) return;
+
+      const info = usuariosLlamada.get(String(destinatarioId)) || {};
+      const callId = `${yo._id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+      llamada = {
+        activa: true,
+        callId,
+        tipo: tipo === "video" ? "video" : "audio",
+        role: "caller",
+        convId: convActiva,
+        peerId: String(destinatarioId),
+        nombre: info.nombre || "Usuario",
+        avatar: info.avatar || "",
+        avatarTipo: info.avatarTipo || "imagen",
+        peer: null,
+        localStream: null,
+        remoteStream: null,
+        pendingCandidates: [],
+        timeout: null
+      };
+
+      mostrarPanelLlamada("outgoing");
+      insertarEventoLlamada("outgoing", convActiva, callId, llamada.tipo, llamada.nombre);
+      actualizarEstadoLlamada("Llamando…");
+
+      // IMPORTANTE EN ANDROID: getUserMedia debe ejecutarse como consecuencia
+      // directa del toque del usuario. Si esperamos al evento Socket.IO
+      // "llamada:aceptada", algunos navegadores móviles pueden bloquear el
+      // prompt de permisos porque ya no existe un gesto del usuario.
+      try {
+        if (!window.isSecureContext) {
+          throw new Error("SECURE_CONTEXT_REQUIRED");
+        }
+
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error("MEDIA_DEVICES_UNAVAILABLE");
+        }
+
+        actualizarEstadoLlamada(
+          llamada.tipo === "video"
+            ? "Solicitando cámara y micrófono…"
+            : "Solicitando micrófono…"
+        );
+
+        await prepararPeer(false, true);
+      } catch (error) {
+        console.error("Permisos multimedia al iniciar:", error);
+        finalizarLlamadaLocal(mediaErrorMessage(error), false);
+        return;
+      }
+
+      actualizarEstadoLlamada("Llamando…");
+
+      if (!socket.connected) {
+        actualizarEstadoLlamada("Conectando con Foro Ubre…");
+        await esperarSocket(5000);
+      }
+
+      if (!socket.connected) {
+        finalizarLlamadaLocal("No hay conexión con el servidor.", false);
+        return;
+      }
+
+      socket.emit("llamada:invitar", {
+        destinatarioId: String(destinatarioId),
+        callId,
+        tipo: llamada.tipo,
+        callerName: yo.nombre,
+        callerAvatar: yo.avatar,
+        callerAvatarTipo: yo.avatarTipo || "imagen",
+        convId: convActiva
+      }, (respuesta) => {
+        if (respuesta?.ok === false && llamada.activa && llamada.callId === callId) {
+          finalizarLlamadaLocal(respuesta.mensaje || "El usuario no está disponible.", false);
+        }
+      });
+
+      // Si el receptor nunca responde, no dejamos una llamada colgada.
+      clearTimeout(llamada.timeout);
+      llamada.timeout = setTimeout(() => {
+        if (llamada.activa && llamada.callId === callId && llamada.role === "caller") {
+          finalizarLlamadaLocal("No respondió.", true);
+        }
+      }, 30000);
+    }
+
+    function esperarSocket(timeout = 5000) {
+      if (socket.connected) return Promise.resolve(true);
+
+      return new Promise(resolve => {
+        let terminado = false;
+        const done = (value) => {
+          if (terminado) return;
+          terminado = true;
+          clearTimeout(timer);
+          socket.off("connect", onConnect);
+          resolve(value);
+        };
+        const onConnect = () => {
+          registrarSocket();
+          done(true);
+        };
+        const timer = setTimeout(() => done(false), timeout);
+        socket.once("connect", onConnect);
+      });
+    }
+
+    function mediaErrorMessage(error) {
+      if (error?.message === "SECURE_CONTEXT_REQUIRED" || !window.isSecureContext) {
+        return "Foro Ubre necesita HTTPS para usar el micrófono y la cámara. Abre la versión segura del sitio (https://).";
+      }
+
+      if (error?.message === "MEDIA_DEVICES_UNAVAILABLE" || !navigator.mediaDevices?.getUserMedia) {
+        return "Este navegador no permite usar micrófono/cámara en esta página.";
+      }
+
+      const name = error?.name || "";
+      if (name === "NotAllowedError" || name === "PermissionDeniedError") {
+        return "Permiso bloqueado. En Android toca el candado de la barra de direcciones → Permisos → Micrófono/Cámara → Permitir y vuelve a cargar Foro Ubre.";
+      }
+      if (name === "NotFoundError" || name === "DevicesNotFoundError") {
+        return "No se encontró un micrófono o cámara disponible.";
+      }
+      if (name === "NotReadableError" || name === "TrackStartError") {
+        return "El micrófono o cámara está siendo usado por otra aplicación.";
+      }
+      if (name === "SecurityError") {
+        return "El navegador bloqueó el acceso al micrófono/cámara por seguridad.";
+      }
+      return "No se pudo acceder al micrófono o cámara.";
+    }
+
+    async function aceptarLlamada() {
+      if (!llamada.activa || llamada.role !== "receiver") return;
+
+      const peerId = llamada.peerId;
+      const callId = llamada.callId;
+      clearTimeout(llamada.timeout);
+
+      try {
+        mostrarPanelLlamada("active");
+        actualizarEstadoLlamada(
+          llamada.tipo === "video"
+            ? "Solicitando cámara y micrófono…"
+            : "Solicitando micrófono…"
+        );
+
+        // Este getUserMedia ocurre dentro del clic de Aceptar.
+        // Es el momento más compatible con Android/iOS para mostrar permisos.
+        await prepararPeer(false, true);
+
+        actualizarEstadoLlamada("Conectando…");
+        actualizarEventoLlamada(callId, "conectando");
+
+        socket.emit("llamada:aceptar", {
+          callerId: peerId,
+          callId
+        });
+      } catch (error) {
+        console.error("Aceptar llamada:", error);
+        socket.emit("llamada:rechazar", {
+          callerId: peerId,
+          callId
+        });
+        finalizarLlamadaLocal(mediaErrorMessage(error), false);
+      }
+    }
+
+    function rechazarLlamada() {
+      if (!llamada.activa) return;
+
+      socket.emit("llamada:rechazar", {
+        callerId: llamada.peerId,
+        callId: llamada.callId
+      });
+
+      finalizarLlamadaLocal("Llamada rechazada", false);
+    }
+
+    async function prepararPeer(forceCreate = false, getMedia = false) {
+      if (!llamada.peer || forceCreate) {
+        if (llamada.peer) llamada.peer.close();
+
+        llamada.peer = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+
+        llamada.peer.onicecandidate = (event) => {
+          if (!event.candidate || !llamada.peerId) return;
+
+          socket.emit("llamada:signal", {
+            destinatarioId: llamada.peerId,
+            callId: llamada.callId,
+            signal: {
+              type: "candidate",
+              candidate: event.candidate.toJSON()
+            }
+          });
+        };
+
+        llamada.peer.ontrack = (event) => {
+          if (!llamada.remoteStream) {
+            llamada.remoteStream = new MediaStream();
+          }
+
+          const exists = llamada.remoteStream
+            .getTracks()
+            .some(track => track.id === event.track.id);
+
+          if (!exists) llamada.remoteStream.addTrack(event.track);
+
+          const remote = document.getElementById("remoteCallVideo");
+          if (remote && remote.srcObject !== llamada.remoteStream) {
+            remote.srcObject = llamada.remoteStream;
+            remote.play().catch(() => {});
+          }
+
+          actualizarEstadoLlamada("Conectado");
+          actualizarEventoLlamada(llamada.callId, "conectada");
+        };
+
+        llamada.peer.onconnectionstatechange = () => {
+          const state = llamada.peer?.connectionState;
+
+          if (state === "connected") {
+            actualizarEstadoLlamada("Conectado");
+            actualizarEventoLlamada(llamada.callId, "conectada");
+          } else if (["failed", "disconnected", "closed"].includes(state)) {
+            if (state !== "closed") finalizarLlamadaLocal("Se perdió la conexión.");
+          }
+        };
+      }
+
+      if (!llamada.localStream && getMedia) {
+        llamada.localStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: llamada.tipo === "video"
+        });
+
+        llamada.localStream.getTracks().forEach(track => {
+          llamada.peer.addTrack(track, llamada.localStream);
+        });
+
+        const local = document.getElementById("localCallVideo");
+        if (local) {
+          local.srcObject = llamada.localStream;
+          local.play().catch(() => {});
+        }
+      }
+
+      if (llamada.tipo === "video") {
+        document.getElementById("localCallVideo")?.classList.add("visible");
+      }
+    }
+
+    async function procesarCandidatosPendientes() {
+      if (!llamada.peer?.remoteDescription) return;
+
+      const pendientes = llamada.pendingCandidates.splice(0);
+      for (const candidate of pendientes) {
+        try {
+          await llamada.peer.addIceCandidate(candidate);
+        } catch (error) {
+          console.warn("ICE pendiente:", error);
+        }
+      }
+    }
+
+    function alternarMute() {
+      const audio = llamada.localStream?.getAudioTracks()[0];
+      if (!audio) return;
+
+      audio.enabled = !audio.enabled;
+      const btn = document.getElementById("callMuteBtn");
+      if (btn) {
+        btn.classList.toggle("off", !audio.enabled);
+        btn.innerHTML = `<i class="${audio.enabled ? "ri-mic-line" : "ri-mic-off-line"}"></i>`;
+      }
+    }
+
+    function alternarCamara() {
+      const video = llamada.localStream?.getVideoTracks()[0];
+      if (!video) return;
+
+      video.enabled = !video.enabled;
+      const btn = document.getElementById("callCameraBtn");
+      if (btn) {
+        btn.classList.toggle("off", !video.enabled);
+        btn.innerHTML = `<i class="${video.enabled ? "ri-camera-line" : "ri-camera-off-line"}"></i>`;
+      }
+    }
+
+    function finalizarLlamadaLocal(mensaje = "Llamada finalizada", avisar = true) {
+      if (!llamada.activa) return;
+
+      const peerId = llamada.peerId;
+      const callId = llamada.callId;
+
+      clearTimeout(llamada.timeout);
+
+      if (avisar && peerId && callId) {
+        socket.emit("llamada:finalizar", {
+          destinatarioId: peerId,
+          callId,
+          razon: "finalizada"
+        });
+      }
+
+      llamada.localStream?.getTracks().forEach(track => track.stop());
+      llamada.remoteStream?.getTracks().forEach(track => track.stop());
+      llamada.peer?.close();
+
+      const panel = document.getElementById("callOverlay");
+      const remote = document.getElementById("remoteCallVideo");
+      const local = document.getElementById("localCallVideo");
+
+      if (remote) remote.srcObject = null;
+      if (local) local.srcObject = null;
+
+      if (panel) {
+        actualizarEstadoLlamada(mensaje);
+        panel.classList.add("closing");
+        setTimeout(() => {
+          panel.classList.remove("closing", "incoming", "video-call", "audio-call", "minimized");
+          panel.classList.add("hidden");
+        }, 220);
+      }
+
+      llamada = {
+        activa: false,
+        callId: null,
+        tipo: null,
+        role: null,
+        peerId: null,
+        nombre: "",
+        avatar: "",
+        avatarTipo: "imagen",
+        convId: null,
+        peer: null,
+        localStream: null,
+        remoteStream: null,
+        pendingCandidates: [],
+        timeout: null
+      };
+    }
+
+
     /* =========================================================
        CERRAR CHAT EN MÓVIL
     ========================================================== */
@@ -1285,20 +1910,6 @@
             msg.mensaje
           );
         }
-
-
-        socket.emit(
-          "enviarMensaje",
-          {
-            convId:
-              convActiva,
-
-            mensaje:
-              msg,
-
-            destinatarioId
-          }
-        );
 
 
         renderMensaje(msg);
@@ -1421,6 +2032,51 @@
     }
 
 
+
+    /* =========================================================
+       EVENTO DE LLAMADA EN EL CHAT
+    ========================================================= */
+
+    function insertarEventoLlamada(modo, convId, callId, tipo = "audio", nombre = "Usuario") {
+      if (!convId || !callId) return;
+      if (convActiva !== String(convId)) return;
+
+      const container = document.getElementById("chatMessages");
+      if (!container) return;
+
+      const id = `call-event-${String(callId).replace(/[^a-zA-Z0-9_-]/g, "")}`;
+      if (document.getElementById(id)) return;
+
+      const video = tipo === "video";
+      const el = document.createElement("div");
+      el.className = "mensaje-llamada";
+      el.id = id;
+      el.dataset.callId = String(callId);
+      el.innerHTML = `
+        <div class="mensaje-llamada-icon"><i class="${video ? "ri-video-chat-fill" : "ri-phone-fill"}"></i></div>
+        <div class="mensaje-llamada-copy">
+          <strong>${modo === "incoming" ? "Llamada entrante" : video ? "Videollamada" : "Llamada de voz"}</strong>
+          <span>${modo === "incoming" ? `${escHtml(nombre)} te está llamando` : "Llamando…"}</span>
+        </div>
+        <div class="mensaje-llamada-status">•</div>
+      `;
+      container.appendChild(el);
+      scrollChat();
+    }
+
+    function actualizarEventoLlamada(callId, estado) {
+      if (!callId) return;
+      const safe = String(callId).replace(/[^a-zA-Z0-9_-]/g, "");
+      const el = document.getElementById(`call-event-${safe}`);
+      if (!el) return;
+
+      const copy = el.querySelector(".mensaje-llamada-copy span");
+      const status = el.querySelector(".mensaje-llamada-status");
+      const textos = { conectando: "Conectando…", conectada: "Llamada conectada", rechazada: "Llamada rechazada", finalizada: "Llamada finalizada" };
+      if (copy) copy.textContent = textos[estado] || estado;
+      if (status) status.textContent = estado === "conectada" ? "✓" : estado === "rechazada" ? "×" : "";
+      el.classList.toggle("finalizada", estado === "rechazada" || estado === "finalizada");
+    }
 
     /* =========================================================
        SCROLL
@@ -1911,123 +2567,7 @@
 
     }
 
-  
-
-    /* =========================================================
-       FORO UBRE — LLAMADAS AUDIO / VIDEO (WebRTC)
-       ========================================================= */
-    const CALL_ICE = [{ urls: "stun:stun.l.google.com:19302" }];
-    let llamada = { pc:null, stream:null, remoteStream:null, tipo:null, convId:null, peerSocketId:null, caller:false, iceQueue:[], connected:false };
-
-    function callSafeText(v){ return escHtml(String(v ?? "")); }
-
-    function callDialog(html, extraClass=""){
-      document.getElementById("foroCallOverlay")?.remove();
-      const o=document.createElement("div"); o.id="foroCallOverlay"; o.className=`call-overlay ${extraClass}`; o.innerHTML=html; document.body.appendChild(o); return o;
-    }
-    function closeCallUI(){ document.getElementById("foroCallOverlay")?.remove(); }
-    function addCallMessage(title,status){
-      const box=document.getElementById("chatMessages"); if(!box) return;
-      const d=document.createElement("div"); d.className="call-message"; d.innerHTML=`<strong>${callSafeText(title)}</strong><span>${callSafeText(status)}</span>`; box.appendChild(d); scrollChat();
-    }
-    function localMediaError(err, tipo){
-      console.error("FORO UBRE media:",err);
-      let msg="No se pudo acceder al micrófono.";
-      if(tipo==="video") msg="No se pudo acceder a la cámara o al micrófono.";
-      if(err?.name==="NotAllowedError"||err?.name==="PermissionDeniedError") msg="Permiso bloqueado. En Android abre los permisos del sitio y permite Cámara y Micrófono; después recarga Foro Ubre.";
-      else if(err?.name==="NotFoundError") msg="No se encontró una cámara o micrófono disponible.";
-      else if(err?.name==="SecurityError") msg="El navegador bloqueó cámara/micrófono por seguridad. Usa HTTPS.";
-      else if(!window.isSecureContext) msg="Cámara y micrófono requieren HTTPS.";
-      alert(msg);
-    }
-    async function obtenerMedia(tipo){
-      if(!window.isSecureContext){ throw Object.assign(new Error("HTTPS requerido"),{name:"SecurityError"}); }
-      if(!navigator.mediaDevices?.getUserMedia){ throw Object.assign(new Error("getUserMedia no disponible"),{name:"SecurityError"}); }
-      const constraints = tipo==="video" ? {audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}}} : {audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}};
-      return navigator.mediaDevices.getUserMedia(constraints);
-    }
-    function crearPeer(){
-      const pc=new RTCPeerConnection({iceServers:CALL_ICE});
-      pc.onicecandidate=e=>{ if(e.candidate && llamada.peerSocketId) socket.emit("llamada:signal",{targetSocketId:llamada.peerSocketId,kind:"ice",data:e.candidate,convId:llamada.convId}); };
-      pc.ontrack=e=>{ llamada.remoteStream ||= new MediaStream(); e.streams?.[0]?.getTracks().forEach(t=>llamada.remoteStream.addTrack(t)); const v=document.getElementById("callRemote"); if(v) v.srcObject=llamada.remoteStream; };
-      pc.onconnectionstatechange=()=>{
-        if(pc.connectionState==="connected"){ llamada.connected=true; document.getElementById("callStatus")?.replaceChildren(document.createTextNode("Conectada")); }
-        if(["failed","closed","disconnected"].includes(pc.connectionState) && llamada.connected){ finalizarLlamada("conexión perdida",false); }
-      };
-      return pc;
-    }
-    async function prepararLlamadaMedia(tipo){
-      llamada.stream=await obtenerMedia(tipo);
-      llamada.remoteStream=new MediaStream();
-      llamada.pc=crearPeer(); llamada.stream.getTracks().forEach(t=>llamada.pc.addTrack(t,llamada.stream));
-      const local=document.getElementById("callLocal"); if(local){ local.srcObject=llamada.stream; local.muted=true; }
-    }
-    function mostrarLlamada(tipo,nombre,entrante=false){
-      const video=tipo==="video";
-      const overlay=callDialog(video ? `<div class="call-card video"><div class="call-video-wrap"><video id="callRemote" class="call-remote" autoplay playsinline></video><video id="callLocal" class="call-local" autoplay muted playsinline></video></div><div class="call-top" style="margin-top:12px"><div class="call-avatar"><i class="ri-vidicon-line"></i></div><div><div class="call-name">${callSafeText(nombre)}</div><div class="call-status" id="callStatus">${entrante?"Videollamada entrante":"Llamando…"}</div></div></div><div class="call-controls">${entrante?`<button class="call-control end" id="callReject"><i class="ri-close-line"></i></button><button class="call-control" id="callAccept"><i class="ri-phone-line"></i></button>`:`<button class="call-control end" id="callHang"><i class="ri-phone-off-line"></i></button>`}</div></div>` : `<div class="call-card"><div class="call-top"><div class="call-avatar"><i class="ri-phone-line"></i></div><div><div class="call-name">${callSafeText(nombre)}</div><div class="call-status" id="callStatus">${entrante?"Llamada entrante":"Llamando…"}</div></div></div><div class="call-controls">${entrante?`<button class="call-control end" id="callReject"><i class="ri-close-line"></i></button><button class="call-control" id="callAccept"><i class="ri-phone-line"></i></button>`:`<button class="call-control end" id="callHang"><i class="ri-phone-off-line"></i></button>`}</div></div>`);
-      if(entrante){ document.getElementById("callReject")?.addEventListener("click",()=>rechazarLlamada()); document.getElementById("callAccept")?.addEventListener("click",()=>aceptarLlamada()); }
-      else document.getElementById("callHang")?.addEventListener("click",()=>finalizarLlamada("cancelada",true));
-      return overlay;
-    }
-    async function iniciarLlamada(tipo){
-      if(!convActiva||!destinatarioId) return;
-      if(llamada.pc){ alert("Ya tienes una llamada activa."); return; }
-      try{
-        // IMPORTANTE: getUserMedia ocurre directamente después del toque del usuario en Android.
-        await prepararLlamadaMedia(tipo);
-        llamada={...llamada,tipo,convId:convActiva,caller:true,connected:false,peerSocketId:null};
-        // El socket del receptor no es necesario: el servidor enruta por userId.
-        mostrarLlamada(tipo,document.querySelector(".chat-person strong")?.textContent?.trim()||"Usuario",false);
-        socket.emit("llamada:invitar",{destinatarioId,convId:convActiva,tipo,emisor:yo});
-        addCallMessage(tipo==="video"?"Videollamada":"Llamada de voz","Llamando…");
-        setTimeout(()=>{ if(llamada.pc && !llamada.connected && llamada.caller) finalizarLlamada("sin respuesta",true); },30000);
-      }catch(e){ localMediaError(e,tipo); limpiarLlamada(); }
-    }
-    async function aceptarLlamada(){
-      if(!llamada.pc||!llamada.stream){
-        try{ await prepararLlamadaMedia(llamada.tipo); }catch(e){ localMediaError(e,llamada.tipo); socket.emit("llamada:respuesta",{callerSocketId:llamada.peerSocketId,convId:llamada.convId,aceptada:false,motivo:e.name||"permiso"}); limpiarLlamada(); return; }
-      }
-      document.getElementById("callStatus")?.replaceChildren(document.createTextNode("Conectando…"));
-      socket.emit("llamada:respuesta",{callerSocketId:llamada.peerSocketId,convId:llamada.convId,aceptada:true});
-      // El llamante crea el offer después de recibir aceptación.
-    }
-    function rechazarLlamada(){ if(llamada.peerSocketId) socket.emit("llamada:respuesta",{callerSocketId:llamada.peerSocketId,convId:llamada.convId,aceptada:false,motivo:"rechazada"}); addCallMessage(llamada.tipo==="video"?"Videollamada":"Llamada de voz","Rechazada"); limpiarLlamada(); }
-    async function crearOffer(){ const offer=await llamada.pc.createOffer(); await llamada.pc.setLocalDescription(offer); socket.emit("llamada:signal",{targetSocketId:llamada.peerSocketId,kind:"offer",data:offer,convId:llamada.convId}); }
-    async function procesarSignal(msg){
-      if(!llamada.pc) return;
-      if(msg.kind==="offer"){
-        await llamada.pc.setRemoteDescription(msg.data); const answer=await llamada.pc.createAnswer(); await llamada.pc.setLocalDescription(answer); socket.emit("llamada:signal",{targetSocketId:msg.fromSocketId,kind:"answer",data:answer,convId:llamada.convId});
-      }else if(msg.kind==="answer") await llamada.pc.setRemoteDescription(msg.data);
-      else if(msg.kind==="ice"){
-        if(llamada.pc.remoteDescription) await llamada.pc.addIceCandidate(msg.data); else llamada.iceQueue.push(msg.data);
-      }
-      if(llamada.pc.remoteDescription && llamada.iceQueue.length){ const q=[...llamada.iceQueue]; llamada.iceQueue=[]; for(const c of q){try{await llamada.pc.addIceCandidate(c)}catch{}} }
-    }
-    function limpiarLlamada(){
-      llamada.stream?.getTracks().forEach(t=>t.stop()); llamada.remoteStream?.getTracks().forEach(t=>t.stop()); try{llamada.pc?.close()}catch{}
-      llamada={pc:null,stream:null,remoteStream:null,tipo:null,convId:null,peerSocketId:null,caller:false,iceQueue:[],connected:false}; closeCallUI();
-    }
-    function finalizarLlamada(motivo="finalizada",notificar=true){ const target=llamada.peerSocketId; const cid=llamada.convId; if(notificar&&target) socket.emit("llamada:finalizar",{targetSocketId:target,convId:cid,motivo}); addCallMessage(cid&&llamada.tipo==="video"?"Videollamada":"Llamada de voz",motivo); limpiarLlamada(); }
-
-    socket.on("llamada:entrante", data=>{
-      if(llamada.pc){ socket.emit("llamada:respuesta",{callerSocketId:data.callerSocketId,convId:data.convId,aceptada:false,motivo:"ocupado"}); return; }
-      llamada={pc:null,stream:null,remoteStream:null,tipo:data.tipo,convId:data.convId,peerSocketId:data.callerSocketId,caller:false,iceQueue:[],connected:false};
-      mostrarLlamada(data.tipo,data.emisor?.nombre||"Usuario",true);
-      if(convActiva!==data.convId){ cargarConversaciones(); }
-      addCallMessage(data.tipo==="video"?"Videollamada":"Llamada de voz","Llamada entrante");
-    });
-    socket.on("llamada:respuesta",async data=>{
-      if(!llamada.pc||llamada.convId!==data.convId) return;
-      if(!data.aceptada){ addCallMessage(llamada.tipo==="video"?"Videollamada":"Llamada de voz",data.motivo||"No aceptada"); limpiarLlamada(); return; }
-      document.getElementById("callStatus")?.replaceChildren(document.createTextNode("Conectando…"));
-      // El socket del receptor viene en la respuesta solo indirectamente: usamos el room socketId no disponible.
-      // Se resuelve solicitando señal al servidor mediante un evento de enlace.
-      socket.emit("llamada:signalTarget",{destinatarioId,convId:llamada.convId});
-    });
-    socket.on("llamada:signalTarget", async ({targetSocketId,convId})=>{ if(llamada.caller&&llamada.convId===convId){ llamada.peerSocketId=targetSocketId; await crearOffer(); } });
-    socket.on("llamada:signal", async msg=>{ if(!llamada.convId) return; if(!llamada.peerSocketId) llamada.peerSocketId=msg.fromSocketId; if(llamada.convId===msg.convId) { try{ await procesarSignal(msg); }catch(e){ console.error("WebRTC signal",e); } } });
-    socket.on("llamada:finalizada", data=>{ if(llamada.convId===data.convId){ addCallMessage(llamada.tipo==="video"?"Videollamada":"Llamada de voz",data.motivo||"Finalizada"); limpiarLlamada(); } });
-</script>
+  </script>
 
 </body>
 </html>
