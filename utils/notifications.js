@@ -1,5 +1,6 @@
 const Notification = require("../models/Notification");
 const { enviarPushAUsuario } = require("./push");
+const { trigger, channelForUser } = require("./pusher");
 
 const TEXTOS_PUSH = {
   mensaje: "te envio un mensaje",
@@ -40,6 +41,12 @@ async function crearNotificacion({
 
   if (io) {
     io.to(`user_${String(receptor)}`).emit("nuevaNotificacion", completa);
+  }
+
+  try {
+    await trigger(channelForUser(receptor), "nuevaNotificacion", completa);
+  } catch (realtimeError) {
+    console.error("Error enviando notificación por Pusher:", realtimeError);
   }
 
   const emisorData = completa?.emisor || {};
