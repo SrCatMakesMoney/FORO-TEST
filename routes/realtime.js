@@ -5,6 +5,7 @@ const { authenticate, trigger, channelForUser, getConfig } = require("../utils/p
 const router = express.Router();
 
 
+
 router.get("/config", auth, (req, res) => {
   try {
     const { key, cluster } = getConfig();
