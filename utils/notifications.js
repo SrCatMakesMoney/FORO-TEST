@@ -1,14 +1,6 @@
 const Notification = require("../models/Notification");
 const { trigger, channelForUser } = require("./pusher");
 
-const TEXTOS_PUSH = {
-  mensaje: "te envio un mensaje",
-  follow: "empezo a seguirte",
-  like: "le dio me gusta a tu publicacion",
-  comentario: "comento en tu publicacion",
-  like_comentario: "le dio me gusta a tu comentario"
-};
-
 async function crearNotificacion({
   io,
   receptor,
@@ -38,17 +30,25 @@ async function crearNotificacion({
     .populate("emisor", "nombre handle avatar avatarTipo personalizacion")
     .lean();
 
+  // Compatibilidad temporal con el Socket.IO antiguo si existe.
   if (io) {
-    io.to(`user_${String(receptor)}`).emit("nuevaNotificacion", completa);
+    try {
+      io.to(`user_${String(receptor)}`).emit("nuevaNotificacion", completa);
+    } catch (error) {
+      console.warn("Socket.IO legacy notification:", error.message);
+    }
   }
 
+  // Tiempo real principal: Pusher.
   try {
     await trigger(channelForUser(receptor), "nuevaNotificacion", completa);
   } catch (realtimeError) {
     console.error("Error enviando notificación por Pusher:", realtimeError);
   }
 
-  // Web Push nativo desactivado: las notificaciones en tiempo real se entregan exclusivamente por Pusher.
+  // IMPORTANTE: no llamar a web-push aquí.
+  // Foro Ubre usa Pusher para avisos en tiempo real y así no aparece
+  // la notificación nativa gigante del navegador/dispositivo.
 
   return completa;
 }
