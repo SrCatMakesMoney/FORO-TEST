@@ -3342,3 +3342,194 @@ a {
 .mensaje-llamada.finalizada { opacity:.65; }
 @keyframes callEventIn { from { opacity:0; transform:translateY(6px) scale(.98); } to { opacity:1; transform:none; } }
 
+
+/* ============================================================
+   LLAMADAS V2 — VIDEO ESTABLE + MOBILE SAFE AREA
+   ============================================================ */
+.call-overlay .call-window {
+  isolation: isolate;
+}
+
+.call-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: block;
+  contain: layout paint;
+}
+
+.call-remote-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity .2s ease, visibility .2s ease;
+}
+
+.call-remote-placeholder.has-remote-video {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.call-remote-video {
+  position: absolute !important;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  object-position: center center;
+  background: #050607;
+  border: 0;
+  outline: 0;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.call-remote-video:not(.has-stream) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.call-remote-video.has-stream {
+  opacity: 1;
+}
+
+.call-local-video {
+  position: absolute !important;
+  z-index: 8;
+  right: 18px;
+  bottom: 94px;
+  width: clamp(104px, 23vw, 168px);
+  height: clamp(148px, 32vw, 236px);
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.22);
+  background: #090a0c;
+  box-shadow: 0 18px 48px rgba(0,0,0,.55), 0 0 0 1px rgba(0,0,0,.22);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.call-local-video:not(.has-stream) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.call-local-video.has-stream {
+  opacity: 1;
+}
+
+.call-topbar,
+.call-controls,
+.call-incoming-actions {
+  z-index: 12;
+}
+
+.call-overlay.video-call .call-stage {
+  background: #050607;
+}
+
+.call-overlay.video-call .call-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0,0,0,.34), transparent 18%, transparent 70%, rgba(0,0,0,.42));
+}
+
+.call-overlay.video-call .call-local-video,
+.call-overlay.video-call .call-controls,
+.call-overlay.video-call .call-topbar,
+.call-overlay.video-call .call-incoming-actions {
+  z-index: 14;
+}
+
+.call-overlay.minimized .call-remote-video {
+  object-fit: cover;
+}
+
+@media (max-width: 700px) {
+  .call-window {
+    height: 100dvh !important;
+    min-height: 100svh;
+  }
+
+  .call-stage {
+    height: 100%;
+  }
+
+  .call-local-video {
+    right: 12px;
+    bottom: calc(104px + env(safe-area-inset-bottom));
+    width: 104px;
+    height: 148px;
+    border-radius: 17px;
+  }
+
+  .call-controls {
+    bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+
+  .call-incoming-actions {
+    bottom: calc(28px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 430px) {
+  .call-local-video {
+    width: 92px;
+    height: 130px;
+    right: 10px;
+    bottom: calc(98px + env(safe-area-inset-bottom));
+    border-radius: 15px;
+  }
+
+  .call-control {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .call-local-video {
+    width: 96px;
+    height: 128px;
+    right: calc(10px + env(safe-area-inset-right));
+    bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+
+  .call-controls {
+    bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Historial persistente de llamadas */
+.mensaje-llamada.historial-llamada {
+  background: linear-gradient(145deg, rgba(114,242,139,.055), rgba(255,255,255,.018));
+}
+
+.mensaje-llamada.historial-llamada .mensaje-llamada-status {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  color: #72f28b;
+  background: rgba(114,242,139,.08);
+}
