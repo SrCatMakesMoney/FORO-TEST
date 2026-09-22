@@ -529,7 +529,9 @@
       localStream: null,
       remoteStream: null,
       pendingCandidates: [],
-      timeout: null
+      timeout: null,
+      startedAt: null,
+      connectedAt: null
     };
 
 
@@ -688,6 +690,8 @@
         remoteStream: null,
         pendingCandidates: [],
         remoteDescriptionSet: false,
+        startedAt: null,
+        connectedAt: null,
         timeout: setTimeout(() => {
           if (llamada.activa && llamada.role === "receiver") {
             finalizarLlamadaLocal("La llamada expiró.", true);
@@ -1451,6 +1455,9 @@
       panel.querySelector("#callCameraBtn").style.display = videoCall ? "grid" : "none";
       panel.querySelector("#remoteCallVideo").style.display = videoCall ? "block" : "none";
       panel.querySelector("#localCallVideo").style.display = videoCall ? "block" : "none";
+      panel.querySelector("#remoteCallVideo").classList.remove("has-stream");
+      panel.querySelector("#localCallVideo").classList.remove("has-stream");
+      panel.querySelector("#callRemotePlaceholder").classList.remove("has-remote-video");
 
       const avatarWrap = panel.querySelector("#callAvatarWrap");
       avatarWrap.innerHTML = llamada.avatarTipo === "video"
@@ -1485,7 +1492,9 @@
         remoteStream: null,
         pendingCandidates: [],
         remoteDescriptionSet: false,
-        timeout: null
+        timeout: null,
+        startedAt: Date.now(),
+        connectedAt: null
       };
 
       mostrarPanelLlamada("outgoing");
@@ -1618,23 +1627,28 @@
         };
 
         llamada.peer.ontrack = (event) => {
-          if (!llamada.remoteStream) {
-            llamada.remoteStream = new MediaStream();
+          if (!llamada.remoteStream) llamada.remoteStream = new MediaStream();
+
+          if (!llamada.remoteStream.getTracks().some(track => track.id === event.track.id)) {
+            llamada.remoteStream.addTrack(event.track);
           }
-
-          const exists = llamada.remoteStream
-            .getTracks()
-            .some(track => track.id === event.track.id);
-
-          if (!exists) llamada.remoteStream.addTrack(event.track);
 
           const remote = document.getElementById("remoteCallVideo");
-          if (remote && remote.srcObject !== llamada.remoteStream) {
+          const placeholder = document.getElementById("callRemotePlaceholder");
+          if (remote) {
+            remote.autoplay = true;
+            remote.playsInline = true;
             remote.srcObject = llamada.remoteStream;
-            remote.play().catch(() => {});
+            remote.classList.add("has-stream");
+            remote.play().catch(() => {
+              // Algunos navegadores móviles requieren un gesto; el botón de cámara/overlay
+              // vuelve a intentar play cuando el usuario interactúa.
+            });
           }
+          if (placeholder && llamada.tipo === "video") placeholder.classList.add("has-remote-video");
 
           actualizarEstadoLlamada("Conectado");
+          llamada.connectedAt ||= Date.now();
           actualizarEventoLlamada(llamada.callId, "conectada");
         };
 
@@ -1642,6 +1656,7 @@
           const state = llamada.peer?.connectionState;
 
           if (state === "connected") {
+            llamada.connectedAt ||= Date.now();
             actualizarEstadoLlamada("Conectado");
             actualizarEventoLlamada(llamada.callId, "conectada");
           } else if (["failed", "disconnected", "closed"].includes(state)) {
@@ -1662,7 +1677,11 @@
 
         const local = document.getElementById("localCallVideo");
         if (local) {
+          local.autoplay = true;
+          local.muted = true;
+          local.playsInline = true;
           local.srcObject = llamada.localStream;
+          local.classList.add("has-stream");
           local.play().catch(() => {});
         }
       }
@@ -1714,8 +1733,21 @@
 
       const peerId = llamada.peerId;
       const callId = llamada.callId;
+      const convId = llamada.convId || convActiva;
+      const tipo = llamada.tipo || "audio";
+      const duracion = llamada.connectedAt
+        ? Math.max(0, Math.round((Date.now() - llamada.connectedAt) / 1000))
+        : 0;
 
       clearTimeout(llamada.timeout);
+
+      // Solo persistimos llamadas que realmente llegaron a conectarse.
+      // Invitaciones rechazadas, permisos fallidos o llamadas que expiraron no entran al historial.
+      if (convId && callId && llamada.connectedAt) {
+        guardarHistorialLlamada({ convId, callId, tipo, duracion }).catch(error => {
+          console.warn("No se pudo guardar el historial de llamada:", error);
+        });
+      }
 
       if (avisar && peerId && callId) {
         socket.emit("llamada:finalizada", {
@@ -1760,7 +1792,9 @@
         remoteStream: null,
         pendingCandidates: [],
         remoteDescriptionSet: false,
-        timeout: null
+        timeout: null,
+        startedAt: null,
+        connectedAt: null
       };
     }
 
@@ -1925,6 +1959,27 @@
 
       if (!container) return;
 
+      if (msg.tipo === "llamada") {
+        const video = msg.llamadaTipo === "video";
+        const estado = msg.llamadaEstado || "finalizada";
+        const duracion = Number(msg.llamadaDuracion || 0);
+        const minutos = Math.floor(duracion / 60);
+        const segundos = String(duracion % 60).padStart(2, "0");
+        const el = document.createElement("div");
+        el.className = "mensaje-llamada historial-llamada finalizada";
+        el.dataset.callId = String(msg.llamadaId || msg._id);
+        el.innerHTML = `
+          <div class="mensaje-llamada-icon"><i class="${video ? "ri-video-chat-fill" : "ri-phone-fill"}"></i></div>
+          <div class="mensaje-llamada-copy">
+            <strong>${video ? "Videollamada" : "Llamada de voz"}</strong>
+            <span>${estado === "finalizada" ? `Llamada finalizada${duracion ? ` · ${minutos}:${segundos}` : ""}` : escHtml(estado)}</span>
+          </div>
+          <div class="mensaje-llamada-status"><i class="ri-check-line"></i></div>
+        `;
+        container.appendChild(el);
+        return;
+      }
+
 
       if (
         document.getElementById(
@@ -1984,6 +2039,22 @@
     }
 
 
+
+    async function guardarHistorialLlamada({ convId, callId, tipo, duracion = 0 }) {
+      const res = await fetch(`${API}/messages/${encodeURIComponent(convId)}/call-history`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ callId, tipo, duracion })
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.mensaje || "No se pudo guardar la llamada.");
+      if (data?.mensaje) renderMensaje(data.mensaje);
+      return data?.mensaje;
+    }
 
     /* =========================================================
        EVENTO DE LLAMADA EN EL CHAT
