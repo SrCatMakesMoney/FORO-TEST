@@ -30,15 +30,16 @@
   position: fixed;
   z-index: 9998;
   top: 76px;
-  left: 86px;
-  width: min(410px, calc(100vw - 108px));
-  max-height: min(650px, calc(100vh - 100px));
+  right: 20px;
+  left: auto;
+  width: min(390px, calc(100vw - 40px));
+  max-height: min(560px, calc(100vh - 100px));
   overflow: hidden;
   display: none;
   flex-direction: column;
   border: 1px solid rgba(255,255,255,.09);
   border-radius: 24px;
-  background: rgba(10,12,14,.92);
+  background: rgba(10,12,14,.96);
   backdrop-filter: blur(30px) saturate(135%);
   -webkit-backdrop-filter: blur(30px) saturate(135%);
   box-shadow: 0 30px 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05);
@@ -47,11 +48,6 @@
 .notifications-panel.open {
   display:flex;
   animation: notificationPanelIn .22s ease both;
-}
-
-@keyframes notificationPanelIn {
-  from { opacity:0; transform:translateY(-8px) scale(.98); }
-  to { opacity:1; transform:none; }
 }
 
 .notifications-header {
@@ -195,11 +191,11 @@
 
 @media (max-width: 700px) {
   .notifications-panel {
-    top: max(10px, env(safe-area-inset-top));
-    left:10px;
+    top: calc(10px + env(safe-area-inset-top));
     right:10px;
+    left:10px;
     width:auto;
-    max-height:calc(100vh - 24px);
+    max-height:min(560px, calc(100vh - 90px));
     border-radius:22px;
   }
 
