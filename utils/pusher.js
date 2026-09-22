@@ -54,8 +54,12 @@ async function pusherRequest(path, method, body = null) {
 
 async function trigger(channel, event, data) {
   if (!channel || !event) throw new Error("Canal y evento son obligatorios.");
+
+  // Pusher Channels HTTP API no admite ":" en nombres de eventos.
+  const safeEvent = String(event).replace(/[^A-Za-z0-9_-]/g, "-");
+
   return pusherRequest(`/apps/${getConfig().appId}/events`, "POST", {
-    name: event,
+    name: safeEvent,
     channels: [channel],
     data: JSON.stringify(data || {})
   });
