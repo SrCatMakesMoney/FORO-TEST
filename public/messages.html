@@ -409,7 +409,7 @@
        SOCKET.IO
   ========================================================== -->
 
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/realtime.js"></script>
 
 
   <!-- =========================================================
@@ -538,17 +538,7 @@
        SOCKET.IO
     ========================================================== */
 
-    const socket = io();
-
-
-    function registrarSocket() {
-      if (yo?._id && socket?.connected) {
-        socket.emit("registrar", String(yo._id));
-      }
-    }
-
-    socket.on("connect", registrarSocket);
-    registrarSocket();
+    const socket = window.foroRealtime;
 
 
     socket.on(
@@ -1494,34 +1484,9 @@
       insertarEventoLlamada("outgoing", convActiva, callId, llamada.tipo, llamada.nombre);
       actualizarEstadoLlamada("Llamando…");
 
-      // IMPORTANTE EN ANDROID: getUserMedia debe ejecutarse como consecuencia
-      // directa del toque del usuario. Si esperamos al evento Socket.IO
-      // "llamada:aceptada", algunos navegadores móviles pueden bloquear el
-      // prompt de permisos porque ya no existe un gesto del usuario.
-      try {
-        if (!window.isSecureContext) {
-          throw new Error("SECURE_CONTEXT_REQUIRED");
-        }
-
-        if (!navigator.mediaDevices?.getUserMedia) {
-          throw new Error("MEDIA_DEVICES_UNAVAILABLE");
-        }
-
-        actualizarEstadoLlamada(
-          llamada.tipo === "video"
-            ? "Solicitando cámara y micrófono…"
-            : "Solicitando micrófono…"
-        );
-
-        await prepararPeer(false, true);
-      } catch (error) {
-        console.error("Permisos multimedia al iniciar:", error);
-        finalizarLlamadaLocal(mediaErrorMessage(error), false);
-        return;
-      }
-
-      actualizarEstadoLlamada("Llamando…");
-
+      // NO pedimos cámara/micrófono todavía. Primero enviamos la
+      // invitación. Esto evita que una falta de permisos en el iPhone
+      // o tablet mate la llamada antes de que llegue al otro usuario.
       if (!socket.connected) {
         actualizarEstadoLlamada("Conectando con Foro Ubre…");
         await esperarSocket(5000);
@@ -1577,17 +1542,9 @@
     }
 
     function mediaErrorMessage(error) {
-      if (error?.message === "SECURE_CONTEXT_REQUIRED" || !window.isSecureContext) {
-        return "Foro Ubre necesita HTTPS para usar el micrófono y la cámara. Abre la versión segura del sitio (https://).";
-      }
-
-      if (error?.message === "MEDIA_DEVICES_UNAVAILABLE" || !navigator.mediaDevices?.getUserMedia) {
-        return "Este navegador no permite usar micrófono/cámara en esta página.";
-      }
-
       const name = error?.name || "";
       if (name === "NotAllowedError" || name === "PermissionDeniedError") {
-        return "Permiso bloqueado. En Android toca el candado de la barra de direcciones → Permisos → Micrófono/Cámara → Permitir y vuelve a cargar Foro Ubre.";
+        return "Permiso de micrófono/cámara bloqueado. Actívalo en los ajustes del navegador.";
       }
       if (name === "NotFoundError" || name === "DevicesNotFoundError") {
         return "No se encontró un micrófono o cámara disponible.";
@@ -1610,14 +1567,10 @@
 
       try {
         mostrarPanelLlamada("active");
-        actualizarEstadoLlamada(
-          llamada.tipo === "video"
-            ? "Solicitando cámara y micrófono…"
-            : "Solicitando micrófono…"
-        );
+        actualizarEstadoLlamada("Solicitando micrófono/cámara…");
 
-        // Este getUserMedia ocurre dentro del clic de Aceptar.
-        // Es el momento más compatible con Android/iOS para mostrar permisos.
+        // El clic de Aceptar es una acción del usuario, ideal para que
+        // Safari/iOS/Android permitan getUserMedia().
         await prepararPeer(false, true);
 
         actualizarEstadoLlamada("Conectando…");
@@ -1910,6 +1863,7 @@
             msg.mensaje
           );
         }
+
 
 
         renderMensaje(msg);
