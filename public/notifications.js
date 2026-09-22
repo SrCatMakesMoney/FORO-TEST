@@ -1,12 +1,45 @@
 /* ============================================================
-   FORO UBRE — NOTIFICACIONES + WEB PUSH
+   FORO UBRE — NOTIFICACIONES EN TIEMPO REAL
+   Pusher + panel interno + toast aislado.
+   Web Push nativo NO se registra desde este archivo.
    ============================================================ */
 (() => {
   const API = "/api";
   const token = localStorage.getItem("fu_token");
   const usuario = JSON.parse(localStorage.getItem("fu_usuario") || "null");
 
-  if (!token || !usuario) return;
+  if (!token || !usuario?._id) return;
+
+  // Retira service workers y suscripciones Web Push antiguas.
+  // Esto evita que una instalación vieja siga mostrando avisos nativos.
+  async function limpiarWebPushAntiguo() {
+    if (!("serviceWorker" in navigator)) return;
+
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        try {
+          const subscription = await registration.pushManager?.getSubscription();
+          if (subscription) {
+            try {
+              await fetch(`${API}/push/subscribe`, {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ endpoint: subscription.endpoint })
+              });
+            } catch {}
+            try { await subscription.unsubscribe(); } catch {}
+          }
+        } catch {}
+        try { await registration.unregister(); } catch {}
+      }
+    } catch {}
+  }
+
+  limpiarWebPushAntiguo();
 
   const authHeaders = () => ({
     Authorization: `Bearer ${token}`,
@@ -37,7 +70,7 @@
     if (h < 24) return `hace ${h} h`;
     const d = Math.floor(h / 24);
     if (d < 7) return `hace ${d} d`;
-    return new Date(date).toLocaleDateString("es-MX", { day:"numeric", month:"short" });
+    return new Date(date).toLocaleDateString("es-MX", { day: "numeric", month: "short" });
   };
 
   const icon = {
@@ -48,16 +81,15 @@
     like_comentario: "ri-heart-2-fill"
   };
 
-  let panel;
-  let list;
-  let badge;
-  let socket;
-  let pushStatus = null;
+  let panel = null;
+  let list = null;
+  let badge = null;
+  let realtimeBound = false;
 
   function findNav() {
     return document.querySelector("aside .main-nav") ||
-           document.querySelector("aside nav") ||
-           document.querySelector(".main-nav");
+      document.querySelector("aside nav") ||
+      document.querySelector(".main-nav");
   }
 
   function buildUI() {
@@ -95,14 +127,6 @@
         </div>
         <button class="notifications-readall" id="notificationsReadAll">Leer todo</button>
       </header>
-      <div class="notifications-push" id="notificationsPushBox">
-        <div class="notification-icon"><i class="ri-smartphone-line"></i></div>
-        <div class="notifications-push-copy">
-          <strong>Notificaciones del teléfono</strong>
-          <span id="notificationsPushText">Actívalas para recibir avisos aunque cierres Foro Ubre.</span>
-        </div>
-        <button class="notifications-push-btn" id="notificationsPushBtn">Activar</button>
-      </div>
       <div class="notifications-list" id="notificationsList">
         <div class="notifications-empty"><i class="ri-loader-4-line ri-spin"></i>Cargando...</div>
       </div>
@@ -112,15 +136,15 @@
     list = panel.querySelector("#notificationsList");
 
     panel.querySelector("#notificationsReadAll").addEventListener("click", async () => {
-      await fetch(`${API}/notifications/read-all`, {
-        method: "PUT",
-        headers: authHeaders()
-      });
+      try {
+        await fetch(`${API}/notifications/read-all`, {
+          method: "PUT",
+          headers: authHeaders()
+        });
+      } catch {}
       document.querySelectorAll(".notification-item.unread").forEach(el => el.classList.remove("unread"));
       updateCount(0);
     });
-
-    panel.querySelector("#notificationsPushBtn").addEventListener("click", activarPush);
 
     document.addEventListener("click", (e) => {
       if (!panel?.classList.contains("open")) return;
@@ -133,10 +157,7 @@
   function togglePanel() {
     if (!panel) return;
     panel.classList.toggle("open");
-    if (panel.classList.contains("open")) {
-      cargarNotificaciones();
-      cargarPushStatus();
-    }
+    if (panel.classList.contains("open")) cargarNotificaciones();
   }
 
   function updateCount(count) {
@@ -157,7 +178,6 @@
 
   async function cargarNotificaciones() {
     if (!list) return;
-
     try {
       const res = await fetch(`${API}/notifications?limite=30`, { headers: authHeaders() });
       if (!res.ok) throw new Error();
@@ -173,9 +193,7 @@
       }
 
       list.innerHTML = data.map(renderNotification).join("");
-      list.querySelectorAll(".notification-item").forEach(el => {
-        el.addEventListener("click", () => abrirNotificacion(el.dataset.id, el.dataset.url));
-      });
+      bindNotificationItems();
     } catch {
       list.innerHTML = `<div class="notifications-empty"><i class="ri-error-warning-line"></i>No se pudieron cargar.</div>`;
     }
@@ -183,15 +201,13 @@
 
   function renderNotification(n) {
     const u = n.emisor || {};
-    const texto = n.tipo === "mensaje"
-      ? `<strong>${esc(u.nombre || "Alguien")}</strong> te envió un mensaje`
-      : n.tipo === "follow"
-        ? `<strong>${esc(u.nombre || "Alguien")}</strong> empezó a seguirte`
-        : n.tipo === "like"
-          ? `<strong>${esc(u.nombre || "Alguien")}</strong> le dio me gusta a tu publicación`
-          : n.tipo === "comentario"
-            ? `<strong>${esc(u.nombre || "Alguien")}</strong> comentó en tu publicación`
-            : `<strong>${esc(u.nombre || "Alguien")}</strong> le dio me gusta a tu comentario`;
+    let texto = `<strong>${esc(u.nombre || "Alguien")}</strong> tiene una nueva notificación`;
+
+    if (n.tipo === "mensaje") texto = `<strong>${esc(u.nombre || "Alguien")}</strong> te envió un mensaje`;
+    if (n.tipo === "follow") texto = `<strong>${esc(u.nombre || "Alguien")}</strong> empezó a seguirte`;
+    if (n.tipo === "like") texto = `<strong>${esc(u.nombre || "Alguien")}</strong> le dio me gusta a tu publicación`;
+    if (n.tipo === "comentario") texto = `<strong>${esc(u.nombre || "Alguien")}</strong> comentó en tu publicación`;
+    if (n.tipo === "like_comentario") texto = `<strong>${esc(u.nombre || "Alguien")}</strong> le dio me gusta a tu comentario`;
 
     return `
       <article class="notification-item ${n.leida ? "" : "unread"}"
@@ -200,11 +216,17 @@
         ${avatar(u)}
         <div class="notification-content">
           <div class="notification-text">${texto}</div>
-          ${n.tipo === "comentario" && n.texto ? `<div style="margin-top:4px;color:#92979e;font-size:.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">“${esc(n.texto)}”</div>` : ""}
+          ${n.tipo === "comentario" && n.texto ? `<div class="notification-preview">“${esc(n.texto)}”</div>` : ""}
           <div class="notification-time">${timeAgo(n.createdAt)}</div>
         </div>
         <div class="notification-icon"><i class="${icon[n.tipo] || "ri-notification-3-fill"}"></i></div>
       </article>`;
+  }
+
+  function bindNotificationItems() {
+    list?.querySelectorAll(".notification-item").forEach(el => {
+      el.addEventListener("click", () => abrirNotificacion(el.dataset.id, el.dataset.url));
+    });
   }
 
   async function abrirNotificacion(id, url) {
@@ -220,347 +242,127 @@
     cargarCount();
   }
 
+  /* Toast aislado: NO usa .notification-toast para evitar cualquier CSS viejo. */
   function showToast(n) {
-  const old = document.querySelector(".notification-toast");
-  old?.remove();
+    document.querySelectorAll(".fu-live-toast").forEach(el => el.remove());
 
-  // Crear estilos una sola vez
-  if (!document.getElementById("notificationToastStyles")) {
-    const style = document.createElement("style");
-    style.id = "notificationToastStyles";
-    style.textContent = `
-      .notification-toast {
-        position: fixed !important;
-        top: 20px !important;
-        right: 20px !important;
-        z-index: 2147483647 !important;
+    const u = n?.emisor || {};
+    const tipoTexto = {
+      mensaje: "te envió un mensaje",
+      follow: "empezó a seguirte",
+      like: "le dio me gusta a tu publicación",
+      comentario: "comentó en tu publicación",
+      like_comentario: "le dio me gusta a tu comentario"
+    };
 
-        width: min(380px, calc(100vw - 32px));
-        min-height: 68px;
+    const toast = document.createElement("button");
+    toast.type = "button";
+    toast.className = "fu-live-toast";
+    toast.setAttribute("aria-label", "Nueva notificación");
 
-        display: flex !important;
-        align-items: center;
-        gap: 12px;
+    /* Todo queda inline para que ningún CSS antiguo pueda convertirlo en un panel. */
+    Object.assign(toast.style, {
+      position: "fixed",
+      top: "max(14px, env(safe-area-inset-top))",
+      right: "14px",
+      left: "auto",
+      bottom: "auto",
+      width: "min(360px, calc(100vw - 28px))",
+      height: "auto",
+      minHeight: "0",
+      maxHeight: "92px",
+      margin: "0",
+      padding: "12px 14px",
+      display: "flex",
+      alignItems: "center",
+      gap: "11px",
+      boxSizing: "border-box",
+      overflow: "hidden",
+      border: "1px solid rgba(255,255,255,.11)",
+      borderRadius: "17px",
+      background: "linear-gradient(135deg, rgba(28,31,36,.97), rgba(9,11,14,.98))",
+      color: "#fff",
+      boxShadow: "0 18px 45px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.06)",
+      backdropFilter: "blur(22px) saturate(140%)",
+      WebkitBackdropFilter: "blur(22px) saturate(140%)",
+      zIndex: "2147483647",
+      cursor: "pointer",
+      textAlign: "left",
+      font: "inherit",
+      transform: "translateY(-8px)",
+      opacity: "0",
+      transition: "opacity .22s ease, transform .22s ease"
+    });
 
-        padding: 13px 15px;
-
-        background:
-          linear-gradient(
-            135deg,
-            rgba(30, 33, 38, .96),
-            rgba(10, 12, 15, .97)
-          ) !important;
-
-        border: 1px solid rgba(255,255,255,.10);
-        border-radius: 18px;
-
-        color: #fff;
-        box-shadow:
-          0 20px 60px rgba(0,0,0,.55),
-          0 0 0 1px rgba(255,255,255,.03),
-          inset 0 1px 0 rgba(255,255,255,.06);
-
-        backdrop-filter: blur(22px);
-        -webkit-backdrop-filter: blur(22px);
-
-        cursor: pointer;
-
-        opacity: 0;
-        transform: translate3d(0,-20px,0) scale(.96);
-
-        animation:
-          notificationToastIn .35s cubic-bezier(.2,.8,.2,1) forwards;
-      }
-
-      .notification-toast-icon {
-        width: 42px;
-        height: 42px;
-        flex: 0 0 42px;
-
-        display: grid;
-        place-items: center;
-
-        border-radius: 14px;
-
-        background: rgba(255,255,255,.08);
-        border: 1px solid rgba(255,255,255,.08);
-
-        color: #ff4d67;
-        font-size: 19px;
-      }
-
-      .notification-toast-copy {
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-      }
-
-      .notification-toast-copy strong {
-        color: #fff;
-        font-size: 14px;
-        font-weight: 750;
-
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .notification-toast-copy span {
-        color: #a7adb5;
-        font-size: 12px;
-        line-height: 1.35;
-
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-
-      .notification-toast:hover {
-        transform: translate3d(0,0,0) scale(1.01);
-        border-color: rgba(255,255,255,.16);
-      }
-
-      @keyframes notificationToastIn {
-        from {
-          opacity: 0;
-          transform: translate3d(0,-20px,0) scale(.96);
-        }
-
-        to {
-          opacity: 1;
-          transform: translate3d(0,0,0) scale(1);
-        }
-      }
-
-      @keyframes notificationToastOut {
-        from {
-          opacity: 1;
-          transform: translate3d(0,0,0) scale(1);
-        }
-
-        to {
-          opacity: 0;
-          transform: translate3d(0,-12px,0) scale(.97);
-        }
-      }
-
-      @media (max-width: 600px) {
-        .notification-toast {
-          top: calc(10px + env(safe-area-inset-top)) !important;
-          right: 10px !important;
-          left: 10px !important;
-          width: auto;
-          max-width: none;
-
-          border-radius: 17px;
-        }
-      }
+    toast.innerHTML = `
+      <span class="fu-live-toast-icon"><i class="${icon[n?.tipo] || "ri-notification-3-fill"}"></i></span>
+      <span class="fu-live-toast-copy">
+        <strong>${esc(u.nombre || "Foro Ubre")}</strong>
+        <span>${esc(tipoTexto[n?.tipo] || "tienes una nueva notificación")}</span>
+      </span>
+      <span class="fu-live-toast-close" aria-hidden="true"><i class="ri-close-line"></i></span>
     `;
 
-    document.head.appendChild(style);
-  }
+    document.body.appendChild(toast);
 
-  const u = n.emisor || {};
-
-  const toast = document.createElement("div");
-  toast.className = "notification-toast";
-  toast.setAttribute("role", "status");
-  toast.setAttribute("aria-live", "polite");
-
-  const tipoTexto = {
-    mensaje: "te envió un mensaje",
-    follow: "empezó a seguirte",
-    like: "le dio me gusta a tu publicación",
-    comentario: "comentó en tu publicación",
-    like_comentario: "le dio me gusta a tu comentario"
-  };
-
-  const accion = tipoTexto[n.tipo] || "tienes una nueva notificación";
-
-  toast.innerHTML = `
-    <div class="notification-toast-icon">
-      <i class="${icon[n.tipo] || "ri-notification-3-fill"}"></i>
-    </div>
-
-    <div class="notification-toast-copy">
-      <strong>${esc(u.nombre || "Foro Ubre")}</strong>
-      <span>${esc(accion)}</span>
-    </div>
-  `;
-
-  toast.onclick = () => {
-    toast.style.animation = "notificationToastOut .22s ease forwards";
-
-    setTimeout(() => {
-      toast.remove();
-      abrirNotificacion(n._id, n.url);
-    }, 180);
-  };
-
-  document.body.appendChild(toast);
-
-  setTimeout(() => {
-    if (!toast.isConnected) return;
-
-    toast.style.animation =
-      "notificationToastOut .25s ease forwards";
-
-    setTimeout(() => toast.remove(), 260);
-  }, 6000);
-}
-
-  function connectSocket() {
-    socket = window.foroRealtime;
-    if (!socket) return;
-
-    socket.off("nuevaNotificacion");
-    socket.on("nuevaNotificacion", (notification) => {
-      if (!notification?._id) return;
-      insertarNotificacionEnVivo(notification);
-      cargarCount();
-
-      // Una notificación entrante NUNCA debe abrir el panel grande.
-      // El panel solo se abre cuando el usuario toca "Notificaciones".
-      if (panel?.classList.contains("open")) {
-        panel.classList.remove("open");
-      }
-
-      showToast(notification);
+    requestAnimationFrame(() => {
+      toast.style.opacity = "1";
+      toast.style.transform = "translateY(0)";
     });
+
+    const close = () => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateY(-6px)";
+      setTimeout(() => toast.remove(), 230);
+    };
+
+    toast.addEventListener("click", () => {
+      close();
+      setTimeout(() => abrirNotificacion(n._id, n.url), 100);
+    });
+
+    setTimeout(close, 4500);
   }
 
   function insertarNotificacionEnVivo(n) {
     if (!list || !n?._id) return;
 
-    // Evitar duplicados si el usuario recibió el evento y luego recargó el panel.
-    if (list.querySelector(`[data-id="${CSS.escape(String(n._id))}"]`)) return;
+    const selector = `[data-id="${CSS.escape(String(n._id))}"]`;
+    if (list.querySelector(selector)) return;
 
     const empty = list.querySelector(".notifications-empty");
     if (empty) list.innerHTML = "";
 
-    const html = renderNotification(n);
-    list.insertAdjacentHTML("afterbegin", html);
+    list.insertAdjacentHTML("afterbegin", renderNotification(n));
+    bindNotificationItems();
 
-    const item = list.querySelector(`[data-id="${CSS.escape(String(n._id))}"]`);
-    item?.addEventListener("click", () => abrirNotificacion(item.dataset.id, item.dataset.url));
-
-    // Mantener el panel ligero aunque lleguen muchas notificaciones seguidas.
-    const items = list.querySelectorAll(".notification-item");
-    items.forEach((el, index) => {
+    list.querySelectorAll(".notification-item").forEach((el, index) => {
       if (index >= 30) el.remove();
     });
   }
 
-  function urlBase64ToUint8Array(base64String) {
-    const padding = "=".repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-    const rawData = atob(base64);
-    return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
-  }
+  function connectRealtime() {
+    const realtime = window.foroRealtime;
+    if (!realtime || realtimeBound) return false;
 
-  async function cargarPushStatus() {
-    const btn = document.getElementById("notificationsPushBtn");
-    const text = document.getElementById("notificationsPushText");
-    if (!btn || !text) return;
+    realtimeBound = true;
+    realtime.on("nuevaNotificacion", (notification) => {
+      if (!notification?._id) return;
+      insertarNotificacionEnVivo(notification);
+      cargarCount();
+      showToast(notification);
+    });
 
-    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
-      btn.style.display = "none";
-      text.textContent = "Este navegador no admite Web Push.";
-      return;
-    }
-
-    if (Notification.permission === "denied") {
-      btn.textContent = "Bloqueadas";
-      btn.disabled = true;
-      text.textContent = "Las notificaciones están bloqueadas en los permisos del navegador.";
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API}/push/status`, { headers: authHeaders() });
-      pushStatus = await res.json();
-      if (pushStatus.suscrito) {
-        btn.textContent = "Activadas";
-        btn.disabled = true;
-        text.textContent = "Este dispositivo recibirá avisos aunque Foro Ubre esté cerrado.";
-      } else {
-        btn.textContent = "Activar";
-        btn.disabled = false;
-      }
-    } catch {}
-  }
-
-  async function activarPush() {
-    const btn = document.getElementById("notificationsPushBtn");
-    const text = document.getElementById("notificationsPushText");
-    if (!btn || !text) return;
-
-    try {
-      if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
-        throw new Error("Este navegador no admite notificaciones Push.");
-      }
-
-      btn.disabled = true;
-      btn.textContent = "...";
-
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        btn.disabled = false;
-        btn.textContent = "Activar";
-        text.textContent = "Necesitas permitir las notificaciones en el navegador.";
-        return;
-      }
-
-      const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
-      await navigator.serviceWorker.ready;
-
-      const keyRes = await fetch(`${API}/push/vapid-public-key`, {
-        headers: authHeaders()
-      });
-      const keyData = await keyRes.json();
-      if (!keyRes.ok || !keyData.publicKey) throw new Error(keyData.mensaje || "Falta VAPID_PUBLIC_KEY");
-
-      let subscription = await registration.pushManager.getSubscription();
-
-      if (!subscription) {
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(keyData.publicKey)
-        });
-      }
-
-      const subJson = subscription.toJSON();
-      const saveRes = await fetch(`${API}/push/subscribe`, {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify(subJson)
-      });
-
-      const saveData = await saveRes.json().catch(() => ({}));
-      if (!saveRes.ok) throw new Error(saveData.mensaje || "No se pudo guardar la suscripción.");
-
-      btn.textContent = "Activadas";
-      text.textContent = "Listo. Este dispositivo recibirá avisos aunque cierres Foro Ubre.";
-      pushStatus = { suscrito: true };
-    } catch (error) {
-      console.error("Push:", error);
-      btn.disabled = false;
-      btn.textContent = "Reintentar";
-      text.textContent = error.message || "No se pudieron activar las notificaciones.";
-    }
+    return true;
   }
 
   function init() {
     buildUI();
     cargarCount();
-    connectSocket();
+    connectRealtime();
 
-    // Registrar el service worker sin pedir permiso todavía.
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
-    }
+    /* realtime.js puede terminar de cargar después de este script. */
+    window.addEventListener("foro-realtime-ready", connectRealtime, { once: false });
   }
 
   if (document.readyState === "loading") {
