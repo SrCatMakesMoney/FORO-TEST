@@ -410,64 +410,16 @@
 }
 
   function connectSocket() {
-    const registerSocket = () => {
-      if (!socket) return;
+    socket = window.foroRealtime;
+    if (!socket) return;
 
-      const registrar = () => {
-        if (usuario?._id) socket.emit("registrar", usuario._id);
-      };
-
-      // Evita listeners duplicados si la página vuelve a inicializarse.
-      socket.off("nuevaNotificacion");
-      socket.off("connect", registrar);
-
-      socket.on("nuevaNotificacion", (notification) => {
-        if (!notification?._id) return;
-
-        // Si el panel está abierto, insertamos la nueva notificación
-        // inmediatamente sin esperar a otra petición HTTP.
-        insertarNotificacionEnVivo(notification);
-        cargarCount();
-        showToast(notification);
-      });
-
-      socket.on("connect", registrar);
-      registrar();
-    };
-
-    if (window.foroNotificationSocket) {
-      socket = window.foroNotificationSocket;
-      registerSocket();
-      return;
-    }
-
-    const iniciar = () => {
-      if (typeof window.io !== "function") return;
-      socket = window.io({
-        transports: ["websocket", "polling"],
-        withCredentials: false
-      });
-      window.foroNotificationSocket = socket;
-      registerSocket();
-    };
-
-    if (typeof window.io === "function") {
-      iniciar();
-      return;
-    }
-
-    const existing = document.querySelector('script[src*="socket.io.js"]');
-    if (existing) {
-      existing.addEventListener("load", iniciar, { once: true });
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "/socket.io/socket.io.js";
-    script.async = true;
-    script.onload = iniciar;
-    script.onerror = () => console.warn("No se pudo cargar Socket.IO");
-    document.head.appendChild(script);
+    socket.off("nuevaNotificacion");
+    socket.on("nuevaNotificacion", (notification) => {
+      if (!notification?._id) return;
+      insertarNotificacionEnVivo(notification);
+      cargarCount();
+      showToast(notification);
+    });
   }
 
   function insertarNotificacionEnVivo(n) {
