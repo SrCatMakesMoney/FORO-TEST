@@ -169,4 +169,65 @@ router.post("/:convId/send", auth, async (req, res) => {
   }
 });
 
+// Guardar una llamada finalizada como evento persistente del chat.
+router.post("/:convId/call-history", auth, async (req, res) => {
+  try {
+    const { callId, tipo, duracion } = req.body || {};
+    if (!callId) return res.status(400).json({ mensaje: "callId requerido" });
+
+    const conv = await Conversation.findById(req.params.convId);
+    if (!conv) return res.status(404).json({ mensaje: "Conversación no encontrada" });
+    if (!conv.participantes.map(String).includes(String(req.usuario._id))) {
+      return res.status(403).json({ mensaje: "No tienes acceso" });
+    }
+
+    const existente = await Message.findOne({
+      conversacion: conv._id,
+      llamadaId: String(callId)
+    }).populate("remitente", "nombre handle avatar avatarTipo");
+
+    if (existente) return res.status(200).json({ mensaje: existente, duplicado: true });
+
+    const llamadaTipo = tipo === "video" ? "video" : "audio";
+    const segundos = Math.max(0, Math.min(86400, Number(duracion) || 0));
+
+    const mensaje = await Message.create({
+      conversacion: conv._id,
+      remitente: req.usuario._id,
+      contenido: llamadaTipo === "video" ? "Videollamada finalizada" : "Llamada de voz finalizada",
+      tipo: "llamada",
+      llamadaId: String(callId),
+      llamadaTipo,
+      llamadaEstado: "finalizada",
+      llamadaDuracion: segundos
+    });
+
+    await Conversation.findByIdAndUpdate(conv._id, {
+      ultimoMensaje: mensaje._id,
+      ultimaActividad: new Date()
+    });
+
+    const populated = await mensaje.populate("remitente", "nombre handle avatar avatarTipo");
+    const destinatarioId = conv.participantes
+      .map(String)
+      .find(id => id !== String(req.usuario._id));
+
+    if (destinatarioId) {
+      try {
+        await trigger(channelForUser(destinatarioId), "nuevoMensaje", {
+          convId: String(conv._id),
+          mensaje: populated
+        });
+      } catch (realtimeError) {
+        console.error("Error enviando historial de llamada por Pusher:", realtimeError);
+      }
+    }
+
+    res.status(201).json({ mensaje: populated, duplicado: false });
+  } catch (err) {
+    console.error("Historial de llamada:", err);
+    res.status(500).json({ mensaje: "Error al guardar la llamada" });
+  }
+});
+
 module.exports = router;
