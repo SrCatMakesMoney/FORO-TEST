@@ -3307,3 +3307,37 @@ a {
   }
 }
 
+
+/* ============================================================
+   EVENTOS DE LLAMADA DENTRO DEL CHAT
+   ============================================================ */
+.mensaje-llamada {
+  width: min(330px, 82%);
+  margin: 8px auto;
+  padding: 11px 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.018));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.045), 0 10px 30px rgba(0,0,0,.14);
+  animation: callEventIn .24s ease both;
+}
+.mensaje-llamada-icon {
+  width: 35px;
+  height: 35px;
+  flex: 0 0 35px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  color: var(--green);
+  background: rgba(114,242,139,.08);
+  border: 1px solid rgba(114,242,139,.10);
+}
+.mensaje-llamada-copy { min-width: 0; display:flex; flex-direction:column; gap:2px; }
+.mensaje-llamada-copy strong { font-size: 11px; font-weight: 800; color: var(--text); }
+.mensaje-llamada-copy span { font-size: 10px; color: var(--text-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mensaje-llamada-status { margin-left:auto; color:var(--green); font-size:13px; font-weight:800; }
+.mensaje-llamada.finalizada { opacity:.65; }
+@keyframes callEventIn { from { opacity:0; transform:translateY(6px) scale(.98); } to { opacity:1; transform:none; } }
