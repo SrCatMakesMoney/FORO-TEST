@@ -1,5 +1,5 @@
 /* ============================================================
-   FORO UBRE — NOTIFICACIONES + WEB PUSH
+   FORO UBRE — NOTIFICACIONES + PUSHER REALTIME
    ============================================================ */
 (() => {
   const API = "/api";
@@ -52,7 +52,6 @@
   let list;
   let badge;
   let socket;
-  let pushStatus = null;
 
   function findNav() {
     return document.querySelector("aside .main-nav") ||
@@ -95,14 +94,6 @@
         </div>
         <button class="notifications-readall" id="notificationsReadAll">Leer todo</button>
       </header>
-      <div class="notifications-push" id="notificationsPushBox">
-        <div class="notification-icon"><i class="ri-smartphone-line"></i></div>
-        <div class="notifications-push-copy">
-          <strong>Notificaciones del teléfono</strong>
-          <span id="notificationsPushText">Actívalas para recibir avisos aunque cierres Foro Ubre.</span>
-        </div>
-        <button class="notifications-push-btn" id="notificationsPushBtn">Activar</button>
-      </div>
       <div class="notifications-list" id="notificationsList">
         <div class="notifications-empty"><i class="ri-loader-4-line ri-spin"></i>Cargando...</div>
       </div>
@@ -120,7 +111,6 @@
       updateCount(0);
     });
 
-    panel.querySelector("#notificationsPushBtn").addEventListener("click", activarPush);
 
     document.addEventListener("click", (e) => {
       if (!panel?.classList.contains("open")) return;
@@ -135,7 +125,6 @@
     panel.classList.toggle("open");
     if (panel.classList.contains("open")) {
       cargarNotificaciones();
-      cargarPushStatus();
     }
   }
 
@@ -444,119 +433,23 @@
     });
   }
 
-  function urlBase64ToUint8Array(base64String) {
-    const padding = "=".repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-    const rawData = atob(base64);
-    return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
-  }
 
-  async function cargarPushStatus() {
-    const btn = document.getElementById("notificationsPushBtn");
-    const text = document.getElementById("notificationsPushText");
-    if (!btn || !text) return;
 
-    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
-      btn.style.display = "none";
-      text.textContent = "Este navegador no admite Web Push.";
-      return;
-    }
-
-    if (Notification.permission === "denied") {
-      btn.textContent = "Bloqueadas";
-      btn.disabled = true;
-      text.textContent = "Las notificaciones están bloqueadas en los permisos del navegador.";
-      return;
-    }
-
+  // Web Push nativo desactivado: Pusher maneja el realtime dentro de Foro Ubre.
+  async function limpiarWebPushAntiguo() {
     try {
-      const res = await fetch(`${API}/push/status`, { headers: authHeaders() });
-      pushStatus = await res.json();
-      if (pushStatus.suscrito) {
-        btn.textContent = "Activadas";
-        btn.disabled = true;
-        text.textContent = "Este dispositivo recibirá avisos aunque Foro Ubre esté cerrado.";
-      } else {
-        btn.textContent = "Activar";
-        btn.disabled = false;
+      if (!("serviceWorker" in navigator)) return;
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const reg of regs) {
+        try {
+          const sub = await reg.pushManager?.getSubscription?.();
+          if (sub) await sub.unsubscribe();
+        } catch {}
+        try { await reg.unregister(); } catch {}
       }
     } catch {}
   }
 
-  async function activarPush() {
-    const btn = document.getElementById("notificationsPushBtn");
-    const text = document.getElementById("notificationsPushText");
-    if (!btn || !text) return;
+  limpiarWebPushAntiguo();
 
-    try {
-      if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
-        throw new Error("Este navegador no admite notificaciones Push.");
-      }
-
-      btn.disabled = true;
-      btn.textContent = "...";
-
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        btn.disabled = false;
-        btn.textContent = "Activar";
-        text.textContent = "Necesitas permitir las notificaciones en el navegador.";
-        return;
-      }
-
-      const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
-      await navigator.serviceWorker.ready;
-
-      const keyRes = await fetch(`${API}/push/vapid-public-key`, {
-        headers: authHeaders()
-      });
-      const keyData = await keyRes.json();
-      if (!keyRes.ok || !keyData.publicKey) throw new Error(keyData.mensaje || "Falta VAPID_PUBLIC_KEY");
-
-      let subscription = await registration.pushManager.getSubscription();
-
-      if (!subscription) {
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(keyData.publicKey)
-        });
-      }
-
-      const subJson = subscription.toJSON();
-      const saveRes = await fetch(`${API}/push/subscribe`, {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify(subJson)
-      });
-
-      const saveData = await saveRes.json().catch(() => ({}));
-      if (!saveRes.ok) throw new Error(saveData.mensaje || "No se pudo guardar la suscripción.");
-
-      btn.textContent = "Activadas";
-      text.textContent = "Listo. Este dispositivo recibirá avisos aunque cierres Foro Ubre.";
-      pushStatus = { suscrito: true };
-    } catch (error) {
-      console.error("Push:", error);
-      btn.disabled = false;
-      btn.textContent = "Reintentar";
-      text.textContent = error.message || "No se pudieron activar las notificaciones.";
-    }
-  }
-
-  function init() {
-    buildUI();
-    cargarCount();
-    connectSocket();
-
-    // Registrar el service worker sin pedir permiso todavía.
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
-    }
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init, { once: true });
-  } else {
-    init();
-  }
 })();
