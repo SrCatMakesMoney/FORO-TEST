@@ -267,6 +267,8 @@ io.on("connection", (socket) => {
 
     const id = String(userId);
 
+    socket.data.userId = id;
+
     usuariosOnline.set(
       id,
       socket.id
@@ -353,6 +355,67 @@ io.on("connection", (socket) => {
       );
     }
   );
+
+  // ----------------------------------------------------------
+  // LLAMADAS / WEBRTC
+  // ----------------------------------------------------------
+
+  // El servidor solo hace señalización. El audio/video viaja
+  // directamente entre navegadores mediante WebRTC.
+
+  socket.on("llamada:invitar", ({ destinatarioId, callId, tipo, callerName, callerAvatar, callerAvatarTipo }) => {
+    if (!destinatarioId || !callId) return;
+
+    const callerId = socket.data.userId;
+    if (!callerId) return;
+
+    io.to(`user_${String(destinatarioId)}`).emit("llamada:entrante", {
+      callId: String(callId),
+      tipo: tipo === "video" ? "video" : "audio",
+      callerId: String(callerId),
+      callerName: callerName || "Usuario",
+      callerAvatar: callerAvatar || "",
+      callerAvatarTipo: callerAvatarTipo || "imagen"
+    });
+  });
+
+  socket.on("llamada:aceptar", ({ callerId, callId }) => {
+    if (!callerId || !callId || !socket.data.userId) return;
+
+    io.to(`user_${String(callerId)}`).emit("llamada:aceptada", {
+      callId: String(callId),
+      receiverId: String(socket.data.userId)
+    });
+  });
+
+  socket.on("llamada:rechazar", ({ callerId, callId }) => {
+    if (!callerId || !callId || !socket.data.userId) return;
+
+    io.to(`user_${String(callerId)}`).emit("llamada:rechazada", {
+      callId: String(callId),
+      receiverId: String(socket.data.userId)
+    });
+  });
+
+  socket.on("llamada:finalizar", ({ destinatarioId, callId, razon }) => {
+    if (!destinatarioId || !callId || !socket.data.userId) return;
+
+    io.to(`user_${String(destinatarioId)}`).emit("llamada:finalizada", {
+      callId: String(callId),
+      fromId: String(socket.data.userId),
+      razon: razon || "finalizada"
+    });
+  });
+
+  socket.on("llamada:signal", ({ destinatarioId, callId, signal }) => {
+    if (!destinatarioId || !callId || !signal || !socket.data.userId) return;
+
+    io.to(`user_${String(destinatarioId)}`).emit("llamada:signal", {
+      callId: String(callId),
+      fromId: String(socket.data.userId),
+      signal
+    });
+  });
 
   // ----------------------------------------------------------
   // DESCONECTAR
