@@ -9,13 +9,6 @@ const path = require("path");
 const { initBucket } = require("./utils/gridfs");
 
 const app = express();
-
-// Permitir que WebRTC solicite micrófono y cámara desde el mismo origen.
-// Algunos navegadores móviles son más estrictos con Permissions-Policy.
-app.use((req, res, next) => {
-  res.setHeader("Permissions-Policy", "camera=(self), microphone=(self)");
-  next();
-});
 const server = http.createServer(app);
 
 // ============================================================
@@ -219,6 +212,11 @@ app.use(
 app.use(
   "/api/messages",
   require("./routes/messages")
+);
+
+app.use(
+  "/api/realtime",
+  require("./routes/realtime")
 );
 
 app.use(
