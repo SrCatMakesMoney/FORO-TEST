@@ -481,4 +481,3 @@ router.put("/personalizacion", auth, async (req, res) => {
 });
 
 module.exports = router;
-
