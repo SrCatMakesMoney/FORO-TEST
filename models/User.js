@@ -45,6 +45,16 @@ const userSchema = new mongoose.Schema(
       default: "imagen"
     },
 
+    avatarCloudinaryId: {
+      type: String,
+      default: ""
+    },
+
+    avatarCloudinaryResourceType: {
+      type: String,
+      default: ""
+    },
+
     // Banner subido por el usuario.
     // Puede ser PNG/JPG/WEBP o GIF animado.
     banner: {
@@ -55,6 +65,16 @@ const userSchema = new mongoose.Schema(
     bannerTipo: {
       type: String,
       default: "imagen"
+    },
+
+    bannerCloudinaryId: {
+      type: String,
+      default: ""
+    },
+
+    bannerCloudinaryResourceType: {
+      type: String,
+      default: ""
     },
 
     bio: {
