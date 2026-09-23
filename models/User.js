@@ -35,10 +35,6 @@ const userSchema = new mongoose.Schema(
       required: true
     },
 
-    // ══════════════════════════════════════════════
-    // AVATAR
-    // ══════════════════════════════════════════════
-
     avatar: {
       type: String,
       default: ""
@@ -49,10 +45,18 @@ const userSchema = new mongoose.Schema(
       default: "imagen"
     },
 
-    // ══════════════════════════════════════════════
-    // BANNER
-    // ══════════════════════════════════════════════
+    avatarCloudinaryId: {
+      type: String,
+      default: ""
+    },
 
+    avatarCloudinaryResourceType: {
+      type: String,
+      default: ""
+    },
+
+    // Banner subido por el usuario.
+    // Puede ser PNG/JPG/WEBP o GIF animado.
     banner: {
       type: String,
       default: ""
@@ -63,6 +67,16 @@ const userSchema = new mongoose.Schema(
       default: "imagen"
     },
 
+    bannerCloudinaryId: {
+      type: String,
+      default: ""
+    },
+
+    bannerCloudinaryResourceType: {
+      type: String,
+      default: ""
+    },
+
     bio: {
       type: String,
       default: "",
@@ -70,159 +84,51 @@ const userSchema = new mongoose.Schema(
     },
 
     seguidores: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-      }
+      { type: mongoose.Schema.Types.ObjectId, ref: "User" }
     ],
 
     siguiendo: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-      }
+      { type: mongoose.Schema.Types.ObjectId, ref: "User" }
     ],
 
-    // ══════════════════════════════════════════════
-    // PERSONALIZACIÓN
-    // ══════════════════════════════════════════════
-
     personalizacion: {
+      // Marco de avatar
+      marco:       { type: String, default: "none" },
+      marcoColor:  { type: String, default: "#5cdb6f" },
 
-      // ────────────────────────────────────────────
-      // MARCO DEL AVATAR
-      // ────────────────────────────────────────────
+      // Banner por preset / colores
+      bannerPreset: { type: String, default: "default" },
+      bannerColor1: { type: String, default: "#0d2010" },
+      bannerColor2: { type: String, default: "#1a3a14" },
 
-      marco: {
-        type: String,
-        default: "none"
-      },
+      // Estilo visual premium
+      bannerEstilo: { type: String, default: "normal" },
+      avatarEstilo: { type: String, default: "normal" },
+      profundidad:  { type: Boolean, default: true },
+      reflejo:     { type: Boolean, default: true },
+      brillo:      { type: Boolean, default: true },
 
-      marcoColor: {
-        type: String,
-        default: "#5cdb6f"
-      },
+      // Nombre
+      nombreEfecto:   { type: String, default: "none" },
+      nombreGradiente:{ type: String, default: "green-blue" },
+      nombreColor:    { type: String, default: "#f0f0f0" },
+      gradColor1:     { type: String, default: "#5cdb6f" },
+      gradColor2:     { type: String, default: "#4dabf7" },
 
-      // ────────────────────────────────────────────
-      // BANNER PRESETS
-      // ────────────────────────────────────────────
+      // Badge
+      badge: { type: String, default: "none" },
 
-      bannerPreset: {
-        type: String,
-        default: "default"
-      },
-
-      bannerColor1: {
-        type: String,
-        default: "#0d2010"
-      },
-
-      bannerColor2: {
-        type: String,
-        default: "#1a3a14"
-      },
-
-      // ────────────────────────────────────────────
-      // ESTILO VISUAL NUEVO
-      // ────────────────────────────────────────────
-
-      bannerEstilo: {
-        type: String,
-        default: "normal"
-      },
-
-      avatarEstilo: {
-        type: String,
-        default: "normal"
-      },
-
-      profundidad: {
-        type: Boolean,
-        default: true
-      },
-
-      reflejo: {
-        type: Boolean,
-        default: true
-      },
-
-      brillo: {
-        type: Boolean,
-        default: true
-      },
-
-      tema: {
-        type: String,
-        default: "carbon"
-      },
-
-      // ────────────────────────────────────────────
-      // NOMBRE
-      // ────────────────────────────────────────────
-
-      nombreEfecto: {
-        type: String,
-        default: "none"
-      },
-
-      nombreGradiente: {
-        type: String,
-        default: "green-blue"
-      },
-
-      nombreColor: {
-        type: String,
-        default: "#f0f0f0"
-      },
-
-      gradColor1: {
-        type: String,
-        default: "#5cdb6f"
-      },
-
-      gradColor2: {
-        type: String,
-        default: "#4dabf7"
-      },
-
-      // ────────────────────────────────────────────
-      // BADGE
-      // ────────────────────────────────────────────
-
-      badge: {
-        type: String,
-        default: "none"
-      },
-
-      // ────────────────────────────────────────────
-      // COLOR PRINCIPAL
-      // ────────────────────────────────────────────
-
-      temaColor: {
-        type: String,
-        default: "#5cdb6f"
-      }
+      // Tema
+      temaColor: { type: String, default: "#5cdb6f" }
     }
   },
-
-  {
-    timestamps: true
-  }
+  { timestamps: true }
 );
-
-// ══════════════════════════════════════════════
-// PASSWORD
-// ══════════════════════════════════════════════
 
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
-
   this.password = await bcrypt.hash(this.password, 12);
 });
-
-// ══════════════════════════════════════════════
-// COMPARAR PASSWORD
-// ══════════════════════════════════════════════
 
 userSchema.methods.compararPassword = function (c) {
   return bcrypt.compare(c, this.password);
