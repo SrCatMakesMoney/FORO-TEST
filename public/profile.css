@@ -700,3 +700,33 @@ body::after{content:"";position:fixed;inset:0;z-index:-9;pointer-events:none;opa
   .sidebar nav .nav-icon{width:32px;height:32px;font-size:18px;border-radius:11px}
   .notification-badge{right:calc(50% - 17px);top:1px}
 }
+
+/* ============================================================
+   CLOUDINARY — PREVIEWS DE MEDIA DE PERFIL
+   ============================================================ */
+.banner-upload-preview img,
+.banner-upload-preview video {
+  width:100%;
+  height:100%;
+  min-height:88px;
+  object-fit:cover;
+  display:block;
+}
+
+
+
+/* DEEP SPACE / PROFUNDIDAD 100 */
+#deepSpaceWorld{position:fixed;inset:0;width:100vw;height:100vh;z-index:-5;pointer-events:none;background:#010207;}
+#deepSpaceUI{position:fixed;inset:0;z-index:-4;pointer-events:none;overflow:hidden;}
+.deep-space-stars-front{position:absolute;inset:-20%;background-image:radial-gradient(circle,rgba(255,255,255,.8) 0 1px,transparent 1.5px);background-size:83px 97px;opacity:.16;transform:translate3d(calc(var(--deep-px,0) * -8px),calc(var(--deep-py,0) * -6px),0);}
+.deep-space-hud{position:absolute;right:20px;top:18px;font:700 8px ui-monospace,monospace;letter-spacing:.24em;color:rgba(220,240,255,.2);}
+body.deep-space-page{background:#010207!important;color:#edf7ff!important;overflow-x:hidden;}
+body.deep-space-page::before{content:"";position:fixed;inset:0;z-index:-3;pointer-events:none;background:radial-gradient(circle at 70% 40%,color-mix(in srgb,var(--deep-accent) 10%,transparent),transparent 30%),linear-gradient(180deg,rgba(1,3,10,.05),rgba(0,0,0,.48));}
+body.deep-space-page .sidebar,body.deep-space-page .feed-header,body.deep-space-page .trends-box,body.deep-space-page .bottom-nav{background:rgba(3,8,17,.58)!important;border-color:rgba(170,220,255,.12)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 20px 60px rgba(0,0,0,.35)!important;backdrop-filter:blur(24px) saturate(135%);-webkit-backdrop-filter:blur(24px) saturate(135%);}
+body.deep-space-page .profile-premium-shell{background:rgba(3,9,18,.42)!important;border-color:rgba(175,220,255,.13)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 30px 100px rgba(0,0,0,.5)!important;transform:perspective(1400px) rotateX(calc(var(--deep-py,0) * -.5deg)) rotateY(calc(var(--deep-px,0) * .7deg));transition:transform .2s ease-out;}
+body.deep-space-page .profile-banner,body.deep-space-page .profile-info,body.deep-space-page .profile-stats,body.deep-space-page .profile-bio,body.deep-space-page .post-card,body.deep-space-page .profile-tabs{background-color:rgba(3,9,18,.48)!important;border-color:rgba(175,220,255,.11)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 20px 55px rgba(0,0,0,.3)!important;backdrop-filter:blur(18px) saturate(125%);-webkit-backdrop-filter:blur(18px) saturate(125%);}
+body.deep-space-page .profile-avatar-wrap{box-shadow:0 0 0 1px rgba(255,255,255,.1),0 0 45px color-mix(in srgb,var(--deep-accent) 20%,transparent),0 25px 60px rgba(0,0,0,.55)!important;}
+body.deep-space-page .modal-content{background:rgba(3,8,16,.85)!important;border-color:rgba(175,220,255,.12)!important;backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);}
+.profile-advanced-depth{margin-top:12px;border:1px solid rgba(255,255,255,.07);border-radius:15px;background:rgba(255,255,255,.025);overflow:hidden}.profile-advanced-depth summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 13px;color:var(--text-2);font-size:.78rem;font-weight:800}.profile-advanced-depth summary::-webkit-details-marker{display:none}.profile-advanced-depth summary i{color:var(--green)}.profile-advanced-depth summary small{margin-left:auto;color:var(--text-3);font-size:.62rem}.profile-depth-secret{padding:0 13px 14px}.profile-depth-secret-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.profile-depth-secret-head span{display:flex;flex-direction:column;gap:2px}.profile-depth-secret-head strong{font-size:.8rem}.profile-depth-secret-head small{font-size:.62rem;color:var(--text-3)}.profile-depth-secret output{min-width:38px;text-align:center;padding:6px 8px;border-radius:9px;background:rgba(255,255,255,.05);font:800 .78rem ui-monospace,monospace}.profile-depth-range{width:100%;accent-color:var(--green);cursor:pointer}.profile-depth-secret p{margin:7px 0 0;color:var(--text-3);font-size:.64rem;line-height:1.45}
+@media(max-width:700px){body.deep-space-page .profile-premium-shell{transform:none!important}body.deep-space-page .deep-space-hud{right:12px;top:12px}.deep-space-stars-front{opacity:.1}}
+@media(prefers-reduced-motion:reduce){body.deep-space-page .profile-premium-shell{transform:none!important}}
