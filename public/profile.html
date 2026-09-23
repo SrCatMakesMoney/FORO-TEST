@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>Foro Ubre — Perfil</title>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet"/>
   <link rel="stylesheet" href="profile.css"/>
@@ -257,14 +257,15 @@
           <div class="banner-upload-preview" id="bannerUploadPreview">
             <div class="banner-upload-empty" id="bannerUploadEmpty">
               <i class="ri-image-add-line"></i>
-              <span>PNG o GIF</span>
-              <small>Máx. 8MB</small>
+              <span>Imagen, GIF o video</span>
+              <small>Máx. 100MB · Cloudinary</small>
             </div>
             <img id="bannerUploadImg" class="hidden" alt="Vista previa del banner"/>
+            <video id="bannerUploadVid" class="hidden" autoplay loop muted playsinline></video>
           </div>
           <div class="banner-upload-copy">
             <strong>Tu propio banner</strong>
-            <span>Sube una imagen PNG, JPG, WEBP o GIF. Los GIF animados se conservan.</span>
+            <span>PNG, JPG, WEBP, GIF, MP4, WEBM o MOV. El archivo se sube directo a Cloudinary.</span>
             <div class="banner-upload-actions">
               <button type="button" class="btn-pick-avatar banner-pick-btn" id="btnPickBanner">
                 <i class="ri-upload-cloud-2-line"></i> Elegir banner
@@ -273,7 +274,7 @@
                 <i class="ri-close-circle-line"></i> Cancelar
               </button>
             </div>
-            <input type="file" id="bannerEditInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden/>
+            <input type="file" id="bannerEditInput" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,video/ogg" hidden/>
             <small class="banner-upload-status" id="bannerUploadStatus"></small>
           </div>
         </div>
@@ -316,21 +317,7 @@
           </div>
         </div>
 
-        <details class="profile-advanced-depth">
-          <summary>
-            <i class="ri-flask-line"></i>
-            <span>Configuración avanzada</span>
-            <small>Hay algo escondido aquí</small>
-          </summary>
-          <div class="profile-depth-secret">
-            <div class="profile-depth-secret-head">
-              <span><strong>Profundidad</strong><small>0–100</small></span>
-              <output id="profileDepthValue">55</output>
-            </div>
-            <input id="profileDepthRange" class="profile-depth-range" type="range" min="0" max="100" step="1" value="55" aria-label="Nivel de profundidad"/>
-            <p>Al llegar exactamente a 100, el perfil deja de ser normal.</p>
-          </div>
-        </details>
+        <details class="profile-advanced-depth"><summary><i class="ri-flask-line"></i><span>Configuración avanzada</span><small>Hay algo escondido</small></summary><div class="profile-depth-secret"><div class="profile-depth-secret-head"><span><strong>Profundidad</strong><small>0–100</small></span><output id="profileDepthValue">55</output></div><input id="profileDepthRange" class="profile-depth-range" type="range" min="0" max="100" step="1" value="55"><p>Hay un punto que no parece una configuración normal.</p></div></details>
 
         <div class="visual-toggle-grid">
           <label class="visual-toggle">
@@ -532,6 +519,12 @@ function getMarcoStyle(p) {
 function renderAvatarEl(autor, size = 44) {
   const p  = autor.personalizacion || {};
   const ms = getMarcoStyle(p);
+  const depthLevel = Math.max(0, Math.min(100, Number.isFinite(Number(p.profundidadNivel)) ? Number(p.profundidadNivel) : (p.profundidad === false ? 0 : 55)));
+  const isDeep = depthLevel === 100;
+  document.body.classList.toggle("deep-space-page", isDeep);
+  document.documentElement.style.setProperty("--deep-accent", p.temaColor || "#5cdb6f");
+  if (isDeep) initDeepSpacePage(p); else stopDeepSpacePage();
+
   const extraClass = p.marco === "rainbow" ? "avatar-rainbow" : p.marco === "animated" ? "avatar-animated" : "";
   const style = `width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;${ms}`;
   if (autor.avatarTipo === "video") {
@@ -659,12 +652,6 @@ function renderPerfil(u) {
       ? "profile-avatar-water profile-avatar-drop"
       : "";
 
-  const depthLevel = Math.max(0, Math.min(100, Number.isFinite(Number(p.profundidadNivel)) ? Number(p.profundidadNivel) : (p.profundidad === false ? 0 : 55)));
-
-  document.body.classList.toggle("deep-space-page", depthLevel >= 100);
-  document.documentElement.style.setProperty("--deep-accent", p.temaColor || "#5cdb6f");
-  document.body.dataset.deepWorld = getDeepWorld(p);
-
   const extraClass = p.marco === "rainbow"
     ? "avatar-rainbow"
     : p.marco === "animated"
@@ -688,10 +675,9 @@ function renderPerfil(u) {
     : "";
 
   document.getElementById("profileContent").innerHTML = `
-    <div class="profile-premium-shell ${visualClass} ${p.profundidad === false ? "no-depth" : ""} ${depthLevel >= 100 ? "deep-space" : ""}"
+    <div class="profile-premium-shell ${visualClass} ${p.profundidad === false ? "no-depth" : ""}"
          style="--profile-accent:${p.temaColor || "#5cdb6f"}">
 
-      ${depthLevel >= 100 ? `<canvas class="profile-deep-world" aria-hidden="true"></canvas><div class="deep-space-stars-front" aria-hidden="true"></div>` : ""}
       <div class="profile-ambient-layer" aria-hidden="true"></div>
 
       <div class="profile-banner ${visual === "vitrina" ? "banner-vitrina" : ""} ${hasUploadedBanner ? "has-banner-media" : ""}"
@@ -739,12 +725,6 @@ function renderPerfil(u) {
       </div>
     </div>
   `;
-
-  if (depthLevel >= 100) {
-    initDeepSpaceWorld(document.querySelector("#profileContent .profile-premium-shell"), u, p);
-  } else {
-    stopDeepSpaceWorld();
-  }
 }
 
 // ══════════════════════════════════
@@ -1122,19 +1102,31 @@ function abrirModalEditar() {
   const bannerInput = document.getElementById("bannerEditInput");
   if (bannerInput) bannerInput.value = "";
   const bannerImg = document.getElementById("bannerUploadImg");
+  const bannerVid = document.getElementById("bannerUploadVid");
   const bannerEmpty = document.getElementById("bannerUploadEmpty");
   const bannerStatus = document.getElementById("bannerUploadStatus");
   const clearBanner = document.getElementById("btnClearBanner");
-  if (bannerStatus) bannerStatus.textContent = p.banner ? "Banner actual guardado. Elige otro para reemplazarlo." : "";
-  if (bannerImg && bannerEmpty) {
-    if (p.banner) {
-      bannerImg.src = p.banner;
-      bannerImg.classList.remove("hidden");
+  if (bannerStatus) bannerStatus.textContent = u.banner ? "Banner actual guardado. Elige otro para reemplazarlo." : "";
+  if (bannerImg && bannerVid && bannerEmpty) {
+    if (u.banner) {
       bannerEmpty.classList.add("hidden");
+      if (u.bannerTipo === "video") {
+        bannerImg.removeAttribute("src");
+        bannerImg.classList.add("hidden");
+        bannerVid.src = u.banner;
+        bannerVid.classList.remove("hidden");
+      } else {
+        bannerVid.removeAttribute("src");
+        bannerVid.classList.add("hidden");
+        bannerImg.src = u.banner;
+        bannerImg.classList.remove("hidden");
+      }
       clearBanner?.classList.add("hidden");
     } else {
       bannerImg.removeAttribute("src");
       bannerImg.classList.add("hidden");
+      bannerVid.removeAttribute("src");
+      bannerVid.classList.add("hidden");
       bannerEmpty.classList.remove("hidden");
     }
   }
@@ -1331,18 +1323,39 @@ document.getElementById("gradColor1")?.addEventListener("input", actualizarPrevi
 document.getElementById("gradColor2")?.addEventListener("input", actualizarPreviewNombre);
 
 document.getElementById("editAvatarInput")?.addEventListener("change", function() {
-  const file = this.files[0];
+  const file = this.files?.[0];
   if (!file) return;
-  if (file.size > 3 * 1024 * 1024) { alert("Máximo 3MB"); this.value = ""; return; }
+
+  const allowed = [
+    "image/jpeg", "image/png", "image/gif", "image/webp",
+    "video/mp4", "video/webm", "video/quicktime", "video/ogg"
+  ];
+  if (!allowed.includes(file.type)) {
+    alert("El avatar debe ser JPG, PNG, GIF, WEBP, MP4, WEBM, MOV u OGG.");
+    this.value = "";
+    return;
+  }
+
+  if (file.size > 100 * 1024 * 1024) {
+    alert("El avatar puede pesar máximo 100MB.");
+    this.value = "";
+    return;
+  }
+
   avatarEditFile = file;
-  const url  = URL.createObjectURL(file);
+  const url = URL.createObjectURL(file);
   const img  = document.getElementById("editAvatarImg");
   const vid  = document.getElementById("editAvatarVid");
   document.getElementById("editAvatarHolder").classList.add("hidden");
+
   if (file.type.startsWith("video/")) {
-    img.classList.add("hidden"); vid.src = url; vid.classList.remove("hidden");
+    img.classList.add("hidden");
+    vid.src = url;
+    vid.classList.remove("hidden");
   } else {
-    vid.classList.add("hidden"); img.src = url; img.classList.remove("hidden");
+    vid.classList.add("hidden");
+    img.src = url;
+    img.classList.remove("hidden");
   }
 });
 
@@ -1355,14 +1368,17 @@ document.getElementById("bannerEditInput")?.addEventListener("change", function(
   const file = this.files?.[0];
   if (!file) return;
 
-  const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+  const allowed = [
+    "image/jpeg", "image/png", "image/gif", "image/webp",
+    "video/mp4", "video/webm", "video/quicktime", "video/ogg"
+  ];
   if (!allowed.includes(file.type)) {
-    alert("El banner debe ser PNG, JPG, WEBP o GIF.");
+    alert("El banner debe ser JPG, PNG, GIF, WEBP, MP4, WEBM, MOV u OGG.");
     this.value = "";
     return;
   }
-  if (file.size > 8 * 1024 * 1024) {
-    alert("El banner puede pesar máximo 8MB.");
+  if (file.size > 100 * 1024 * 1024) {
+    alert("El banner puede pesar máximo 100MB.");
     this.value = "";
     return;
   }
@@ -1370,15 +1386,25 @@ document.getElementById("bannerEditInput")?.addEventListener("change", function(
   bannerEditFile = file;
   const url = URL.createObjectURL(file);
   const img = document.getElementById("bannerUploadImg");
+  const vid = document.getElementById("bannerUploadVid");
   const empty = document.getElementById("bannerUploadEmpty");
   const status = document.getElementById("bannerUploadStatus");
   const clear = document.getElementById("btnClearBanner");
 
-  img.src = url;
-  img.classList.remove("hidden");
   empty.classList.add("hidden");
+  if (file.type.startsWith("video/")) {
+    img.removeAttribute("src");
+    img.classList.add("hidden");
+    vid.src = url;
+    vid.classList.remove("hidden");
+  } else {
+    vid.removeAttribute("src");
+    vid.classList.add("hidden");
+    img.src = url;
+    img.classList.remove("hidden");
+  }
   clear?.classList.remove("hidden");
-  if (status) status.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB`;
+  if (status) status.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB · listo para Cloudinary`;
 });
 
 document.getElementById("btnClearBanner")?.addEventListener("click", () => {
@@ -1386,15 +1412,92 @@ document.getElementById("btnClearBanner")?.addEventListener("click", () => {
   const input = document.getElementById("bannerEditInput");
   if (input) input.value = "";
   const img = document.getElementById("bannerUploadImg");
+  const vid = document.getElementById("bannerUploadVid");
   const empty = document.getElementById("bannerUploadEmpty");
   const status = document.getElementById("bannerUploadStatus");
   const clear = document.getElementById("btnClearBanner");
   img?.removeAttribute("src");
   img?.classList.add("hidden");
+  vid?.removeAttribute("src");
+  vid?.classList.add("hidden");
   empty?.classList.remove("hidden");
   clear?.classList.add("hidden");
   if (status) status.textContent = "Selección cancelada. El banner actual no se modifica.";
 });
+
+// ── Guardar info ──
+async function subirMediaPerfil(file, campo, onProgress) {
+  const signRes = await fetch(`${API}/auth/perfil/media-signature`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ campo })
+  });
+
+  const signData = await signRes.json().catch(() => ({}));
+  if (!signRes.ok) throw new Error(signData.mensaje || "No se pudo preparar la subida");
+
+  const resourceType = file.type.startsWith("video/") ? "video" : "image";
+  const cloudForm = new FormData();
+  cloudForm.append("file", file);
+  cloudForm.append("api_key", signData.apiKey);
+  cloudForm.append("timestamp", signData.timestamp);
+  cloudForm.append("folder", signData.folder);
+  cloudForm.append("public_id", signData.publicId);
+  cloudForm.append("signature", signData.signature);
+
+  const cloudResult = await new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `https://api.cloudinary.com/v1_1/${encodeURIComponent(signData.cloudName)}/${resourceType}/upload`);
+    xhr.upload.addEventListener("progress", e => {
+      if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
+    });
+    xhr.addEventListener("load", () => {
+      let data = {};
+      try { data = JSON.parse(xhr.responseText || "{}"); } catch (_) {}
+      if (xhr.status >= 200 && xhr.status < 300) resolve(data);
+      else reject(new Error(data.error?.message || "Cloudinary rechazó el archivo"));
+    });
+    xhr.addEventListener("error", () => reject(new Error("Error de conexión con Cloudinary")));
+    xhr.addEventListener("abort", () => reject(new Error("Subida cancelada")));
+    xhr.send(cloudForm);
+  });
+
+  if (!cloudResult.secure_url || !cloudResult.public_id) {
+    throw new Error("Cloudinary no devolvió los datos del archivo");
+  }
+
+  const saveRes = await fetch(`${API}/auth/perfil/media`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      campo,
+      secure_url: cloudResult.secure_url,
+      public_id: cloudResult.public_id,
+      resource_type: cloudResult.resource_type || resourceType,
+      format: cloudResult.format || null
+    })
+  });
+
+  const saveData = await saveRes.json().catch(() => ({}));
+  if (!saveRes.ok) {
+    try {
+      await fetch(`${API}/auth/perfil/media-cleanup`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ public_id: cloudResult.public_id, resource_type: cloudResult.resource_type || resourceType })
+      });
+    } catch (_) {}
+    throw new Error(saveData.mensaje || "No se pudo guardar el archivo");
+  }
+
+  return saveData.usuario;
+}
 
 // ── Guardar info ──
 document.getElementById("btnGuardarInfo")?.addEventListener("click", async () => {
@@ -1405,30 +1508,44 @@ document.getElementById("btnGuardarInfo")?.addEventListener("click", async () =>
   btn.innerHTML = '<i class="ri-loader-4-line spin"></i> Guardando...';
   btn.disabled  = true;
   try {
-    const fd = new FormData();
-    fd.append("nombre", document.getElementById("editNombre").value.trim());
-    fd.append("bio",    document.getElementById("editBio").value);
-    if (avatarEditFile) fd.append("avatar", avatarEditFile);
-    const res  = await fetch(`${API}/auth/perfil`, {
-      method: "PUT", headers: { Authorization: `Bearer ${token}` }, body: fd
+    const body = {
+      nombre: document.getElementById("editNombre").value.trim(),
+      bio: document.getElementById("editBio").value
+    };
+
+    let usuarioActual = null;
+
+    if (avatarEditFile) {
+      btn.innerHTML = '<i class="ri-cloud-line"></i> Subiendo avatar...';
+      usuarioActual = await subirMediaPerfil(avatarEditFile, "avatar", pct => {
+        btn.innerHTML = `<i class="ri-cloud-line"></i> Avatar ${pct}%`;
+      });
+      avatarEditFile = null;
+    }
+
+    const res = await fetch(`${API}/auth/perfil`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body)
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.mensaje);
-    localStorage.setItem("fu_usuario", JSON.stringify({ ...yo, ...data.usuario }));
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.mensaje || "No se pudo guardar el perfil");
+
+    const merged = { ...yo, ...(usuarioActual || {}), ...(data.usuario || {}) };
+    localStorage.setItem("fu_usuario", JSON.stringify(merged));
+    Object.assign(yo, merged);
     cerrarModalEditar();
     cargarPerfil();
-  } catch(e) { errText.textContent = e.message; errBox.classList.remove("hidden"); }
-  finally { btn.innerHTML = '<i class="ri-save-line"></i> Guardar info'; btn.disabled = false; }
+  } catch(e) {
+    errText.textContent = e.message || "Error al guardar";
+    errBox.classList.remove("hidden");
+  } finally {
+    btn.innerHTML = '<i class="ri-save-line"></i> Guardar info';
+    btn.disabled = false;
+  }
 });
 
-const depthRangeControl = document.getElementById("profileDepthRange");
-const depthValueControl = document.getElementById("profileDepthValue");
-if (depthRangeControl) {
-  depthRangeControl.addEventListener("input", () => {
-    if (depthValueControl) depthValueControl.value = depthRangeControl.value;
-    depthRangeControl.parentElement?.classList.toggle("is-secret-ready", depthRangeControl.value === "100");
-  });
-}
+document.getElementById("profileDepthRange")?.addEventListener("input", e => { const o=document.getElementById("profileDepthValue"); if(o)o.value=e.target.value; });
 
 // ── Guardar apariencia ──
 document.getElementById("btnGuardarApariencia")?.addEventListener("click", async () => {
@@ -1452,16 +1569,12 @@ document.getElementById("btnGuardarApariencia")?.addEventListener("click", async
     let uploadedBanner = null;
 
     if (bannerEditFile) {
-      const fd = new FormData();
-      fd.append("banner", bannerEditFile);
-      const uploadRes = await fetch(`${API}/auth/perfil`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd
+      btn.innerHTML = '<i class="ri-cloud-line"></i> Subiendo banner...';
+      const usuarioMedia = await subirMediaPerfil(bannerEditFile, "banner", pct => {
+        btn.innerHTML = `<i class="ri-cloud-line"></i> Banner ${pct}%`;
       });
-      const uploadData = await uploadRes.json();
-      if (!uploadRes.ok) throw new Error(uploadData.mensaje || "No se pudo subir el banner");
-      uploadedBanner = uploadData.usuario?.banner || null;
+      uploadedBanner = usuarioMedia?.banner || null;
+      bannerEditFile = null;
     }
 
     const res = await fetch(`${API}/auth/personalizacion`, {
@@ -1566,7 +1679,28 @@ document.addEventListener("keydown", e => {
 
 // ── INIT ──
 cargarPerfil();
-\n\n// ============================================================\n// DEEP SPACE — EASTER EGG 100\n// ============================================================\nlet deepSpaceCleanup = null;\n\nfunction getDeepWorld(p = {}) {\n  const key = String(p.bannerEstilo || p.bannerPreset || "default").toLowerCase();\n  if (["ocean", "water"].includes(key)) return "ocean";\n  if (["purple", "neon"].includes(key)) return "void";\n  if (["sunset", "fire"].includes(key)) return "ember";\n  if (["blue"].includes(key)) return "ice";\n  return "terra";\n}\n\nfunction stopDeepSpaceWorld() {\n  if (typeof deepSpaceCleanup === "function") { try { deepSpaceCleanup(); } catch (_) {} }\n  deepSpaceCleanup = null;\n}\n\nfunction initDeepSpaceWorld(shell, user, p) {\n  stopDeepSpaceWorld();\n  if (!shell) return;\n  const canvas = shell.querySelector(".profile-deep-world");\n  if (!canvas) return;\n  const ctx = canvas.getContext("2d", { alpha: true });\n  if (!ctx) return;\n\n  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;\n  const world = getDeepWorld(p);\n  const accent = p.temaColor || "#5cdb6f";\n  const palettes = {\n    terra: { a:"#5cdb6f", b:"#42a5f5", c:"#08130d", land:"#173e2a", cloud:"#dff8ff" },\n    ocean: { a:"#46d9ff", b:"#3867ff", c:"#031326", land:"#0b4266", cloud:"#c7f7ff" },\n    void:  { a:"#c084ff", b:"#5c3bff", c:"#07020e", land:"#191024", cloud:"#e6d8ff" },\n    ember: { a:"#ffb15c", b:"#ff4e6a", c:"#190703", land:"#542016", cloud:"#ffd8bd" },\n    ice:   { a:"#a9efff", b:"#4da9ff", c:"#04131d", land:"#17445a", cloud:"#effcff" }\n  };\n  const pal = palettes[world] || palettes.terra;\n  pal.a = accent || pal.a;\n\n  let w=0,h=0,dpr=1,raf=0,alive=true,time=0,px=0,py=0;\n  let stars=[];\n  let resizeObserver=null;\n  const pointer = {x:0,y:0};\n\n  function resize() {\n    const r = shell.getBoundingClientRect();\n    w=Math.max(1,r.width); h=Math.max(1,r.height);\n    dpr=Math.min(devicePixelRatio||1,1.5);\n    canvas.width=Math.floor(w*dpr); canvas.height=Math.floor(h*dpr);\n    canvas.style.width=w+"px"; canvas.style.height=h+"px";\n    ctx.setTransform(dpr,0,0,dpr,0,0);\n    const count=Math.min(180,Math.max(70,Math.floor(w*h/8500)));\n    stars=Array.from({length:count},()=>({x:Math.random(),y:Math.random(),z:.12+Math.random()*.88,s:Math.random()*1.8+.25,a:.2+Math.random()*.7,t:Math.random()*Math.PI*2}));\n  }\n\n  function hexRgb(hex){\n    const m=String(hex).replace('#','').match(/^([0-9a-f]{6})$/i);\n    if(!m) return [92,219,111];\n    return [parseInt(m[1].slice(0,2),16),parseInt(m[1].slice(2,4),16),parseInt(m[1].slice(4,6),16)];\n  }\n  const rgb=hexRgb(pal.a);\n\n  function roundRect(x,y,ww,hh,r){\n    const q=Math.min(r,ww/2,hh/2); ctx.beginPath();ctx.moveTo(x+q,y);ctx.arcTo(x+ww,y,x+ww,y+hh,q);ctx.arcTo(x+ww,y+hh,x,y+hh,q);ctx.arcTo(x,y+hh,x,y,q);ctx.arcTo(x,y,x+ww,y,q);ctx.closePath();\n  }\n\n  function drawStars() {\n    for(const s of stars){\n      const drift=(time*.000012)*(1.3-s.z);\n      const x=((s.x + drift + (pointer.x*.015)*(1-s.z))%1)*w;\n      const y=((s.y + pointer.y*.012*(1-s.z)+1)%1)*h;\n      const alpha=s.a*(.45+.55*Math.sin(time*.001+s.t));\n      ctx.fillStyle=`rgba(230,245,255,${Math.max(.05,alpha)})`;\n      ctx.beginPath();ctx.arc(x,y,s.s*(.55+.9*s.z),0,Math.PI*2);ctx.fill();\n    }\n  }\n\n  function drawNebula() {\n    const g=ctx.createRadialGradient(w*.75,h*.35,0,w*.75,h*.35,Math.max(w,h)*.75);\n    g.addColorStop(0,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},.18)`);\n    g.addColorStop(.34,"rgba(80,100,255,.08)");\n    g.addColorStop(1,"rgba(0,0,0,0)");\n    ctx.fillStyle=g;ctx.fillRect(0,0,w,h);\n    const g2=ctx.createRadialGradient(w*.15,h*.75,0,w*.15,h*.75,Math.max(w,h)*.55);\n    g2.addColorStop(0,"rgba(170,80,255,.08)");g2.addColorStop(1,"rgba(0,0,0,0)");\n    ctx.fillStyle=g2;ctx.fillRect(0,0,w,h);\n  }\n\n  function drawPlanet() {\n    const mobile=w<700;\n    const radius=Math.min(w,h)*(mobile?.28:.34);\n    const cx=w*(mobile?.73:.78) + pointer.x*34;\n    const cy=h*(mobile?.35:.40) + pointer.y*25;\n    ctx.save();\n    ctx.translate(cx,cy);\n    const halo=ctx.createRadialGradient(0,0,radius*.8,0,0,radius*1.55);\n    halo.addColorStop(0,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},.13)`);halo.addColorStop(.65,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},.045)`);halo.addColorStop(1,"rgba(0,0,0,0)");\n    ctx.fillStyle=halo;ctx.beginPath();ctx.arc(0,0,radius*1.55,0,Math.PI*2);ctx.fill();\n    const sphere=ctx.createRadialGradient(-radius*.38,-radius*.45,radius*.06,0,0,radius*1.2);\n    sphere.addColorStop(0,pal.cloud); sphere.addColorStop(.16,pal.b); sphere.addColorStop(.62,pal.land); sphere.addColorStop(1,pal.c);\n    ctx.fillStyle=sphere;ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.fill();\n    ctx.save();ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.clip();\n    const drift=time*.000025;\n    for(let i=-3;i<5;i++){\n      const yy=Math.sin(i*1.7+drift*3)*radius*.45+i*radius*.25;\n      ctx.fillStyle=world==="ice"?"rgba(225,250,255,.13)":world==="ember"?"rgba(255,205,130,.10)":"rgba(115,240,180,.11)";\n      ctx.beginPath();ctx.ellipse(Math.sin(i*2+drift)*radius*.25,yy,radius*.72,radius*.065,Math.sin(i)*.4,0,Math.PI*2);ctx.fill();\n    }\n    if(world==="ocean"){\n      for(let i=0;i<7;i++){ctx.strokeStyle=`rgba(150,235,255,${.05+i*.008})`;ctx.lineWidth=radius*.018;ctx.beginPath();ctx.arc(Math.sin(i+drift)*radius*.35,Math.cos(i*.7+drift)*radius*.2,radius*(.2+i*.07),0,Math.PI*1.3);ctx.stroke();}\n    }\n    const night=ctx.createLinearGradient(-radius,-radius*.1,radius,radius*.15);night.addColorStop(0,"rgba(0,0,0,0)");night.addColorStop(.58,"rgba(0,0,0,.12)");night.addColorStop(1,"rgba(0,0,0,.68)");ctx.fillStyle=night;ctx.fillRect(-radius,-radius,radius*2,radius*2);\n    ctx.restore();\n    const rim=ctx.createRadialGradient(-radius*.15,-radius*.18,radius*.84,-radius*.15,-radius*.18,radius*1.08);rim.addColorStop(.78,"rgba(255,255,255,0)");rim.addColorStop(.91,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},.34)`);rim.addColorStop(1,"rgba(255,255,255,0)");ctx.fillStyle=rim;ctx.beginPath();ctx.arc(0,0,radius*1.08,0,Math.PI*2);ctx.fill();\n    if(world==="void"){\n      ctx.strokeStyle="rgba(215,180,255,.28)";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,radius*.08,radius*1.38,radius*.28,-.16,0,Math.PI*2);ctx.stroke();\n    }\n    // moon\n    const moonR=Math.max(5,radius*.075); const ma=Math.cos(time*.00009)*radius*1.55, my=Math.sin(time*.00009)*radius*.65;\n    ctx.fillStyle="rgba(215,225,235,.75)";ctx.beginPath();ctx.arc(ma,my,moonR,0,Math.PI*2);ctx.fill();\n    ctx.restore();\n  }\n\n  function drawOrbitParticles(){\n    const r=Math.min(w,h)*.34; const cx=w*.78+pointer.x*34,cy=h*.4+pointer.y*25;\n    ctx.save();ctx.translate(cx,cy);ctx.rotate(-.12);ctx.strokeStyle=`rgba(${rgb[0]},${rgb[1]},${rgb[2]},.13)`;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(0,0,r*1.45,r*.48,0,0,Math.PI*2);ctx.stroke();\n    for(let i=0;i<8;i++){const a=time*.00004+i*Math.PI/4;const x=Math.cos(a)*r*1.45,y=Math.sin(a)*r*.48;ctx.fillStyle=`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${.15+.08*Math.sin(a*2)})`;ctx.beginPath();ctx.arc(x,y,1.5+(i%3),0,Math.PI*2);ctx.fill();}\n    ctx.restore();\n  }\n\n  function drawForeground(){\n    const grad=ctx.createLinearGradient(0,0,0,h);grad.addColorStop(0,"rgba(0,0,0,.03)");grad.addColorStop(.62,"rgba(0,0,0,.08)");grad.addColorStop(1,"rgba(0,0,0,.38)");ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);\n    const vignette=ctx.createRadialGradient(w*.5,h*.45,Math.min(w,h)*.2,w*.5,h*.45,Math.max(w,h)*.8);vignette.addColorStop(.65,"rgba(0,0,0,0)");vignette.addColorStop(1,"rgba(0,0,0,.55)");ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);\n  }\n\n  function frame(now){\n    if(!alive)return; time=now||performance.now();\n    ctx.clearRect(0,0,w,h);drawNebula();drawStars();drawOrbitParticles();drawPlanet();drawForeground();\n    if(!reduced) raf=requestAnimationFrame(frame);\n  }\n\n  function onPointer(e){\n    const x=e.clientX ?? e.touches?.[0]?.clientX ?? w/2; const y=e.clientY ?? e.touches?.[0]?.clientY ?? h/2;\n    pointer.x=Math.max(-1,Math.min(1,(x-innerWidth/2)/(innerWidth/2)));pointer.y=Math.max(-1,Math.min(1,(y-innerHeight/2)/(innerHeight/2)));\n    shell.style.setProperty("--deep-px",pointer.x.toFixed(3));shell.style.setProperty("--deep-py",pointer.y.toFixed(3));\n  }\n\n  resize();\n  resizeObserver=new ResizeObserver(resize);resizeObserver.observe(shell);\n  addEventListener("pointermove",onPointer,{passive:true});\n  frame(performance.now());\n  if(!reduced) raf=requestAnimationFrame(frame);\n  deepSpaceCleanup=()=>{alive=false;cancelAnimationFrame(raf);resizeObserver?.disconnect();removeEventListener("pointermove",onPointer);document.body.classList.remove("deep-space-page");};\n}\n
+
+// ============================================================
+// DEEP SPACE — PROFUNDIDAD 100
+// ============================================================
+let deepSpacePageCleanup=null;
+function stopDeepSpacePage(){ if(deepSpacePageCleanup){try{deepSpacePageCleanup()}catch(_){}} deepSpacePageCleanup=null; document.getElementById("deepSpaceWorld")?.remove(); document.getElementById("deepSpaceUI")?.remove(); }
+function initDeepSpacePage(p={}){
+  stopDeepSpacePage();
+  const canvas=document.createElement("canvas"); canvas.id="deepSpaceWorld"; document.body.prepend(canvas);
+  const ui=document.createElement("div"); ui.id="deepSpaceUI"; ui.innerHTML='<div class="deep-space-stars-front"></div><div class="deep-space-hud">DEEP / 100</div>'; document.body.prepend(ui);
+  const ctx=canvas.getContext("2d"); if(!ctx)return;
+  const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches; let w=1,h=1,dpr=1,t=0,raf=0,alive=true,px=0,py=0,stars=[];
+  const key=String(p.bannerEstilo||p.bannerPreset||"normal").toLowerCase();
+  const worlds={water:{base:"#137fb6",land:"#0c5269",light:"#d9fbff",dark:"#02101c",a:"#45dfff"},frosted:{base:"#71c6ee",land:"#265c79",light:"#fff",dark:"#03131d",a:"#a9efff"},vitrina:{base:"#bd4935",land:"#62251d",light:"#ffe1c3",dark:"#140403",a:"#ff9b62"},normal:{base:"#2675c7",land:"#173f35",light:"#dffcff",dark:"#020912",a:p.temaColor||"#5cdb6f"}};
+  const pal=worlds[key]||worlds.normal;
+  function resize(){w=innerWidth;h=innerHeight;dpr=Math.min(devicePixelRatio||1,1.5);canvas.width=w*dpr;canvas.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);stars=Array.from({length:Math.min(260,Math.max(100,Math.floor(w*h/6500)))},()=>({x:Math.random(),y:Math.random(),z:.08+Math.random()*.92,s:.3+Math.random()*1.6,a:.2+Math.random()*.7,q:Math.random()*6.28}));}
+  function drawStars(){for(const s of stars){let x=((s.x+t*.000012*(1-s.z)+px*.025*(1-s.z)+1)%1)*w,y=((s.y+py*.02*(1-s.z)+1)%1)*h;ctx.fillStyle=`rgba(235,247,255,${s.a*(.55+.45*Math.sin(t*.0015+s.q))})`;ctx.beginPath();ctx.arc(x,y,s.s*(.45+s.z),0,Math.PI*2);ctx.fill();}}
+  function drawPlanet(){const r=Math.min(w,h)*.31,cx=w*.79+px*45,cy=h*.38+py*30;ctx.save();ctx.translate(cx,cy);const halo=ctx.createRadialGradient(0,0,r*.6,0,0,r*1.7);halo.addColorStop(0,`rgba(100,210,255,.18)`);halo.addColorStop(1,"rgba(0,0,0,0)");ctx.fillStyle=halo;ctx.beginPath();ctx.arc(0,0,r*1.7,0,Math.PI*2);ctx.fill();const g=ctx.createRadialGradient(-r*.38,-r*.45,r*.03,0,0,r*1.15);g.addColorStop(0,pal.light);g.addColorStop(.18,pal.base);g.addColorStop(.62,pal.land);g.addColorStop(1,pal.dark);ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();ctx.save();ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.clip();for(let i=-4;i<7;i++){ctx.fillStyle="rgba(150,240,210,.11)";ctx.beginPath();ctx.ellipse(Math.sin(i+t*.00003)*r*.25,i*r*.23,r*.75,r*.055,Math.sin(i)*.3,0,Math.PI*2);ctx.fill();}ctx.restore();const n=ctx.createLinearGradient(-r,0,r,0);n.addColorStop(0,"rgba(0,0,0,0)");n.addColorStop(.58,"rgba(0,0,0,.08)");n.addColorStop(1,"rgba(0,0,0,.72)");ctx.fillStyle=n;ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle=`${pal.a}66`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,r*1.04,0,Math.PI*2);ctx.stroke();if(key==="vitrina"){ctx.beginPath();ctx.ellipse(0,r*.05,r*1.4,r*.25,-.15,0,Math.PI*2);ctx.stroke();}const a=t*.00008;ctx.fillStyle="#dce8ee";ctx.beginPath();ctx.arc(Math.cos(a)*r*1.48,Math.sin(a)*r*.6,r*.06,0,Math.PI*2);ctx.fill();ctx.restore();}
+  function draw(){if(!alive)return;t=performance.now();ctx.clearRect(0,0,w,h);const bg=ctx.createRadialGradient(w*.75,h*.35,0,w*.75,h*.35,Math.max(w,h)*.8);bg.addColorStop(0,`${pal.a}1f`);bg.addColorStop(.45,"#1b2c6830");bg.addColorStop(1,"#0000");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);drawStars();drawPlanet();if(!reduced)raf=requestAnimationFrame(draw);}
+  function pointer(e){px=Math.max(-1,Math.min(1,(e.clientX-innerWidth/2)/(innerWidth/2)));py=Math.max(-1,Math.min(1,(e.clientY-innerHeight/2)/(innerHeight/2)));document.body.style.setProperty("--deep-px",px);document.body.style.setProperty("--deep-py",py);}
+  resize();addEventListener("resize",resize);addEventListener("pointermove",pointer,{passive:true});draw();deepSpacePageCleanup=()=>{alive=false;cancelAnimationFrame(raf);removeEventListener("resize",resize);removeEventListener("pointermove",pointer);};
+}
 </script>
 
 <style>
@@ -1950,6 +2084,6 @@ cargarPerfil();
   #badgeOptions .badge-option div { display:flex; flex-direction:column; }
   #badgeOptions .badge-option strong { font-size:.9rem; }
   #badgeOptions .badge-option small  { color:var(--text-3); font-size:.75rem; }
-\n\n/* ============================================================\n   DEEP SPACE MODE — PROFUNDIDAD 100\n   ============================================================ */\nhtml:has(body.deep-space-page),\nbody.deep-space-page{background:#010207!important;}\nbody.deep-space-page{\n  --deep-accent:var(--profile-accent,#5cdb6f);\n  color:#edf6ff!important;\n  background:\n    radial-gradient(circle at 76% 30%, color-mix(in srgb,var(--deep-accent) 12%,transparent), transparent 28%),\n    radial-gradient(circle at 12% 85%, rgba(94,64,255,.08), transparent 32%),\n    #010207!important;\n  overflow-x:hidden;\n}\nbody.deep-space-page::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:linear-gradient(180deg,rgba(2,4,14,.15),rgba(0,0,0,.52));}\nbody.deep-space-page .carbon-bg,body.deep-space-page .ambient{opacity:0!important;transition:opacity .8s ease;}\nbody.deep-space-page .sidebar,body.deep-space-page .feed-header,body.deep-space-page .trends-box,body.deep-space-page .bottom-nav-inner{\n  background:rgba(4,8,16,.38)!important;\n  border-color:rgba(255,255,255,.10)!important;\n  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 25px 80px rgba(0,0,0,.32)!important;\n  backdrop-filter:blur(24px) saturate(145%)!important;\n  -webkit-backdrop-filter:blur(24px) saturate(145%)!important;\n}\nbody.deep-space-page .sidebar{border-right:1px solid rgba(255,255,255,.07)!important;}\nbody.deep-space-page .logo i,body.deep-space-page .nav-item.active,body.deep-space-page .bottom-nav-btn.active .bn-icon{color:var(--deep-accent)!important;}\nbody.deep-space-page .profile-premium-shell{\n  position:relative;isolation:isolate;overflow:visible!important;\n  background:linear-gradient(145deg,rgba(8,13,25,.60),rgba(2,5,12,.42))!important;\n  border:1px solid rgba(255,255,255,.12)!important;\n  box-shadow:0 50px 120px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.11),0 0 90px color-mix(in srgb,var(--deep-accent) 7%,transparent)!important;\n  transform:perspective(1400px) rotateX(calc(var(--deep-py,0)*.55deg)) rotateY(calc(var(--deep-px,0)*-.55deg));\n  transition:transform .45s cubic-bezier(.2,.8,.2,1),box-shadow .5s ease;\n}\nbody.deep-space-page .profile-premium-shell::before{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;z-index:8;background:linear-gradient(115deg,rgba(255,255,255,.13),transparent 22%,transparent 70%,color-mix(in srgb,var(--deep-accent) 20%,transparent));mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;padding:1px;}\n.profile-deep-world{position:absolute!important;inset:-8%!important;width:116%!important;height:116%!important;z-index:-3!important;pointer-events:none!important;display:block;}\nbody.deep-space-page .profile-ambient-layer{position:absolute!important;inset:-20%!important;z-index:-2!important;background:radial-gradient(circle at 78% 36%,color-mix(in srgb,var(--deep-accent) 12%,transparent),transparent 34%),radial-gradient(circle at 20% 80%,rgba(91,71,255,.08),transparent 30%)!important;filter:blur(30px)!important;opacity:1!important;}\nbody.deep-space-page .deep-space-stars-front{position:absolute;inset:-40px;z-index:7;pointer-events:none;background-image:radial-gradient(circle,rgba(255,255,255,.72) 0 1px,transparent 1.5px),radial-gradient(circle,rgba(180,225,255,.42) 0 1px,transparent 1.5px);background-size:137px 151px,223px 197px;opacity:.22;animation:deepStarDrift 32s linear infinite;mix-blend-mode:screen;}\n@keyframes deepStarDrift{to{background-position:137px 151px,-223px -197px;}}\nbody.deep-space-page .profile-banner{background:rgba(4,8,17,.38)!important;border:1px solid rgba(255,255,255,.09)!important;box-shadow:0 25px 65px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.08)!important;transform:translateZ(22px);}\nbody.deep-space-page .profile-banner::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.10),transparent 28%,transparent 72%,color-mix(in srgb,var(--deep-accent) 12%,transparent));mix-blend-mode:screen;}\nbody.deep-space-page .profile-banner-media{filter:saturate(1.08) contrast(1.03);}\nbody.deep-space-page .profile-info{background:linear-gradient(145deg,rgba(9,15,27,.68),rgba(2,6,14,.52))!important;border-color:rgba(255,255,255,.10)!important;box-shadow:0 35px 75px rgba(0,0,0,.44),inset 0 1px 0 rgba(255,255,255,.075)!important;backdrop-filter:blur(20px) saturate(135%)!important;-webkit-backdrop-filter:blur(20px) saturate(135%)!important;transform:translateZ(35px);}\nbody.deep-space-page .profile-avatar-wrap{box-shadow:0 0 0 1px rgba(255,255,255,.15),0 0 0 7px rgba(0,0,0,.25),0 20px 55px color-mix(in srgb,var(--deep-accent) 22%,transparent)!important;transform:translateZ(55px);}\nbody.deep-space-page #profileFeed{position:relative;z-index:4;perspective:1200px;}\nbody.deep-space-page .post-card{background:linear-gradient(145deg,rgba(8,13,24,.72),rgba(2,5,12,.55))!important;border-color:rgba(255,255,255,.09)!important;box-shadow:0 28px 70px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.06)!important;backdrop-filter:blur(18px) saturate(130%)!important;-webkit-backdrop-filter:blur(18px) saturate(130%)!important;transform:translateZ(16px);}\nbody.deep-space-page .profile-tabs{background:rgba(5,9,17,.58)!important;border-color:rgba(255,255,255,.10)!important;box-shadow:0 18px 50px rgba(0,0,0,.38)!important;backdrop-filter:blur(20px)!important;}\nbody.deep-space-page .profile-tabs .tab-btn.active{color:#fff!important;background:color-mix(in srgb,var(--deep-accent) 12%,rgba(255,255,255,.04))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 22px color-mix(in srgb,var(--deep-accent) 10%,transparent)!important;}\nbody.deep-space-page .btn-edit-profile,body.deep-space-page .btn-mensaje,body.deep-space-page .btn-follow{background:rgba(255,255,255,.065)!important;border-color:rgba(255,255,255,.12)!important;color:#eef7ff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 30px rgba(0,0,0,.25)!important;backdrop-filter:blur(14px)!important;}\nbody.deep-space-page .btn-follow:not(.siguiendo){background:color-mix(in srgb,var(--deep-accent) 16%,rgba(255,255,255,.06))!important;}\nbody.deep-space-page .trends{position:relative;}\nbody.deep-space-page .feed-header h2{letter-spacing:.03em;text-shadow:0 0 24px color-mix(in srgb,var(--deep-accent) 28%,transparent);}\nbody.deep-space-page .sidebar-user{background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.08)!important;}\nbody.deep-space-page .feed{position:relative;}\nbody.deep-space-page .feed::before{content:"DEEP / 100";position:absolute;right:4px;top:78px;font:700 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;color:rgba(255,255,255,.20);pointer-events:none;transform:rotate(90deg);transform-origin:right top;}\n.profile-advanced-depth{margin-top:12px;border:1px solid rgba(255,255,255,.07);border-radius:15px;background:rgba(255,255,255,.025);overflow:hidden;}\n.profile-advanced-depth summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 13px;color:var(--text-2);font-size:.78rem;font-weight:800;}\n.profile-advanced-depth summary::-webkit-details-marker{display:none;}\n.profile-advanced-depth summary i{color:var(--green);font-size:1rem;}\n.profile-advanced-depth summary small{margin-left:auto;color:var(--text-3);font-size:.62rem;font-weight:600;}\n.profile-depth-secret{padding:0 13px 14px;}\n.profile-depth-secret-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}\n.profile-depth-secret-head span{display:flex;flex-direction:column;gap:2px;}\n.profile-depth-secret-head strong{font-size:.8rem;}\n.profile-depth-secret-head small{font-size:.62rem;color:var(--text-3);}\n.profile-depth-secret output{min-width:38px;text-align:center;border-radius:9px;padding:6px 8px;background:rgba(255,255,255,.05);font:800 .78rem ui-monospace,monospace;color:var(--text);} \n.profile-depth-range{width:100%;accent-color:var(--green);cursor:pointer;}\n.profile-depth-secret p{margin:7px 0 0;color:var(--text-3);font-size:.64rem;line-height:1.45;}\n.profile-depth-secret.is-secret-ready output,.profile-depth-secret:has(.profile-depth-range[value="100"]) output{color:#fff;box-shadow:0 0 18px rgba(92,219,111,.2);}\n@media(max-width:700px){body.deep-space-page .profile-premium-shell{transform:none;}body.deep-space-page .profile-deep-world{inset:-10%!important;width:120%!important;height:120%!important;}body.deep-space-page .feed::before{display:none;}body.deep-space-page .post-card{transform:none;}body.deep-space-page .profile-info{transform:none;}body.deep-space-page .profile-avatar-wrap{transform:none;}}\n@media(prefers-reduced-motion:reduce){body.deep-space-page .deep-space-stars-front{animation:none;}body.deep-space-page .profile-premium-shell{transform:none!important;}}\n</style>
+</style>
 </body>
 </html>
