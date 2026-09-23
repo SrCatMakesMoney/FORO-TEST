@@ -257,14 +257,15 @@
           <div class="banner-upload-preview" id="bannerUploadPreview">
             <div class="banner-upload-empty" id="bannerUploadEmpty">
               <i class="ri-image-add-line"></i>
-              <span>PNG o GIF</span>
-              <small>Máx. 8MB</small>
+              <span>Imagen, GIF o video</span>
+              <small>Máx. 100MB · Cloudinary</small>
             </div>
             <img id="bannerUploadImg" class="hidden" alt="Vista previa del banner"/>
+            <video id="bannerUploadVid" class="hidden" autoplay loop muted playsinline></video>
           </div>
           <div class="banner-upload-copy">
             <strong>Tu propio banner</strong>
-            <span>Sube una imagen PNG, JPG, WEBP o GIF. Los GIF animados se conservan.</span>
+            <span>PNG, JPG, WEBP, GIF, MP4, WEBM o MOV. El archivo se sube directo a Cloudinary.</span>
             <div class="banner-upload-actions">
               <button type="button" class="btn-pick-avatar banner-pick-btn" id="btnPickBanner">
                 <i class="ri-upload-cloud-2-line"></i> Elegir banner
@@ -273,7 +274,7 @@
                 <i class="ri-close-circle-line"></i> Cancelar
               </button>
             </div>
-            <input type="file" id="bannerEditInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden/>
+            <input type="file" id="bannerEditInput" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,video/ogg" hidden/>
             <small class="banner-upload-status" id="bannerUploadStatus"></small>
           </div>
         </div>
@@ -673,7 +674,9 @@ function renderPerfil(u) {
 
       <div class="profile-banner ${visual === "vitrina" ? "banner-vitrina" : ""} ${hasUploadedBanner ? "has-banner-media" : ""}"
            style="background:${bannerStyle}">
-        ${hasUploadedBanner ? `<img class="profile-banner-media" src="${escHtml(u.banner)}" alt="Banner de ${escHtml(u.nombre)}"/>` : ""}
+        ${hasUploadedBanner ? (u.bannerTipo === "video"
+          ? `<video class="profile-banner-media" src="${escHtml(u.banner)}" autoplay loop muted playsinline preload="metadata" aria-label="Banner de ${escHtml(u.nombre)}"></video>`
+          : `<img class="profile-banner-media" src="${escHtml(u.banner)}" alt="Banner de ${escHtml(u.nombre)}"/>`) : ""}
         ${drops}
         <div class="profile-banner-highlight" aria-hidden="true"></div>
       </div>
@@ -1091,19 +1094,31 @@ function abrirModalEditar() {
   const bannerInput = document.getElementById("bannerEditInput");
   if (bannerInput) bannerInput.value = "";
   const bannerImg = document.getElementById("bannerUploadImg");
+  const bannerVid = document.getElementById("bannerUploadVid");
   const bannerEmpty = document.getElementById("bannerUploadEmpty");
   const bannerStatus = document.getElementById("bannerUploadStatus");
   const clearBanner = document.getElementById("btnClearBanner");
   if (bannerStatus) bannerStatus.textContent = u.banner ? "Banner actual guardado. Elige otro para reemplazarlo." : "";
-  if (bannerImg && bannerEmpty) {
+  if (bannerImg && bannerVid && bannerEmpty) {
     if (u.banner) {
-      bannerImg.src = u.banner;
-      bannerImg.classList.remove("hidden");
       bannerEmpty.classList.add("hidden");
+      if (u.bannerTipo === "video") {
+        bannerImg.removeAttribute("src");
+        bannerImg.classList.add("hidden");
+        bannerVid.src = u.banner;
+        bannerVid.classList.remove("hidden");
+      } else {
+        bannerVid.removeAttribute("src");
+        bannerVid.classList.add("hidden");
+        bannerImg.src = u.banner;
+        bannerImg.classList.remove("hidden");
+      }
       clearBanner?.classList.add("hidden");
     } else {
       bannerImg.removeAttribute("src");
       bannerImg.classList.add("hidden");
+      bannerVid.removeAttribute("src");
+      bannerVid.classList.add("hidden");
       bannerEmpty.classList.remove("hidden");
     }
   }
@@ -1294,18 +1309,39 @@ document.getElementById("gradColor1")?.addEventListener("input", actualizarPrevi
 document.getElementById("gradColor2")?.addEventListener("input", actualizarPreviewNombre);
 
 document.getElementById("editAvatarInput")?.addEventListener("change", function() {
-  const file = this.files[0];
+  const file = this.files?.[0];
   if (!file) return;
-  if (file.size > 3 * 1024 * 1024) { alert("Máximo 3MB"); this.value = ""; return; }
+
+  const allowed = [
+    "image/jpeg", "image/png", "image/gif", "image/webp",
+    "video/mp4", "video/webm", "video/quicktime", "video/ogg"
+  ];
+  if (!allowed.includes(file.type)) {
+    alert("El avatar debe ser JPG, PNG, GIF, WEBP, MP4, WEBM, MOV u OGG.");
+    this.value = "";
+    return;
+  }
+
+  if (file.size > 100 * 1024 * 1024) {
+    alert("El avatar puede pesar máximo 100MB.");
+    this.value = "";
+    return;
+  }
+
   avatarEditFile = file;
-  const url  = URL.createObjectURL(file);
+  const url = URL.createObjectURL(file);
   const img  = document.getElementById("editAvatarImg");
   const vid  = document.getElementById("editAvatarVid");
   document.getElementById("editAvatarHolder").classList.add("hidden");
+
   if (file.type.startsWith("video/")) {
-    img.classList.add("hidden"); vid.src = url; vid.classList.remove("hidden");
+    img.classList.add("hidden");
+    vid.src = url;
+    vid.classList.remove("hidden");
   } else {
-    vid.classList.add("hidden"); img.src = url; img.classList.remove("hidden");
+    vid.classList.add("hidden");
+    img.src = url;
+    img.classList.remove("hidden");
   }
 });
 
@@ -1318,14 +1354,17 @@ document.getElementById("bannerEditInput")?.addEventListener("change", function(
   const file = this.files?.[0];
   if (!file) return;
 
-  const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+  const allowed = [
+    "image/jpeg", "image/png", "image/gif", "image/webp",
+    "video/mp4", "video/webm", "video/quicktime", "video/ogg"
+  ];
   if (!allowed.includes(file.type)) {
-    alert("El banner debe ser PNG, JPG, WEBP o GIF.");
+    alert("El banner debe ser JPG, PNG, GIF, WEBP, MP4, WEBM, MOV u OGG.");
     this.value = "";
     return;
   }
-  if (file.size > 8 * 1024 * 1024) {
-    alert("El banner puede pesar máximo 8MB.");
+  if (file.size > 100 * 1024 * 1024) {
+    alert("El banner puede pesar máximo 100MB.");
     this.value = "";
     return;
   }
@@ -1333,15 +1372,25 @@ document.getElementById("bannerEditInput")?.addEventListener("change", function(
   bannerEditFile = file;
   const url = URL.createObjectURL(file);
   const img = document.getElementById("bannerUploadImg");
+  const vid = document.getElementById("bannerUploadVid");
   const empty = document.getElementById("bannerUploadEmpty");
   const status = document.getElementById("bannerUploadStatus");
   const clear = document.getElementById("btnClearBanner");
 
-  img.src = url;
-  img.classList.remove("hidden");
   empty.classList.add("hidden");
+  if (file.type.startsWith("video/")) {
+    img.removeAttribute("src");
+    img.classList.add("hidden");
+    vid.src = url;
+    vid.classList.remove("hidden");
+  } else {
+    vid.removeAttribute("src");
+    vid.classList.add("hidden");
+    img.src = url;
+    img.classList.remove("hidden");
+  }
   clear?.classList.remove("hidden");
-  if (status) status.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB`;
+  if (status) status.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB · listo para Cloudinary`;
 });
 
 document.getElementById("btnClearBanner")?.addEventListener("click", () => {
@@ -1349,15 +1398,92 @@ document.getElementById("btnClearBanner")?.addEventListener("click", () => {
   const input = document.getElementById("bannerEditInput");
   if (input) input.value = "";
   const img = document.getElementById("bannerUploadImg");
+  const vid = document.getElementById("bannerUploadVid");
   const empty = document.getElementById("bannerUploadEmpty");
   const status = document.getElementById("bannerUploadStatus");
   const clear = document.getElementById("btnClearBanner");
   img?.removeAttribute("src");
   img?.classList.add("hidden");
+  vid?.removeAttribute("src");
+  vid?.classList.add("hidden");
   empty?.classList.remove("hidden");
   clear?.classList.add("hidden");
   if (status) status.textContent = "Selección cancelada. El banner actual no se modifica.";
 });
+
+// ── Guardar info ──
+async function subirMediaPerfil(file, campo, onProgress) {
+  const signRes = await fetch(`${API}/auth/perfil/media-signature`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ campo })
+  });
+
+  const signData = await signRes.json().catch(() => ({}));
+  if (!signRes.ok) throw new Error(signData.mensaje || "No se pudo preparar la subida");
+
+  const resourceType = file.type.startsWith("video/") ? "video" : "image";
+  const cloudForm = new FormData();
+  cloudForm.append("file", file);
+  cloudForm.append("api_key", signData.apiKey);
+  cloudForm.append("timestamp", signData.timestamp);
+  cloudForm.append("folder", signData.folder);
+  cloudForm.append("public_id", signData.publicId);
+  cloudForm.append("signature", signData.signature);
+
+  const cloudResult = await new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `https://api.cloudinary.com/v1_1/${encodeURIComponent(signData.cloudName)}/${resourceType}/upload`);
+    xhr.upload.addEventListener("progress", e => {
+      if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
+    });
+    xhr.addEventListener("load", () => {
+      let data = {};
+      try { data = JSON.parse(xhr.responseText || "{}"); } catch (_) {}
+      if (xhr.status >= 200 && xhr.status < 300) resolve(data);
+      else reject(new Error(data.error?.message || "Cloudinary rechazó el archivo"));
+    });
+    xhr.addEventListener("error", () => reject(new Error("Error de conexión con Cloudinary")));
+    xhr.addEventListener("abort", () => reject(new Error("Subida cancelada")));
+    xhr.send(cloudForm);
+  });
+
+  if (!cloudResult.secure_url || !cloudResult.public_id) {
+    throw new Error("Cloudinary no devolvió los datos del archivo");
+  }
+
+  const saveRes = await fetch(`${API}/auth/perfil/media`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      campo,
+      secure_url: cloudResult.secure_url,
+      public_id: cloudResult.public_id,
+      resource_type: cloudResult.resource_type || resourceType,
+      format: cloudResult.format || null
+    })
+  });
+
+  const saveData = await saveRes.json().catch(() => ({}));
+  if (!saveRes.ok) {
+    try {
+      await fetch(`${API}/auth/perfil/media-cleanup`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ public_id: cloudResult.public_id, resource_type: cloudResult.resource_type || resourceType })
+      });
+    } catch (_) {}
+    throw new Error(saveData.mensaje || "No se pudo guardar el archivo");
+  }
+
+  return saveData.usuario;
+}
 
 // ── Guardar info ──
 document.getElementById("btnGuardarInfo")?.addEventListener("click", async () => {
@@ -1368,20 +1494,41 @@ document.getElementById("btnGuardarInfo")?.addEventListener("click", async () =>
   btn.innerHTML = '<i class="ri-loader-4-line spin"></i> Guardando...';
   btn.disabled  = true;
   try {
-    const fd = new FormData();
-    fd.append("nombre", document.getElementById("editNombre").value.trim());
-    fd.append("bio",    document.getElementById("editBio").value);
-    if (avatarEditFile) fd.append("avatar", avatarEditFile);
-    const res  = await fetch(`${API}/auth/perfil`, {
-      method: "PUT", headers: { Authorization: `Bearer ${token}` }, body: fd
+    const body = {
+      nombre: document.getElementById("editNombre").value.trim(),
+      bio: document.getElementById("editBio").value
+    };
+
+    let usuarioActual = null;
+
+    if (avatarEditFile) {
+      btn.innerHTML = '<i class="ri-cloud-line"></i> Subiendo avatar...';
+      usuarioActual = await subirMediaPerfil(avatarEditFile, "avatar", pct => {
+        btn.innerHTML = `<i class="ri-cloud-line"></i> Avatar ${pct}%`;
+      });
+      avatarEditFile = null;
+    }
+
+    const res = await fetch(`${API}/auth/perfil`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body)
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.mensaje);
-    localStorage.setItem("fu_usuario", JSON.stringify({ ...yo, ...data.usuario }));
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.mensaje || "No se pudo guardar el perfil");
+
+    const merged = { ...yo, ...(usuarioActual || {}), ...(data.usuario || {}) };
+    localStorage.setItem("fu_usuario", JSON.stringify(merged));
+    Object.assign(yo, merged);
     cerrarModalEditar();
     cargarPerfil();
-  } catch(e) { errText.textContent = e.message; errBox.classList.remove("hidden"); }
-  finally { btn.innerHTML = '<i class="ri-save-line"></i> Guardar info'; btn.disabled = false; }
+  } catch(e) {
+    errText.textContent = e.message || "Error al guardar";
+    errBox.classList.remove("hidden");
+  } finally {
+    btn.innerHTML = '<i class="ri-save-line"></i> Guardar info';
+    btn.disabled = false;
+  }
 });
 
 // ── Guardar apariencia ──
@@ -1405,16 +1552,12 @@ document.getElementById("btnGuardarApariencia")?.addEventListener("click", async
     let uploadedBanner = null;
 
     if (bannerEditFile) {
-      const fd = new FormData();
-      fd.append("banner", bannerEditFile);
-      const uploadRes = await fetch(`${API}/auth/perfil`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd
+      btn.innerHTML = '<i class="ri-cloud-line"></i> Subiendo banner...';
+      const usuarioMedia = await subirMediaPerfil(bannerEditFile, "banner", pct => {
+        btn.innerHTML = `<i class="ri-cloud-line"></i> Banner ${pct}%`;
       });
-      const uploadData = await uploadRes.json();
-      if (!uploadRes.ok) throw new Error(uploadData.mensaje || "No se pudo subir el banner");
-      uploadedBanner = uploadData.usuario?.banner || null;
+      uploadedBanner = usuarioMedia?.banner || null;
+      bannerEditFile = null;
     }
 
     const res = await fetch(`${API}/auth/personalizacion`, {
