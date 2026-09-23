@@ -45,16 +45,6 @@ const userSchema = new mongoose.Schema(
       default: "imagen"
     },
 
-    avatarCloudinaryId: {
-      type: String,
-      default: ""
-    },
-
-    avatarCloudinaryResourceType: {
-      type: String,
-      default: ""
-    },
-
     // Banner subido por el usuario.
     // Puede ser PNG/JPG/WEBP o GIF animado.
     banner: {
@@ -65,16 +55,6 @@ const userSchema = new mongoose.Schema(
     bannerTipo: {
       type: String,
       default: "imagen"
-    },
-
-    bannerCloudinaryId: {
-      type: String,
-      default: ""
-    },
-
-    bannerCloudinaryResourceType: {
-      type: String,
-      default: ""
     },
 
     bio: {
@@ -105,7 +85,6 @@ const userSchema = new mongoose.Schema(
       bannerEstilo: { type: String, default: "normal" },
       avatarEstilo: { type: String, default: "normal" },
       profundidad:  { type: Boolean, default: true },
-      // Nivel avanzado 0–100. En 100 se activa el Easter Egg Deep Space.
       profundidadNivel: { type: Number, min: 0, max: 100, default: 55 },
       reflejo:     { type: Boolean, default: true },
       brillo:      { type: Boolean, default: true },
