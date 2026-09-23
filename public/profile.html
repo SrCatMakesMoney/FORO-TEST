@@ -1715,11 +1715,11 @@ function initDeepSpaceWorld(canvas, user, p) {
   function onPointer(e){
     const x=e.clientX ?? e.touches?.[0]?.clientX ?? w/2; const y=e.clientY ?? e.touches?.[0]?.clientY ?? h/2;
     pointer.x=Math.max(-1,Math.min(1,(x-innerWidth/2)/(innerWidth/2)));pointer.y=Math.max(-1,Math.min(1,(y-innerHeight/2)/(innerHeight/2)));
-    shell.style.setProperty("--deep-px",pointer.x.toFixed(3));shell.style.setProperty("--deep-py",pointer.y.toFixed(3));document.body.style.setProperty("--deep-px",pointer.x.toFixed(3));document.body.style.setProperty("--deep-py",pointer.y.toFixed(3));
+    document.body.style.setProperty("--deep-px",pointer.x.toFixed(3));document.body.style.setProperty("--deep-py",pointer.y.toFixed(3));
   }
 
   resize();
-  resizeObserver=new ResizeObserver(resize);resizeObserver.observe(shell);
+  addEventListener("resize",resize,{passive:true});
   addEventListener("pointermove",onPointer,{passive:true});
   frame(performance.now());
   if(!reduced) raf=requestAnimationFrame(frame);
@@ -1728,6 +1728,7 @@ function initDeepSpaceWorld(canvas, user, p) {
     cancelAnimationFrame(raf);
     resizeObserver?.disconnect();
     removeEventListener("pointermove",onPointer);
+    removeEventListener("resize",resize);
     canvas.remove();
     document.body.classList.remove("deep-space-page");
     document.body.style.removeProperty("--deep-px");
