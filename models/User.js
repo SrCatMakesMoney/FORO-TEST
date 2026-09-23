@@ -105,6 +105,8 @@ const userSchema = new mongoose.Schema(
       bannerEstilo: { type: String, default: "normal" },
       avatarEstilo: { type: String, default: "normal" },
       profundidad:  { type: Boolean, default: true },
+      // Nivel avanzado 0–100. En 100 se activa el Easter Egg Deep Space.
+      profundidadNivel: { type: Number, min: 0, max: 100, default: 55 },
       reflejo:     { type: Boolean, default: true },
       brillo:      { type: Boolean, default: true },
 
