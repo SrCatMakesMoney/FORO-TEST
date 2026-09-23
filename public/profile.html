@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Foro Ubre — Perfil</title>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet"/>
   <link rel="stylesheet" href="profile.css"/>
@@ -257,15 +257,14 @@
           <div class="banner-upload-preview" id="bannerUploadPreview">
             <div class="banner-upload-empty" id="bannerUploadEmpty">
               <i class="ri-image-add-line"></i>
-              <span>Imagen, GIF o video</span>
-              <small>Máx. 100MB · Cloudinary</small>
+              <span>PNG o GIF</span>
+              <small>Máx. 8MB</small>
             </div>
             <img id="bannerUploadImg" class="hidden" alt="Vista previa del banner"/>
-            <video id="bannerUploadVid" class="hidden" autoplay loop muted playsinline></video>
           </div>
           <div class="banner-upload-copy">
             <strong>Tu propio banner</strong>
-            <span>PNG, JPG, WEBP, GIF, MP4, WEBM o MOV. El archivo se sube directo a Cloudinary.</span>
+            <span>Sube una imagen PNG, JPG, WEBP o GIF. Los GIF animados se conservan.</span>
             <div class="banner-upload-actions">
               <button type="button" class="btn-pick-avatar banner-pick-btn" id="btnPickBanner">
                 <i class="ri-upload-cloud-2-line"></i> Elegir banner
@@ -274,7 +273,7 @@
                 <i class="ri-close-circle-line"></i> Cancelar
               </button>
             </div>
-            <input type="file" id="bannerEditInput" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,video/ogg" hidden/>
+            <input type="file" id="bannerEditInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden/>
             <small class="banner-upload-status" id="bannerUploadStatus"></small>
           </div>
         </div>
@@ -317,7 +316,21 @@
           </div>
         </div>
 
-        <details class="profile-advanced-depth"><summary><i class="ri-flask-line"></i><span>Configuración avanzada</span><small>Hay algo escondido</small></summary><div class="profile-depth-secret"><div class="profile-depth-secret-head"><span><strong>Profundidad</strong><small>0–100</small></span><output id="profileDepthValue">55</output></div><input id="profileDepthRange" class="profile-depth-range" type="range" min="0" max="100" step="1" value="55"><p>Hay un punto que no parece una configuración normal.</p></div></details>
+        <details class="profile-advanced-depth">
+          <summary>
+            <i class="ri-flask-line"></i>
+            <span>Configuración avanzada</span>
+            <small>Hay algo escondido aquí</small>
+          </summary>
+          <div class="profile-depth-secret">
+            <div class="profile-depth-secret-head">
+              <span><strong>Profundidad</strong><small>0–100</small></span>
+              <output id="profileDepthValue">55</output>
+            </div>
+            <input id="profileDepthRange" class="profile-depth-range" type="range" min="0" max="100" step="1" value="55" aria-label="Nivel de profundidad"/>
+            <p>Al llegar exactamente a 100, el perfil deja de ser normal.</p>
+          </div>
+        </details>
 
         <div class="visual-toggle-grid">
           <label class="visual-toggle">
@@ -519,12 +532,6 @@ function getMarcoStyle(p) {
 function renderAvatarEl(autor, size = 44) {
   const p  = autor.personalizacion || {};
   const ms = getMarcoStyle(p);
-  const depthLevel = Math.max(0, Math.min(100, Number.isFinite(Number(p.profundidadNivel)) ? Number(p.profundidadNivel) : (p.profundidad === false ? 0 : 55)));
-  const isDeep = depthLevel === 100;
-  document.body.classList.toggle("deep-space-page", isDeep);
-  document.documentElement.style.setProperty("--deep-accent", p.temaColor || "#5cdb6f");
-  if (isDeep) initDeepSpacePage(p); else stopDeepSpacePage();
-
   const extraClass = p.marco === "rainbow" ? "avatar-rainbow" : p.marco === "animated" ? "avatar-animated" : "";
   const style = `width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;${ms}`;
   if (autor.avatarTipo === "video") {
@@ -652,6 +659,12 @@ function renderPerfil(u) {
       ? "profile-avatar-water profile-avatar-drop"
       : "";
 
+  const depthLevel = Math.max(0, Math.min(100, Number.isFinite(Number(p.profundidadNivel)) ? Number(p.profundidadNivel) : (p.profundidad === false ? 0 : 55)));
+
+  document.body.classList.toggle("deep-space-page", depthLevel >= 100);
+  document.documentElement.style.setProperty("--deep-accent", p.temaColor || "#5cdb6f");
+  document.body.dataset.deepWorld = getDeepWorld(p);
+
   const extraClass = p.marco === "rainbow"
     ? "avatar-rainbow"
     : p.marco === "animated"
@@ -675,9 +688,10 @@ function renderPerfil(u) {
     : "";
 
   document.getElementById("profileContent").innerHTML = `
-    <div class="profile-premium-shell ${visualClass} ${p.profundidad === false ? "no-depth" : ""}"
+    <div class="profile-premium-shell ${visualClass} ${p.profundidad === false ? "no-depth" : ""} ${depthLevel >= 100 ? "deep-space" : ""}"
          style="--profile-accent:${p.temaColor || "#5cdb6f"}">
 
+      ${depthLevel >= 100 ? `<div class="deep-space-stars-front" aria-hidden="true"></div>` : ""}
       <div class="profile-ambient-layer" aria-hidden="true"></div>
 
       <div class="profile-banner ${visual === "vitrina" ? "banner-vitrina" : ""} ${hasUploadedBanner ? "has-banner-media" : ""}"
@@ -725,6 +739,17 @@ function renderPerfil(u) {
       </div>
     </div>
   `;
+
+  if (depthLevel >= 100) {
+    const worldCanvas = document.createElement("canvas");
+    worldCanvas.id = "deepSpaceWorld";
+    worldCanvas.className = "deep-space-world-canvas";
+    worldCanvas.setAttribute("aria-hidden", "true");
+    document.body.prepend(worldCanvas);
+    initDeepSpaceWorld(worldCanvas, u, p);
+  } else {
+    stopDeepSpaceWorld();
+  }
 }
 
 // ══════════════════════════════════
@@ -1102,31 +1127,19 @@ function abrirModalEditar() {
   const bannerInput = document.getElementById("bannerEditInput");
   if (bannerInput) bannerInput.value = "";
   const bannerImg = document.getElementById("bannerUploadImg");
-  const bannerVid = document.getElementById("bannerUploadVid");
   const bannerEmpty = document.getElementById("bannerUploadEmpty");
   const bannerStatus = document.getElementById("bannerUploadStatus");
   const clearBanner = document.getElementById("btnClearBanner");
-  if (bannerStatus) bannerStatus.textContent = u.banner ? "Banner actual guardado. Elige otro para reemplazarlo." : "";
-  if (bannerImg && bannerVid && bannerEmpty) {
-    if (u.banner) {
+  if (bannerStatus) bannerStatus.textContent = p.banner ? "Banner actual guardado. Elige otro para reemplazarlo." : "";
+  if (bannerImg && bannerEmpty) {
+    if (p.banner) {
+      bannerImg.src = p.banner;
+      bannerImg.classList.remove("hidden");
       bannerEmpty.classList.add("hidden");
-      if (u.bannerTipo === "video") {
-        bannerImg.removeAttribute("src");
-        bannerImg.classList.add("hidden");
-        bannerVid.src = u.banner;
-        bannerVid.classList.remove("hidden");
-      } else {
-        bannerVid.removeAttribute("src");
-        bannerVid.classList.add("hidden");
-        bannerImg.src = u.banner;
-        bannerImg.classList.remove("hidden");
-      }
       clearBanner?.classList.add("hidden");
     } else {
       bannerImg.removeAttribute("src");
       bannerImg.classList.add("hidden");
-      bannerVid.removeAttribute("src");
-      bannerVid.classList.add("hidden");
       bannerEmpty.classList.remove("hidden");
     }
   }
@@ -1323,39 +1336,18 @@ document.getElementById("gradColor1")?.addEventListener("input", actualizarPrevi
 document.getElementById("gradColor2")?.addEventListener("input", actualizarPreviewNombre);
 
 document.getElementById("editAvatarInput")?.addEventListener("change", function() {
-  const file = this.files?.[0];
+  const file = this.files[0];
   if (!file) return;
-
-  const allowed = [
-    "image/jpeg", "image/png", "image/gif", "image/webp",
-    "video/mp4", "video/webm", "video/quicktime", "video/ogg"
-  ];
-  if (!allowed.includes(file.type)) {
-    alert("El avatar debe ser JPG, PNG, GIF, WEBP, MP4, WEBM, MOV u OGG.");
-    this.value = "";
-    return;
-  }
-
-  if (file.size > 100 * 1024 * 1024) {
-    alert("El avatar puede pesar máximo 100MB.");
-    this.value = "";
-    return;
-  }
-
+  if (file.size > 3 * 1024 * 1024) { alert("Máximo 3MB"); this.value = ""; return; }
   avatarEditFile = file;
-  const url = URL.createObjectURL(file);
+  const url  = URL.createObjectURL(file);
   const img  = document.getElementById("editAvatarImg");
   const vid  = document.getElementById("editAvatarVid");
   document.getElementById("editAvatarHolder").classList.add("hidden");
-
   if (file.type.startsWith("video/")) {
-    img.classList.add("hidden");
-    vid.src = url;
-    vid.classList.remove("hidden");
+    img.classList.add("hidden"); vid.src = url; vid.classList.remove("hidden");
   } else {
-    vid.classList.add("hidden");
-    img.src = url;
-    img.classList.remove("hidden");
+    vid.classList.add("hidden"); img.src = url; img.classList.remove("hidden");
   }
 });
 
@@ -1368,17 +1360,14 @@ document.getElementById("bannerEditInput")?.addEventListener("change", function(
   const file = this.files?.[0];
   if (!file) return;
 
-  const allowed = [
-    "image/jpeg", "image/png", "image/gif", "image/webp",
-    "video/mp4", "video/webm", "video/quicktime", "video/ogg"
-  ];
+  const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
   if (!allowed.includes(file.type)) {
-    alert("El banner debe ser JPG, PNG, GIF, WEBP, MP4, WEBM, MOV u OGG.");
+    alert("El banner debe ser PNG, JPG, WEBP o GIF.");
     this.value = "";
     return;
   }
-  if (file.size > 100 * 1024 * 1024) {
-    alert("El banner puede pesar máximo 100MB.");
+  if (file.size > 8 * 1024 * 1024) {
+    alert("El banner puede pesar máximo 8MB.");
     this.value = "";
     return;
   }
@@ -1386,25 +1375,15 @@ document.getElementById("bannerEditInput")?.addEventListener("change", function(
   bannerEditFile = file;
   const url = URL.createObjectURL(file);
   const img = document.getElementById("bannerUploadImg");
-  const vid = document.getElementById("bannerUploadVid");
   const empty = document.getElementById("bannerUploadEmpty");
   const status = document.getElementById("bannerUploadStatus");
   const clear = document.getElementById("btnClearBanner");
 
+  img.src = url;
+  img.classList.remove("hidden");
   empty.classList.add("hidden");
-  if (file.type.startsWith("video/")) {
-    img.removeAttribute("src");
-    img.classList.add("hidden");
-    vid.src = url;
-    vid.classList.remove("hidden");
-  } else {
-    vid.removeAttribute("src");
-    vid.classList.add("hidden");
-    img.src = url;
-    img.classList.remove("hidden");
-  }
   clear?.classList.remove("hidden");
-  if (status) status.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB · listo para Cloudinary`;
+  if (status) status.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB`;
 });
 
 document.getElementById("btnClearBanner")?.addEventListener("click", () => {
@@ -1412,92 +1391,15 @@ document.getElementById("btnClearBanner")?.addEventListener("click", () => {
   const input = document.getElementById("bannerEditInput");
   if (input) input.value = "";
   const img = document.getElementById("bannerUploadImg");
-  const vid = document.getElementById("bannerUploadVid");
   const empty = document.getElementById("bannerUploadEmpty");
   const status = document.getElementById("bannerUploadStatus");
   const clear = document.getElementById("btnClearBanner");
   img?.removeAttribute("src");
   img?.classList.add("hidden");
-  vid?.removeAttribute("src");
-  vid?.classList.add("hidden");
   empty?.classList.remove("hidden");
   clear?.classList.add("hidden");
   if (status) status.textContent = "Selección cancelada. El banner actual no se modifica.";
 });
-
-// ── Guardar info ──
-async function subirMediaPerfil(file, campo, onProgress) {
-  const signRes = await fetch(`${API}/auth/perfil/media-signature`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ campo })
-  });
-
-  const signData = await signRes.json().catch(() => ({}));
-  if (!signRes.ok) throw new Error(signData.mensaje || "No se pudo preparar la subida");
-
-  const resourceType = file.type.startsWith("video/") ? "video" : "image";
-  const cloudForm = new FormData();
-  cloudForm.append("file", file);
-  cloudForm.append("api_key", signData.apiKey);
-  cloudForm.append("timestamp", signData.timestamp);
-  cloudForm.append("folder", signData.folder);
-  cloudForm.append("public_id", signData.publicId);
-  cloudForm.append("signature", signData.signature);
-
-  const cloudResult = await new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", `https://api.cloudinary.com/v1_1/${encodeURIComponent(signData.cloudName)}/${resourceType}/upload`);
-    xhr.upload.addEventListener("progress", e => {
-      if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
-    });
-    xhr.addEventListener("load", () => {
-      let data = {};
-      try { data = JSON.parse(xhr.responseText || "{}"); } catch (_) {}
-      if (xhr.status >= 200 && xhr.status < 300) resolve(data);
-      else reject(new Error(data.error?.message || "Cloudinary rechazó el archivo"));
-    });
-    xhr.addEventListener("error", () => reject(new Error("Error de conexión con Cloudinary")));
-    xhr.addEventListener("abort", () => reject(new Error("Subida cancelada")));
-    xhr.send(cloudForm);
-  });
-
-  if (!cloudResult.secure_url || !cloudResult.public_id) {
-    throw new Error("Cloudinary no devolvió los datos del archivo");
-  }
-
-  const saveRes = await fetch(`${API}/auth/perfil/media`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      campo,
-      secure_url: cloudResult.secure_url,
-      public_id: cloudResult.public_id,
-      resource_type: cloudResult.resource_type || resourceType,
-      format: cloudResult.format || null
-    })
-  });
-
-  const saveData = await saveRes.json().catch(() => ({}));
-  if (!saveRes.ok) {
-    try {
-      await fetch(`${API}/auth/perfil/media-cleanup`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ public_id: cloudResult.public_id, resource_type: cloudResult.resource_type || resourceType })
-      });
-    } catch (_) {}
-    throw new Error(saveData.mensaje || "No se pudo guardar el archivo");
-  }
-
-  return saveData.usuario;
-}
 
 // ── Guardar info ──
 document.getElementById("btnGuardarInfo")?.addEventListener("click", async () => {
@@ -1508,44 +1410,30 @@ document.getElementById("btnGuardarInfo")?.addEventListener("click", async () =>
   btn.innerHTML = '<i class="ri-loader-4-line spin"></i> Guardando...';
   btn.disabled  = true;
   try {
-    const body = {
-      nombre: document.getElementById("editNombre").value.trim(),
-      bio: document.getElementById("editBio").value
-    };
-
-    let usuarioActual = null;
-
-    if (avatarEditFile) {
-      btn.innerHTML = '<i class="ri-cloud-line"></i> Subiendo avatar...';
-      usuarioActual = await subirMediaPerfil(avatarEditFile, "avatar", pct => {
-        btn.innerHTML = `<i class="ri-cloud-line"></i> Avatar ${pct}%`;
-      });
-      avatarEditFile = null;
-    }
-
-    const res = await fetch(`${API}/auth/perfil`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify(body)
+    const fd = new FormData();
+    fd.append("nombre", document.getElementById("editNombre").value.trim());
+    fd.append("bio",    document.getElementById("editBio").value);
+    if (avatarEditFile) fd.append("avatar", avatarEditFile);
+    const res  = await fetch(`${API}/auth/perfil`, {
+      method: "PUT", headers: { Authorization: `Bearer ${token}` }, body: fd
     });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.mensaje || "No se pudo guardar el perfil");
-
-    const merged = { ...yo, ...(usuarioActual || {}), ...(data.usuario || {}) };
-    localStorage.setItem("fu_usuario", JSON.stringify(merged));
-    Object.assign(yo, merged);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.mensaje);
+    localStorage.setItem("fu_usuario", JSON.stringify({ ...yo, ...data.usuario }));
     cerrarModalEditar();
     cargarPerfil();
-  } catch(e) {
-    errText.textContent = e.message || "Error al guardar";
-    errBox.classList.remove("hidden");
-  } finally {
-    btn.innerHTML = '<i class="ri-save-line"></i> Guardar info';
-    btn.disabled = false;
-  }
+  } catch(e) { errText.textContent = e.message; errBox.classList.remove("hidden"); }
+  finally { btn.innerHTML = '<i class="ri-save-line"></i> Guardar info'; btn.disabled = false; }
 });
 
-document.getElementById("profileDepthRange")?.addEventListener("input", e => { const o=document.getElementById("profileDepthValue"); if(o)o.value=e.target.value; });
+const depthRangeControl = document.getElementById("profileDepthRange");
+const depthValueControl = document.getElementById("profileDepthValue");
+if (depthRangeControl) {
+  depthRangeControl.addEventListener("input", () => {
+    if (depthValueControl) depthValueControl.value = depthRangeControl.value;
+    depthRangeControl.parentElement?.classList.toggle("is-secret-ready", depthRangeControl.value === "100");
+  });
+}
 
 // ── Guardar apariencia ──
 document.getElementById("btnGuardarApariencia")?.addEventListener("click", async () => {
@@ -1569,12 +1457,16 @@ document.getElementById("btnGuardarApariencia")?.addEventListener("click", async
     let uploadedBanner = null;
 
     if (bannerEditFile) {
-      btn.innerHTML = '<i class="ri-cloud-line"></i> Subiendo banner...';
-      const usuarioMedia = await subirMediaPerfil(bannerEditFile, "banner", pct => {
-        btn.innerHTML = `<i class="ri-cloud-line"></i> Banner ${pct}%`;
+      const fd = new FormData();
+      fd.append("banner", bannerEditFile);
+      const uploadRes = await fetch(`${API}/auth/perfil`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd
       });
-      uploadedBanner = usuarioMedia?.banner || null;
-      bannerEditFile = null;
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) throw new Error(uploadData.mensaje || "No se pudo subir el banner");
+      uploadedBanner = uploadData.usuario?.banner || null;
     }
 
     const res = await fetch(`${API}/auth/personalizacion`, {
@@ -1680,27 +1572,169 @@ document.addEventListener("keydown", e => {
 // ── INIT ──
 cargarPerfil();
 
+
 // ============================================================
-// DEEP SPACE — PROFUNDIDAD 100
+// DEEP SPACE — EASTER EGG 100
 // ============================================================
-let deepSpacePageCleanup=null;
-function stopDeepSpacePage(){ if(deepSpacePageCleanup){try{deepSpacePageCleanup()}catch(_){}} deepSpacePageCleanup=null; document.getElementById("deepSpaceWorld")?.remove(); document.getElementById("deepSpaceUI")?.remove(); }
-function initDeepSpacePage(p={}){
-  stopDeepSpacePage();
-  const canvas=document.createElement("canvas"); canvas.id="deepSpaceWorld"; document.body.prepend(canvas);
-  const ui=document.createElement("div"); ui.id="deepSpaceUI"; ui.innerHTML='<div class="deep-space-stars-front"></div><div class="deep-space-hud">DEEP / 100</div>'; document.body.prepend(ui);
-  const ctx=canvas.getContext("2d"); if(!ctx)return;
-  const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches; let w=1,h=1,dpr=1,t=0,raf=0,alive=true,px=0,py=0,stars=[];
-  const key=String(p.bannerEstilo||p.bannerPreset||"normal").toLowerCase();
-  const worlds={water:{base:"#137fb6",land:"#0c5269",light:"#d9fbff",dark:"#02101c",a:"#45dfff"},frosted:{base:"#71c6ee",land:"#265c79",light:"#fff",dark:"#03131d",a:"#a9efff"},vitrina:{base:"#bd4935",land:"#62251d",light:"#ffe1c3",dark:"#140403",a:"#ff9b62"},normal:{base:"#2675c7",land:"#173f35",light:"#dffcff",dark:"#020912",a:p.temaColor||"#5cdb6f"}};
-  const pal=worlds[key]||worlds.normal;
-  function resize(){w=innerWidth;h=innerHeight;dpr=Math.min(devicePixelRatio||1,1.5);canvas.width=w*dpr;canvas.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);stars=Array.from({length:Math.min(260,Math.max(100,Math.floor(w*h/6500)))},()=>({x:Math.random(),y:Math.random(),z:.08+Math.random()*.92,s:.3+Math.random()*1.6,a:.2+Math.random()*.7,q:Math.random()*6.28}));}
-  function drawStars(){for(const s of stars){let x=((s.x+t*.000012*(1-s.z)+px*.025*(1-s.z)+1)%1)*w,y=((s.y+py*.02*(1-s.z)+1)%1)*h;ctx.fillStyle=`rgba(235,247,255,${s.a*(.55+.45*Math.sin(t*.0015+s.q))})`;ctx.beginPath();ctx.arc(x,y,s.s*(.45+s.z),0,Math.PI*2);ctx.fill();}}
-  function drawPlanet(){const r=Math.min(w,h)*.31,cx=w*.79+px*45,cy=h*.38+py*30;ctx.save();ctx.translate(cx,cy);const halo=ctx.createRadialGradient(0,0,r*.6,0,0,r*1.7);halo.addColorStop(0,`rgba(100,210,255,.18)`);halo.addColorStop(1,"rgba(0,0,0,0)");ctx.fillStyle=halo;ctx.beginPath();ctx.arc(0,0,r*1.7,0,Math.PI*2);ctx.fill();const g=ctx.createRadialGradient(-r*.38,-r*.45,r*.03,0,0,r*1.15);g.addColorStop(0,pal.light);g.addColorStop(.18,pal.base);g.addColorStop(.62,pal.land);g.addColorStop(1,pal.dark);ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();ctx.save();ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.clip();for(let i=-4;i<7;i++){ctx.fillStyle="rgba(150,240,210,.11)";ctx.beginPath();ctx.ellipse(Math.sin(i+t*.00003)*r*.25,i*r*.23,r*.75,r*.055,Math.sin(i)*.3,0,Math.PI*2);ctx.fill();}ctx.restore();const n=ctx.createLinearGradient(-r,0,r,0);n.addColorStop(0,"rgba(0,0,0,0)");n.addColorStop(.58,"rgba(0,0,0,.08)");n.addColorStop(1,"rgba(0,0,0,.72)");ctx.fillStyle=n;ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle=`${pal.a}66`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,r*1.04,0,Math.PI*2);ctx.stroke();if(key==="vitrina"){ctx.beginPath();ctx.ellipse(0,r*.05,r*1.4,r*.25,-.15,0,Math.PI*2);ctx.stroke();}const a=t*.00008;ctx.fillStyle="#dce8ee";ctx.beginPath();ctx.arc(Math.cos(a)*r*1.48,Math.sin(a)*r*.6,r*.06,0,Math.PI*2);ctx.fill();ctx.restore();}
-  function draw(){if(!alive)return;t=performance.now();ctx.clearRect(0,0,w,h);const bg=ctx.createRadialGradient(w*.75,h*.35,0,w*.75,h*.35,Math.max(w,h)*.8);bg.addColorStop(0,`${pal.a}1f`);bg.addColorStop(.45,"#1b2c6830");bg.addColorStop(1,"#0000");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);drawStars();drawPlanet();if(!reduced)raf=requestAnimationFrame(draw);}
-  function pointer(e){px=Math.max(-1,Math.min(1,(e.clientX-innerWidth/2)/(innerWidth/2)));py=Math.max(-1,Math.min(1,(e.clientY-innerHeight/2)/(innerHeight/2)));document.body.style.setProperty("--deep-px",px);document.body.style.setProperty("--deep-py",py);}
-  resize();addEventListener("resize",resize);addEventListener("pointermove",pointer,{passive:true});draw();deepSpacePageCleanup=()=>{alive=false;cancelAnimationFrame(raf);removeEventListener("resize",resize);removeEventListener("pointermove",pointer);};
+let deepSpaceCleanup = null;
+
+function getDeepWorld(p = {}) {
+  const key = String(p.bannerEstilo || p.bannerPreset || "default").toLowerCase();
+  if (["ocean", "water"].includes(key)) return "ocean";
+  if (["purple", "neon"].includes(key)) return "void";
+  if (["sunset", "fire"].includes(key)) return "ember";
+  if (["blue"].includes(key)) return "ice";
+  return "terra";
 }
+
+function stopDeepSpaceWorld() {
+  if (typeof deepSpaceCleanup === "function") { try { deepSpaceCleanup(); } catch (_) {} }
+  deepSpaceCleanup = null;
+}
+
+function initDeepSpaceWorld(canvas, user, p) {
+  stopDeepSpaceWorld();
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d", { alpha: true });
+  if (!ctx) return;
+
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const world = getDeepWorld(p);
+  const accent = p.temaColor || "#5cdb6f";
+  const palettes = {
+    terra: { a:"#5cdb6f", b:"#42a5f5", c:"#08130d", land:"#173e2a", cloud:"#dff8ff" },
+    ocean: { a:"#46d9ff", b:"#3867ff", c:"#031326", land:"#0b4266", cloud:"#c7f7ff" },
+    void:  { a:"#c084ff", b:"#5c3bff", c:"#07020e", land:"#191024", cloud:"#e6d8ff" },
+    ember: { a:"#ffb15c", b:"#ff4e6a", c:"#190703", land:"#542016", cloud:"#ffd8bd" },
+    ice:   { a:"#a9efff", b:"#4da9ff", c:"#04131d", land:"#17445a", cloud:"#effcff" }
+  };
+  const pal = palettes[world] || palettes.terra;
+  pal.a = accent || pal.a;
+
+  let w=0,h=0,dpr=1,raf=0,alive=true,time=0,px=0,py=0;
+  let stars=[];
+  let resizeObserver=null;
+  const pointer = {x:0,y:0};
+
+  function resize() {
+    w=Math.max(1,window.innerWidth); h=Math.max(1,window.innerHeight);
+    dpr=Math.min(devicePixelRatio||1,1.5);
+    canvas.width=Math.floor(w*dpr); canvas.height=Math.floor(h*dpr);
+    canvas.style.width=w+"px"; canvas.style.height=h+"px";
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const count=Math.min(180,Math.max(70,Math.floor(w*h/8500)));
+    stars=Array.from({length:count},()=>({x:Math.random(),y:Math.random(),z:.12+Math.random()*.88,s:Math.random()*1.8+.25,a:.2+Math.random()*.7,t:Math.random()*Math.PI*2}));
+  }
+
+  function hexRgb(hex){
+    const m=String(hex).replace('#','').match(/^([0-9a-f]{6})$/i);
+    if(!m) return [92,219,111];
+    return [parseInt(m[1].slice(0,2),16),parseInt(m[1].slice(2,4),16),parseInt(m[1].slice(4,6),16)];
+  }
+  const rgb=hexRgb(pal.a);
+
+  function roundRect(x,y,ww,hh,r){
+    const q=Math.min(r,ww/2,hh/2); ctx.beginPath();ctx.moveTo(x+q,y);ctx.arcTo(x+ww,y,x+ww,y+hh,q);ctx.arcTo(x+ww,y+hh,x,y+hh,q);ctx.arcTo(x,y+hh,x,y,q);ctx.arcTo(x,y,x+ww,y,q);ctx.closePath();
+  }
+
+  function drawStars() {
+    for(const s of stars){
+      const drift=(time*.000012)*(1.3-s.z);
+      const x=((s.x + drift + (pointer.x*.015)*(1-s.z))%1)*w;
+      const y=((s.y + pointer.y*.012*(1-s.z)+1)%1)*h;
+      const alpha=s.a*(.45+.55*Math.sin(time*.001+s.t));
+      ctx.fillStyle=`rgba(230,245,255,${Math.max(.05,alpha)})`;
+      ctx.beginPath();ctx.arc(x,y,s.s*(.55+.9*s.z),0,Math.PI*2);ctx.fill();
+    }
+  }
+
+  function drawNebula() {
+    const g=ctx.createRadialGradient(w*.75,h*.35,0,w*.75,h*.35,Math.max(w,h)*.75);
+    g.addColorStop(0,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},.18)`);
+    g.addColorStop(.34,"rgba(80,100,255,.08)");
+    g.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+    const g2=ctx.createRadialGradient(w*.15,h*.75,0,w*.15,h*.75,Math.max(w,h)*.55);
+    g2.addColorStop(0,"rgba(170,80,255,.08)");g2.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=g2;ctx.fillRect(0,0,w,h);
+  }
+
+  function drawPlanet() {
+    const mobile=w<700;
+    const radius=Math.min(w,h)*(mobile?.28:.34);
+    const cx=w*(mobile?.73:.78) + pointer.x*34;
+    const cy=h*(mobile?.35:.40) + pointer.y*25;
+    ctx.save();
+    ctx.translate(cx,cy);
+    const halo=ctx.createRadialGradient(0,0,radius*.8,0,0,radius*1.55);
+    halo.addColorStop(0,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},.13)`);halo.addColorStop(.65,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},.045)`);halo.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=halo;ctx.beginPath();ctx.arc(0,0,radius*1.55,0,Math.PI*2);ctx.fill();
+    const sphere=ctx.createRadialGradient(-radius*.38,-radius*.45,radius*.06,0,0,radius*1.2);
+    sphere.addColorStop(0,pal.cloud); sphere.addColorStop(.16,pal.b); sphere.addColorStop(.62,pal.land); sphere.addColorStop(1,pal.c);
+    ctx.fillStyle=sphere;ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.fill();
+    ctx.save();ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.clip();
+    const drift=time*.000025;
+    for(let i=-3;i<5;i++){
+      const yy=Math.sin(i*1.7+drift*3)*radius*.45+i*radius*.25;
+      ctx.fillStyle=world==="ice"?"rgba(225,250,255,.13)":world==="ember"?"rgba(255,205,130,.10)":"rgba(115,240,180,.11)";
+      ctx.beginPath();ctx.ellipse(Math.sin(i*2+drift)*radius*.25,yy,radius*.72,radius*.065,Math.sin(i)*.4,0,Math.PI*2);ctx.fill();
+    }
+    if(world==="ocean"){
+      for(let i=0;i<7;i++){ctx.strokeStyle=`rgba(150,235,255,${.05+i*.008})`;ctx.lineWidth=radius*.018;ctx.beginPath();ctx.arc(Math.sin(i+drift)*radius*.35,Math.cos(i*.7+drift)*radius*.2,radius*(.2+i*.07),0,Math.PI*1.3);ctx.stroke();}
+    }
+    const night=ctx.createLinearGradient(-radius,-radius*.1,radius,radius*.15);night.addColorStop(0,"rgba(0,0,0,0)");night.addColorStop(.58,"rgba(0,0,0,.12)");night.addColorStop(1,"rgba(0,0,0,.68)");ctx.fillStyle=night;ctx.fillRect(-radius,-radius,radius*2,radius*2);
+    ctx.restore();
+    const rim=ctx.createRadialGradient(-radius*.15,-radius*.18,radius*.84,-radius*.15,-radius*.18,radius*1.08);rim.addColorStop(.78,"rgba(255,255,255,0)");rim.addColorStop(.91,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},.34)`);rim.addColorStop(1,"rgba(255,255,255,0)");ctx.fillStyle=rim;ctx.beginPath();ctx.arc(0,0,radius*1.08,0,Math.PI*2);ctx.fill();
+    if(world==="void"){
+      ctx.strokeStyle="rgba(215,180,255,.28)";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,radius*.08,radius*1.38,radius*.28,-.16,0,Math.PI*2);ctx.stroke();
+    }
+    // moon
+    const moonR=Math.max(5,radius*.075); const ma=Math.cos(time*.00009)*radius*1.55, my=Math.sin(time*.00009)*radius*.65;
+    ctx.fillStyle="rgba(215,225,235,.75)";ctx.beginPath();ctx.arc(ma,my,moonR,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+
+  function drawOrbitParticles(){
+    const r=Math.min(w,h)*.34; const cx=w*.78+pointer.x*34,cy=h*.4+pointer.y*25;
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(-.12);ctx.strokeStyle=`rgba(${rgb[0]},${rgb[1]},${rgb[2]},.13)`;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(0,0,r*1.45,r*.48,0,0,Math.PI*2);ctx.stroke();
+    for(let i=0;i<8;i++){const a=time*.00004+i*Math.PI/4;const x=Math.cos(a)*r*1.45,y=Math.sin(a)*r*.48;ctx.fillStyle=`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${.15+.08*Math.sin(a*2)})`;ctx.beginPath();ctx.arc(x,y,1.5+(i%3),0,Math.PI*2);ctx.fill();}
+    ctx.restore();
+  }
+
+  function drawForeground(){
+    const grad=ctx.createLinearGradient(0,0,0,h);grad.addColorStop(0,"rgba(0,0,0,.03)");grad.addColorStop(.62,"rgba(0,0,0,.08)");grad.addColorStop(1,"rgba(0,0,0,.38)");ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+    const vignette=ctx.createRadialGradient(w*.5,h*.45,Math.min(w,h)*.2,w*.5,h*.45,Math.max(w,h)*.8);vignette.addColorStop(.65,"rgba(0,0,0,0)");vignette.addColorStop(1,"rgba(0,0,0,.55)");ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);
+  }
+
+  function frame(now){
+    if(!alive)return; time=now||performance.now();
+    ctx.clearRect(0,0,w,h);drawNebula();drawStars();drawOrbitParticles();drawPlanet();drawForeground();
+    if(!reduced) raf=requestAnimationFrame(frame);
+  }
+
+  function onPointer(e){
+    const x=e.clientX ?? e.touches?.[0]?.clientX ?? w/2; const y=e.clientY ?? e.touches?.[0]?.clientY ?? h/2;
+    pointer.x=Math.max(-1,Math.min(1,(x-innerWidth/2)/(innerWidth/2)));pointer.y=Math.max(-1,Math.min(1,(y-innerHeight/2)/(innerHeight/2)));
+    shell.style.setProperty("--deep-px",pointer.x.toFixed(3));shell.style.setProperty("--deep-py",pointer.y.toFixed(3));document.body.style.setProperty("--deep-px",pointer.x.toFixed(3));document.body.style.setProperty("--deep-py",pointer.y.toFixed(3));
+  }
+
+  resize();
+  resizeObserver=new ResizeObserver(resize);resizeObserver.observe(shell);
+  addEventListener("pointermove",onPointer,{passive:true});
+  frame(performance.now());
+  if(!reduced) raf=requestAnimationFrame(frame);
+  deepSpaceCleanup=()=>{
+    alive=false;
+    cancelAnimationFrame(raf);
+    resizeObserver?.disconnect();
+    removeEventListener("pointermove",onPointer);
+    canvas.remove();
+    document.body.classList.remove("deep-space-page");
+    document.body.style.removeProperty("--deep-px");
+    document.body.style.removeProperty("--deep-py");
+  };
+}
+
 </script>
 
 <style>
@@ -2084,6 +2118,128 @@ function initDeepSpacePage(p={}){
   #badgeOptions .badge-option div { display:flex; flex-direction:column; }
   #badgeOptions .badge-option strong { font-size:.9rem; }
   #badgeOptions .badge-option small  { color:var(--text-3); font-size:.75rem; }
+
+
+/* ============================================================
+   DEEP SPACE MODE — PROFUNDIDAD 100
+   ============================================================ */
+html:has(body.deep-space-page),
+body.deep-space-page{background:#010207!important;}
+body.deep-space-page{
+  --deep-accent:var(--profile-accent,#5cdb6f);
+  color:#edf6ff!important;
+  background:
+    radial-gradient(circle at 76% 30%, color-mix(in srgb,var(--deep-accent) 12%,transparent), transparent 28%),
+    radial-gradient(circle at 12% 85%, rgba(94,64,255,.08), transparent 32%),
+    #010207!important;
+  overflow-x:hidden;
+}
+body.deep-space-page::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:linear-gradient(180deg,rgba(2,4,14,.15),rgba(0,0,0,.52));}
+body.deep-space-page .carbon-bg,body.deep-space-page .ambient{opacity:0!important;transition:opacity .8s ease;}
+body.deep-space-page .sidebar,body.deep-space-page .feed-header,body.deep-space-page .trends-box,body.deep-space-page .bottom-nav-inner{
+  background:rgba(4,8,16,.38)!important;
+  border-color:rgba(255,255,255,.10)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 25px 80px rgba(0,0,0,.32)!important;
+  backdrop-filter:blur(24px) saturate(145%)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(145%)!important;
+}
+body.deep-space-page .sidebar{border-right:1px solid rgba(255,255,255,.07)!important;}
+body.deep-space-page .logo i,body.deep-space-page .nav-item.active,body.deep-space-page .bottom-nav-btn.active .bn-icon{color:var(--deep-accent)!important;}
+body.deep-space-page .profile-premium-shell{
+  position:relative;isolation:isolate;overflow:visible!important;
+  background:linear-gradient(145deg,rgba(8,13,25,.60),rgba(2,5,12,.42))!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  box-shadow:0 50px 120px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.11),0 0 90px color-mix(in srgb,var(--deep-accent) 7%,transparent)!important;
+  transform:perspective(1400px) rotateX(calc(var(--deep-py,0)*.55deg)) rotateY(calc(var(--deep-px,0)*-.55deg));
+  transition:transform .45s cubic-bezier(.2,.8,.2,1),box-shadow .5s ease;
+}
+body.deep-space-page .profile-premium-shell::before{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;z-index:8;background:linear-gradient(115deg,rgba(255,255,255,.13),transparent 22%,transparent 70%,color-mix(in srgb,var(--deep-accent) 20%,transparent));mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;padding:1px;}
+.profile-deep-world{position:absolute!important;inset:-8%!important;width:116%!important;height:116%!important;z-index:-3!important;pointer-events:none!important;display:block;}
+body.deep-space-page .profile-ambient-layer{position:absolute!important;inset:-20%!important;z-index:-2!important;background:radial-gradient(circle at 78% 36%,color-mix(in srgb,var(--deep-accent) 12%,transparent),transparent 34%),radial-gradient(circle at 20% 80%,rgba(91,71,255,.08),transparent 30%)!important;filter:blur(30px)!important;opacity:1!important;}
+body.deep-space-page .deep-space-stars-front{position:absolute;inset:-40px;z-index:7;pointer-events:none;background-image:radial-gradient(circle,rgba(255,255,255,.72) 0 1px,transparent 1.5px),radial-gradient(circle,rgba(180,225,255,.42) 0 1px,transparent 1.5px);background-size:137px 151px,223px 197px;opacity:.22;animation:deepStarDrift 32s linear infinite;mix-blend-mode:screen;}
+@keyframes deepStarDrift{to{background-position:137px 151px,-223px -197px;}}
+body.deep-space-page .profile-banner{background:rgba(4,8,17,.38)!important;border:1px solid rgba(255,255,255,.09)!important;box-shadow:0 25px 65px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.08)!important;transform:translateZ(22px);}
+body.deep-space-page .profile-banner::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.10),transparent 28%,transparent 72%,color-mix(in srgb,var(--deep-accent) 12%,transparent));mix-blend-mode:screen;}
+body.deep-space-page .profile-banner-media{filter:saturate(1.08) contrast(1.03);}
+body.deep-space-page .profile-info{background:linear-gradient(145deg,rgba(9,15,27,.68),rgba(2,6,14,.52))!important;border-color:rgba(255,255,255,.10)!important;box-shadow:0 35px 75px rgba(0,0,0,.44),inset 0 1px 0 rgba(255,255,255,.075)!important;backdrop-filter:blur(20px) saturate(135%)!important;-webkit-backdrop-filter:blur(20px) saturate(135%)!important;transform:translateZ(35px);}
+body.deep-space-page .profile-avatar-wrap{box-shadow:0 0 0 1px rgba(255,255,255,.15),0 0 0 7px rgba(0,0,0,.25),0 20px 55px color-mix(in srgb,var(--deep-accent) 22%,transparent)!important;transform:translateZ(55px);}
+body.deep-space-page #profileFeed{position:relative;z-index:4;perspective:1200px;}
+body.deep-space-page .post-card{background:linear-gradient(145deg,rgba(8,13,24,.72),rgba(2,5,12,.55))!important;border-color:rgba(255,255,255,.09)!important;box-shadow:0 28px 70px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.06)!important;backdrop-filter:blur(18px) saturate(130%)!important;-webkit-backdrop-filter:blur(18px) saturate(130%)!important;transform:translateZ(16px);}
+body.deep-space-page .profile-tabs{background:rgba(5,9,17,.58)!important;border-color:rgba(255,255,255,.10)!important;box-shadow:0 18px 50px rgba(0,0,0,.38)!important;backdrop-filter:blur(20px)!important;}
+body.deep-space-page .profile-tabs .tab-btn.active{color:#fff!important;background:color-mix(in srgb,var(--deep-accent) 12%,rgba(255,255,255,.04))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 22px color-mix(in srgb,var(--deep-accent) 10%,transparent)!important;}
+body.deep-space-page .btn-edit-profile,body.deep-space-page .btn-mensaje,body.deep-space-page .btn-follow{background:rgba(255,255,255,.065)!important;border-color:rgba(255,255,255,.12)!important;color:#eef7ff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 30px rgba(0,0,0,.25)!important;backdrop-filter:blur(14px)!important;}
+body.deep-space-page .btn-follow:not(.siguiendo){background:color-mix(in srgb,var(--deep-accent) 16%,rgba(255,255,255,.06))!important;}
+body.deep-space-page .trends{position:relative;}
+body.deep-space-page .feed-header h2{letter-spacing:.03em;text-shadow:0 0 24px color-mix(in srgb,var(--deep-accent) 28%,transparent);}
+body.deep-space-page .sidebar-user{background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.08)!important;}
+body.deep-space-page .feed{position:relative;}
+body.deep-space-page .feed::before{content:"DEEP / 100";position:absolute;right:4px;top:78px;font:700 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;color:rgba(255,255,255,.20);pointer-events:none;transform:rotate(90deg);transform-origin:right top;}
+.profile-advanced-depth{margin-top:12px;border:1px solid rgba(255,255,255,.07);border-radius:15px;background:rgba(255,255,255,.025);overflow:hidden;}
+.profile-advanced-depth summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 13px;color:var(--text-2);font-size:.78rem;font-weight:800;}
+.profile-advanced-depth summary::-webkit-details-marker{display:none;}
+.profile-advanced-depth summary i{color:var(--green);font-size:1rem;}
+.profile-advanced-depth summary small{margin-left:auto;color:var(--text-3);font-size:.62rem;font-weight:600;}
+.profile-depth-secret{padding:0 13px 14px;}
+.profile-depth-secret-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.profile-depth-secret-head span{display:flex;flex-direction:column;gap:2px;}
+.profile-depth-secret-head strong{font-size:.8rem;}
+.profile-depth-secret-head small{font-size:.62rem;color:var(--text-3);}
+.profile-depth-secret output{min-width:38px;text-align:center;border-radius:9px;padding:6px 8px;background:rgba(255,255,255,.05);font:800 .78rem ui-monospace,monospace;color:var(--text);} 
+.profile-depth-range{width:100%;accent-color:var(--green);cursor:pointer;}
+.profile-depth-secret p{margin:7px 0 0;color:var(--text-3);font-size:.64rem;line-height:1.45;}
+.profile-depth-secret.is-secret-ready output,.profile-depth-secret:has(.profile-depth-range[value="100"]) output{color:#fff;box-shadow:0 0 18px rgba(92,219,111,.2);}
+@media(max-width:700px){body.deep-space-page .profile-premium-shell{transform:none;}body.deep-space-page .profile-deep-world{inset:-10%!important;width:120%!important;height:120%!important;}body.deep-space-page .feed::before{display:none;}body.deep-space-page .post-card{transform:none;}body.deep-space-page .profile-info{transform:none;}body.deep-space-page .profile-avatar-wrap{transform:none;}}
+@media(prefers-reduced-motion:reduce){body.deep-space-page .deep-space-stars-front{animation:none;}body.deep-space-page .profile-premium-shell{transform:none!important;}}
+/* ============================================================
+   DEEP SPACE V2 — FULL PAGE SECRET WORLD
+   Esto NO es un efecto dentro del perfil: transforma toda la UI.
+   ============================================================ */
+html:has(body.deep-space-page), body.deep-space-page { background:#01030a !important; }
+body.deep-space-page { --deep-px:0; --deep-py:0; min-height:100vh; color:#eef7ff !important; background:
+ radial-gradient(circle at calc(50% + calc(var(--deep-px) * 18vw)) 20%, color-mix(in srgb,var(--deep-accent) 16%,transparent),transparent 30%),
+ radial-gradient(circle at 15% 85%,rgba(87,68,255,.10),transparent 35%), #01030a !important; }
+body.deep-space-page .carbon-bg,body.deep-space-page .ambient{opacity:0!important;display:none!important;}
+body.deep-space-page .app-layout{position:relative;z-index:2;display:grid;grid-template-columns:220px minmax(0,700px) 260px;gap:28px;max-width:1280px;margin:0 auto;padding:28px 24px 80px;perspective:1600px;}
+body.deep-space-page .sidebar{position:sticky;top:28px;height:calc(100vh - 56px);align-self:start;border:1px solid rgba(255,255,255,.11)!important;border-radius:28px!important;background:linear-gradient(145deg,rgba(12,20,34,.72),rgba(3,7,16,.48))!important;backdrop-filter:blur(28px) saturate(145%)!important;-webkit-backdrop-filter:blur(28px) saturate(145%)!important;box-shadow:0 30px 90px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.10)!important;transform:translate3d(calc(var(--deep-px) * -7px),calc(var(--deep-py) * -4px),0);transition:transform .18s ease-out;}
+body.deep-space-page .sidebar::before{content:"";position:absolute;inset:1px;border-radius:27px;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 30%,color-mix(in srgb,var(--deep-accent) 10%,transparent));}
+body.deep-space-page .logo{font-size:1rem!important;letter-spacing:.02em;text-shadow:0 0 24px color-mix(in srgb,var(--deep-accent) 30%,transparent);}
+body.deep-space-page .nav-item{border-radius:16px!important;transition:transform .2s ease,background .2s ease,box-shadow .2s ease!important;}
+body.deep-space-page .nav-item:hover{transform:translateX(5px);background:rgba(255,255,255,.055)!important;}
+body.deep-space-page .nav-item.active{background:color-mix(in srgb,var(--deep-accent) 13%,rgba(255,255,255,.04))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 30px color-mix(in srgb,var(--deep-accent) 10%,transparent)!important;}
+body.deep-space-page .feed{position:relative;z-index:3;min-width:0;transform:translate3d(calc(var(--deep-px) * 3px),calc(var(--deep-py) * 2px),0);transition:transform .18s ease-out;}
+body.deep-space-page .feed-header{position:sticky!important;top:18px;z-index:30;margin-bottom:18px;padding:13px 16px!important;border:1px solid rgba(255,255,255,.10)!important;border-radius:20px!important;background:rgba(5,10,19,.58)!important;backdrop-filter:blur(25px) saturate(140%)!important;-webkit-backdrop-filter:blur(25px) saturate(140%)!important;box-shadow:0 20px 55px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)!important;}
+body.deep-space-page .feed-header h2{font-size:1rem!important;letter-spacing:.04em;text-shadow:0 0 25px color-mix(in srgb,var(--deep-accent) 35%,transparent);}
+body.deep-space-page .trends{position:relative;z-index:2;transform:translate3d(calc(var(--deep-px) * 6px),calc(var(--deep-py) * 3px),0);transition:transform .18s ease-out;}
+body.deep-space-page .trends-box{border:1px solid rgba(255,255,255,.10)!important;border-radius:25px!important;background:linear-gradient(145deg,rgba(12,20,34,.62),rgba(3,7,16,.40))!important;backdrop-filter:blur(25px) saturate(140%)!important;-webkit-backdrop-filter:blur(25px) saturate(140%)!important;box-shadow:0 28px 75px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.08)!important;}
+body.deep-space-page .profile-premium-shell{position:relative!important;isolation:isolate!important;margin-bottom:30px!important;transform:translate3d(calc(var(--deep-px) * -2px),calc(var(--deep-py) * -3px),0) rotateX(calc(var(--deep-py) * -0.7deg)) rotateY(calc(var(--deep-px) * 0.9deg));transition:transform .18s ease-out!important;}
+body.deep-space-page .profile-premium-shell .profile-banner{box-shadow:0 35px 90px rgba(0,0,0,.55),0 0 80px color-mix(in srgb,var(--deep-accent) 8%,transparent)!important;}
+body.deep-space-page .profile-info{transform:translateZ(42px)!important;background:linear-gradient(145deg,rgba(10,18,30,.78),rgba(2,7,15,.60))!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:0 35px 90px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.09)!important;}
+body.deep-space-page #profileFeed{position:relative;z-index:5;}
+body.deep-space-page .post-card{background:linear-gradient(145deg,rgba(9,16,29,.72),rgba(2,6,14,.52))!important;border:1px solid rgba(255,255,255,.10)!important;box-shadow:0 30px 75px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.07)!important;backdrop-filter:blur(22px) saturate(140%)!important;-webkit-backdrop-filter:blur(22px) saturate(140%)!important;transform:translateZ(25px);}
+body.deep-space-page .profile-tabs{background:rgba(4,9,17,.62)!important;border:1px solid rgba(255,255,255,.10)!important;box-shadow:0 20px 60px rgba(0,0,0,.42)!important;backdrop-filter:blur(22px)!important;}
+body.deep-space-page .profile-tabs .tab-btn.active{color:#fff!important;background:color-mix(in srgb,var(--deep-accent) 14%,rgba(255,255,255,.03))!important;box-shadow:0 0 25px color-mix(in srgb,var(--deep-accent) 10%,transparent)!important;}
+body.deep-space-page .btn-edit-profile,body.deep-space-page .btn-mensaje,body.deep-space-page .btn-follow{background:rgba(255,255,255,.065)!important;border:1px solid rgba(255,255,255,.13)!important;box-shadow:0 12px 30px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.10)!important;backdrop-filter:blur(16px)!important;}
+body.deep-space-page .profile-avatar-wrap{box-shadow:0 0 0 1px rgba(255,255,255,.18),0 0 0 8px rgba(2,5,12,.55),0 25px 65px color-mix(in srgb,var(--deep-accent) 30%,transparent)!important;}
+body.deep-space-page .profile-banner-media{filter:saturate(1.15) contrast(1.06)!important;}
+#profileContent .profile-deep-world{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;z-index:0!important;display:block!important;pointer-events:none!important;}
+/* V4 — WORLD IS A TRUE PAGE LAYER, NOT A PROFILE CHILD */
+.deep-space-world-canvas{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;display:block!important;z-index:0!important;pointer-events:none!important;background:transparent!important;}
+body.deep-space-page .app-layout{position:relative!important;z-index:2!important;}
+body.deep-space-page .modal-overlay,body.deep-space-page .notifications-panel,body.deep-space-page .bottom-nav{z-index:100!important;}
+body.deep-space-page .sidebar,body.deep-space-page .feed,body.deep-space-page .trends{position:relative!important;}
+body.deep-space-page .feed::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.012),transparent 48%);}
+
+body.deep-space-page .profile-ambient-layer{z-index:1!important;position:fixed!important;inset:0!important;pointer-events:none!important;filter:blur(55px)!important;opacity:.9!important;}
+body.deep-space-page .deep-space-stars-front{position:fixed!important;inset:0!important;z-index:1!important;pointer-events:none!important;opacity:.42!important;mix-blend-mode:screen!important;}
+body.deep-space-page .bottom-nav{z-index:50!important;background:rgba(3,7,14,.72)!important;backdrop-filter:blur(25px)!important;-webkit-backdrop-filter:blur(25px)!important;border-top:1px solid rgba(255,255,255,.10)!important;}
+body.deep-space-page .btn-post-sidebar{box-shadow:0 15px 35px color-mix(in srgb,var(--deep-accent) 12%,transparent)!important;}
+body.deep-space-page[data-deep-world="void"]{background:#03000a!important;}
+body.deep-space-page[data-deep-world="ember"]{background:#090201!important;}
+body.deep-space-page[data-deep-world="ice"]{background:#01070b!important;}
+body.deep-space-page[data-deep-world="ocean"]{background:#01070d!important;}
+@media(max-width:900px){body.deep-space-page .app-layout{grid-template-columns:1fr;max-width:720px;padding:16px 12px 90px;}body.deep-space-page .sidebar{display:none;}body.deep-space-page .trends{display:none;}body.deep-space-page .feed{transform:none!important;}body.deep-space-page .profile-premium-shell{transform:none!important;}body.deep-space-page .profile-info{transform:none!important;}#profileContent .profile-deep-world{position:fixed!important;inset:0!important;}}
+@media(prefers-reduced-motion:reduce){body.deep-space-page .sidebar,body.deep-space-page .feed,body.deep-space-page .trends,body.deep-space-page .profile-premium-shell{transform:none!important;}}
+
 </style>
 </body>
 </html>
