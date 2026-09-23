@@ -334,6 +334,18 @@
             <span><strong>Ambiente</strong><small>Glow muy suave</small></span>
           </label>
         </div>
+
+        <details class="profile-advanced-depth">
+          <summary><i class="ri-flask-line"></i><span>Configuración avanzada</span><small>Hay un secreto escondido aquí</small></summary>
+          <div class="profile-depth-secret">
+            <div class="profile-depth-secret-head">
+              <span><strong>Profundidad</strong><small>0–100</small></span>
+              <output id="profileDepthValue">55</output>
+            </div>
+            <input id="profileDepthRange" class="profile-depth-range" type="range" min="0" max="100" step="1" value="55" aria-label="Nivel de profundidad"/>
+            <p>Al llegar exactamente a 100 ocurre algo que no aparece en el editor.</p>
+          </div>
+        </details>
       </div>
 
       <button class="btn-auth" id="btnGuardarApariencia">
@@ -626,6 +638,9 @@ function renderPerfil(u) {
   const bannerStyle = getBannerStyle(p);
   const marcoStyle  = getMarcoStyle(p);
   const hasUploadedBanner = !!u.banner;
+  const depthLevel = Math.max(0, Math.min(100, Number.isFinite(Number(p.profundidadNivel))
+    ? Number(p.profundidadNivel)
+    : (p.profundidad === false ? 0 : 55)));
 
   const visual = p.bannerEstilo || "normal";
   const avatarStyle = p.avatarEstilo || (visual === "water" ? "water" : "normal");
@@ -667,9 +682,10 @@ function renderPerfil(u) {
     : "";
 
   document.getElementById("profileContent").innerHTML = `
-    <div class="profile-premium-shell ${visualClass} ${p.profundidad === false ? "no-depth" : ""}"
+    <div class="profile-premium-shell ${visualClass} ${p.profundidad === false ? "no-depth" : ""} ${depthLevel >= 100 ? "deep-space" : ""}"
          style="--profile-accent:${p.temaColor || "#5cdb6f"}">
 
+      ${depthLevel >= 100 ? `<canvas class="profile-depth-world" aria-hidden="true"></canvas>` : ""}
       <div class="profile-ambient-layer" aria-hidden="true"></div>
 
       <div class="profile-banner ${visual === "vitrina" ? "banner-vitrina" : ""} ${hasUploadedBanner ? "has-banner-media" : ""}"
@@ -717,6 +733,222 @@ function renderPerfil(u) {
       </div>
     </div>
   `;
+
+  if (depthLevel >= 100) initProfileDeepSpace(document.querySelector("#profileContent .profile-premium-shell"), u, p);
+}
+
+// ══════════════════════════════════
+// EASTER EGG — DEEP SPACE 100
+// ══════════════════════════════════
+function initProfileDeepSpace(shell, u, p) {
+  const canvas = shell?.querySelector(".profile-depth-world");
+  if (!canvas || canvas.dataset.ready === "1") return;
+  canvas.dataset.ready = "1";
+
+  const ctx = canvas.getContext("2d", { alpha: true });
+  if (!ctx) return;
+
+  const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const accent = p.temaColor || "#5cdb6f";
+  const visual = p.bannerEstilo || "normal";
+  const palette = visual === "water" ? ["#73c9ff", "#bfe8ff"]
+    : visual === "frosted" ? ["#d9ecff", "#ffffff"]
+    : visual === "vitrina" ? [accent, "#a7c7ff"]
+    : [accent, "#7f9cff"];
+
+  const stars = [];
+  const particles = [];
+  const DPR_MAX = 1.6;
+  let w = 1, h = 1, dpr = 1;
+  let raf = 0;
+  let last = performance.now();
+  let t = 0;
+  let px = 0, py = 0, tx = 0, ty = 0;
+
+  function resize() {
+    const rect = shell.getBoundingClientRect();
+    w = Math.max(1, rect.width);
+    h = Math.max(1, rect.height);
+    dpr = Math.min(window.devicePixelRatio || 1, DPR_MAX);
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
+    canvas.style.width = w + "px";
+    canvas.style.height = h + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function seed() {
+    stars.length = 0;
+    particles.length = 0;
+    const count = Math.min(190, Math.max(90, Math.floor(w * h / 7000)));
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random(), y: Math.random(), z: Math.random(),
+        r: Math.random() * 1.35 + .18,
+        tw: Math.random() * Math.PI * 2,
+        speed: .06 + Math.random() * .18
+      });
+    }
+    for (let i = 0; i < 28; i++) {
+      particles.push({
+        a: Math.random() * Math.PI * 2,
+        r: .18 + Math.random() * .55,
+        z: Math.random(),
+        speed: (.08 + Math.random() * .18) * (Math.random() > .5 ? 1 : -1),
+        size: .6 + Math.random() * 2
+      });
+    }
+  }
+
+  function hexToRgb(hex) {
+    const m = String(hex).replace("#", "").match(/^([0-9a-f]{6})$/i);
+    if (!m) return [92, 219, 111];
+    return [parseInt(m[1].slice(0,2),16), parseInt(m[1].slice(2,4),16), parseInt(m[1].slice(4,6),16)];
+  }
+
+  const [ar, ag, ab] = hexToRgb(palette[0]);
+
+  function drawNebula() {
+    const g = ctx.createRadialGradient(w*.72 + px*30, h*.28 + py*18, 5, w*.72, h*.28, Math.max(w,h)*.65);
+    g.addColorStop(0, `rgba(${ar},${ag},${ab},.16)`);
+    g.addColorStop(.34, `rgba(72,105,210,.07)`);
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,w,h);
+  }
+
+  function drawStars(dt) {
+    for (const s of stars) {
+      s.tw += dt * s.speed;
+      const depth = .18 + s.z * .82;
+      const x = (s.x - .5) * w * (1.0 + s.z * .34) + px * (8 + s.z*28) + w/2;
+      const y = (s.y - .5) * h * (1.0 + s.z * .24) + py * (5 + s.z*20) + h/2;
+      const alpha = (.20 + s.z*.55) * (.72 + Math.sin(s.tw)*.28);
+      ctx.beginPath();
+      ctx.arc(x, y, s.r * depth, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(220,232,255,${alpha})`;
+      ctx.fill();
+    }
+  }
+
+  function drawPlanet() {
+    const cx = w * .78 + px * 48;
+    const cy = h * .44 + py * 30;
+    const radius = Math.min(w, h) * .205;
+    if (radius < 38) return;
+
+    // soft atmospheric halo
+    const halo = ctx.createRadialGradient(cx, cy, radius*.65, cx, cy, radius*1.45);
+    halo.addColorStop(0, `rgba(${ar},${ag},${ab},.10)`);
+    halo.addColorStop(.72, `rgba(110,170,255,.055)`);
+    halo.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = halo;
+    ctx.beginPath(); ctx.arc(cx,cy,radius*1.45,0,Math.PI*2); ctx.fill();
+
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI*2); ctx.clip();
+
+    const sphere = ctx.createRadialGradient(cx-radius*.38, cy-radius*.40, radius*.08, cx+radius*.18, cy+radius*.16, radius*1.12);
+    sphere.addColorStop(0, "rgba(220,242,255,.98)");
+    sphere.addColorStop(.18, `rgba(${Math.min(255,ar+65)},${Math.min(255,ag+25)},${Math.min(255,ab+30)},.94)`);
+    sphere.addColorStop(.48, `rgba(${Math.max(20,ar*.72)},${Math.max(30,ag*.72)},${Math.max(50,ab*.88)},.98)`);
+    sphere.addColorStop(.78, "rgba(10,16,30,.98)");
+    sphere.addColorStop(1, "rgba(2,4,10,1)");
+    ctx.fillStyle = sphere;
+    ctx.fillRect(cx-radius, cy-radius, radius*2, radius*2);
+
+    // moving atmospheric bands
+    ctx.globalAlpha = .24;
+    for (let i=0; i<7; i++) {
+      const yy = cy-radius + (i+.5)*radius*.28 + Math.sin(t*.00035+i)*radius*.035;
+      ctx.fillStyle = i%2 ? palette[1] : palette[0];
+      ctx.fillRect(cx-radius, yy, radius*2, radius*.045);
+    }
+    ctx.globalAlpha = 1;
+
+    // night-side vignette
+    const night = ctx.createRadialGradient(cx-radius*.52,cy-radius*.55,radius*.05,cx+radius*.20,cy+radius*.15,radius*1.25);
+    night.addColorStop(.38,"rgba(0,0,0,0)");
+    night.addColorStop(.72,"rgba(0,0,0,.28)");
+    night.addColorStop(1,"rgba(0,0,0,.86)");
+    ctx.fillStyle = night;
+    ctx.fillRect(cx-radius,cy-radius,radius*2,radius*2);
+    ctx.restore();
+
+    // atmosphere rim
+    ctx.beginPath(); ctx.arc(cx,cy,radius+1.5,0,Math.PI*2);
+    ctx.strokeStyle = `rgba(${ar},${ag},${ab},.36)`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // orbit ring
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(-.28 + px*.08);
+    ctx.beginPath(); ctx.ellipse(0,0,radius*1.62,radius*.37,0,0,Math.PI*2);
+    ctx.strokeStyle = `rgba(190,220,255,.16)`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(0,0,radius*1.62,radius*.37,0,Math.PI*.08,Math.PI*1.12);
+    ctx.strokeStyle = `rgba(${ar},${ag},${ab},.42)`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+
+    // tiny moon
+    const ma = t*.00008;
+    const mx = cx + Math.cos(ma) * radius*1.72;
+    const my = cy + Math.sin(ma) * radius*.42;
+    ctx.beginPath(); ctx.arc(mx,my,Math.max(3,radius*.045),0,Math.PI*2);
+    ctx.fillStyle = "rgba(225,235,255,.78)"; ctx.fill();
+    ctx.beginPath(); ctx.arc(mx,my,Math.max(5,radius*.075),0,Math.PI*2);
+    ctx.strokeStyle = "rgba(180,210,255,.12)"; ctx.stroke();
+  }
+
+  function drawParticles() {
+    for (const p of particles) {
+      const a = p.a + t * .00005 * p.speed;
+      const rr = p.r * Math.min(w,h);
+      const x = w*.78 + Math.cos(a)*rr + px*(18+p.z*22);
+      const y = h*.44 + Math.sin(a)*rr*.42 + py*(12+p.z*18);
+      ctx.beginPath(); ctx.arc(x,y,p.size*(.4+p.z),0,Math.PI*2);
+      ctx.fillStyle = `rgba(205,225,255,${.10+p.z*.25})`; ctx.fill();
+    }
+  }
+
+  function frame(now) {
+    const dt = Math.min(40, now-last); last=now; t += dt;
+    ctx.clearRect(0,0,w,h);
+    if (!reduced) {
+      px += (tx-px)*.035; py += (ty-py)*.035;
+    }
+    drawNebula();
+    drawStars(reduced ? 0 : dt);
+    drawParticles();
+    drawPlanet();
+    raf = requestAnimationFrame(frame);
+  }
+
+  const onPointer = (e) => {
+    const r = shell.getBoundingClientRect();
+    tx = Math.max(-1, Math.min(1, (e.clientX-r.left)/r.width*.2 - .1));
+    ty = Math.max(-1, Math.min(1, (e.clientY-r.top)/r.height*.2 - .1));
+  };
+  const onLeave = () => { tx=0; ty=0; };
+  shell.addEventListener("pointermove", onPointer, { passive:true });
+  shell.addEventListener("pointerleave", onLeave, { passive:true });
+  const ro = new ResizeObserver(() => { resize(); seed(); });
+  ro.observe(shell);
+  resize(); seed();
+  if (reduced) drawStars(0), drawNebula(), drawParticles(), drawPlanet();
+  else raf = requestAnimationFrame(frame);
+
+  shell._deepSpaceCleanup = () => {
+    cancelAnimationFrame(raf);
+    ro.disconnect();
+    shell.removeEventListener("pointermove", onPointer);
+    shell.removeEventListener("pointerleave", onLeave);
+  };
 }
 
 // ══════════════════════════════════
@@ -1136,7 +1368,12 @@ function abrirModalEditar() {
   const depth = document.getElementById("profileDepthToggle");
   const reflection = document.getElementById("profileReflectionToggle");
   const glow = document.getElementById("profileGlowToggle");
+  const depthRange = document.getElementById("profileDepthRange");
+  const depthValue = document.getElementById("profileDepthValue");
+  const savedDepth = Math.max(0, Math.min(100, Number.isFinite(Number(p.profundidadNivel)) ? Number(p.profundidadNivel) : (p.profundidad === false ? 0 : 55)));
   if (depth) depth.checked = p.profundidad !== false;
+  if (depthRange) depthRange.value = savedDepth;
+  if (depthValue) depthValue.value = savedDepth;
   if (reflection) reflection.checked = p.reflejo !== false;
   if (glow) glow.checked = p.brillo !== false;
 
@@ -1531,6 +1768,19 @@ document.getElementById("btnGuardarInfo")?.addEventListener("click", async () =>
   }
 });
 
+// ── Profundidad secreta ──
+const profileDepthRange = document.getElementById("profileDepthRange");
+const profileDepthValue = document.getElementById("profileDepthValue");
+profileDepthRange?.addEventListener("input", () => {
+  const value = Math.max(0, Math.min(100, Number(profileDepthRange.value) || 0));
+  if (profileDepthValue) profileDepthValue.value = value;
+  if (value === 100) {
+    profileDepthValue?.classList.add("is-secret");
+  } else {
+    profileDepthValue?.classList.remove("is-secret");
+  }
+});
+
 // ── Guardar apariencia ──
 document.getElementById("btnGuardarApariencia")?.addEventListener("click", async () => {
   const btn = document.getElementById("btnGuardarApariencia");
@@ -1545,6 +1795,7 @@ document.getElementById("btnGuardarApariencia")?.addEventListener("click", async
     bannerEstilo: document.querySelector("#visualStyleOptions .visual-style-card.active")?.dataset.visual || "normal",
     avatarEstilo: document.querySelector("#avatarStyleOptions .visual-pill.active")?.dataset.avatarStyle || "normal",
     profundidad: document.getElementById("profileDepthToggle")?.checked !== false,
+    profundidadNivel: Math.max(0, Math.min(100, Number(document.getElementById("profileDepthRange")?.value || 55))),
     reflejo: document.getElementById("profileReflectionToggle")?.checked !== false,
     brillo: document.getElementById("profileGlowToggle")?.checked !== false
   };
