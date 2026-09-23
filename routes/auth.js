@@ -1,19 +1,11 @@
 const express  = require("express");
 const multer   = require("multer");
 const jwt      = require("jsonwebtoken");
-const crypto    = require("crypto");
-const { v2: cloudinary } = require("cloudinary");
 const User     = require("../models/User");
 const auth     = require("../middleware/authMiddleware");
 const { uploadFile, deleteFile } = require("../utils/gridfs");
 
 const router = express.Router();
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
 
 // ============================================================
 // UPLOADS DE PERFIL
@@ -173,169 +165,6 @@ router.get("/yo", auth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ mensaje: "Error" });
-  }
-});
-
-// ============================================================
-// MEDIA DE PERFIL — CLOUDINARY
-// El archivo grande nunca pasa por Vercel: el navegador lo manda
-// directamente a Cloudinary y el backend recibe solamente metadata.
-// ============================================================
-router.post("/perfil/media-signature", auth, async (req, res) => {
-  try {
-    if (!process.env.CLOUDINARY_API_SECRET || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_CLOUD_NAME) {
-      return res.status(500).json({ mensaje: "Cloudinary no está configurado en el servidor" });
-    }
-
-    const campo = String(req.body?.campo || "");
-    if (!["avatar", "banner"].includes(campo)) {
-      return res.status(400).json({ mensaje: "Media de perfil inválida" });
-    }
-
-    const timestamp = Math.floor(Date.now() / 1000);
-    const folder = `foro-ubre/perfiles/${req.usuario._id}/${campo}`;
-    const publicId = `${folder}/${crypto.randomUUID()}`;
-    const signature = cloudinary.utils.api_sign_request(
-      { timestamp, folder, public_id: publicId },
-      process.env.CLOUDINARY_API_SECRET
-    );
-
-    res.json({
-      signature,
-      timestamp,
-      folder,
-      publicId,
-      apiKey: process.env.CLOUDINARY_API_KEY,
-      cloudName: process.env.CLOUDINARY_CLOUD_NAME
-    });
-  } catch (err) {
-    console.error("Cloudinary profile signature error:", err);
-    res.status(500).json({ mensaje: "No se pudo preparar la subida" });
-  }
-});
-
-router.post("/perfil/media", auth, async (req, res) => {
-  try {
-    const { campo, secure_url, public_id, resource_type, format } = req.body || {};
-
-    if (!["avatar", "banner"].includes(campo)) {
-      return res.status(400).json({ mensaje: "Media de perfil inválida" });
-    }
-    if (!secure_url || !public_id || !resource_type) {
-      return res.status(400).json({ mensaje: "Faltan datos de Cloudinary" });
-    }
-    if (!process.env.CLOUDINARY_CLOUD_NAME) {
-      return res.status(500).json({ mensaje: "Cloudinary no está configurado" });
-    }
-
-    const expectedPrefix = `foro-ubre/perfiles/${req.usuario._id}/${campo}/`;
-    if (!String(public_id).startsWith(expectedPrefix)) {
-      return res.status(403).json({ mensaje: "Archivo no autorizado" });
-    }
-
-    const expectedResource = String(resource_type) === "video" ? "video" : "image";
-    if (resource_type !== expectedResource) {
-      return res.status(400).json({ mensaje: "Tipo de recurso inválido" });
-    }
-
-    const isVideo = expectedResource === "video";
-    if (campo === "avatar" && !["image", "video"].includes(expectedResource)) {
-      return res.status(400).json({ mensaje: "Tipo de avatar inválido" });
-    }
-    if (campo === "banner" && !["image", "video"].includes(expectedResource)) {
-      return res.status(400).json({ mensaje: "Tipo de banner inválido" });
-    }
-
-    // Evita aceptar URLs que no pertenezcan al Cloudinary configurado.
-    const cloudHost = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/`;
-    if (!String(secure_url).startsWith(cloudHost)) {
-      return res.status(400).json({ mensaje: "URL de Cloudinary inválida" });
-    }
-
-    const viejo = await User.findById(req.usuario._id).select(
-      "avatar avatarTipo banner bannerTipo avatarCloudinaryId avatarCloudinaryResourceType bannerCloudinaryId bannerCloudinaryResourceType"
-    );
-    if (!viejo) return res.status(404).json({ mensaje: "Usuario no encontrado" });
-
-    const update = campo === "avatar"
-      ? {
-          avatar: secure_url,
-          avatarTipo: isVideo ? "video" : "imagen",
-          avatarCloudinaryId: public_id,
-          avatarCloudinaryResourceType: expectedResource
-        }
-      : {
-          banner: secure_url,
-          bannerTipo: isVideo ? "video" : (String(format).toLowerCase() === "gif" ? "gif" : "imagen"),
-          bannerCloudinaryId: public_id,
-          bannerCloudinaryResourceType: expectedResource
-        };
-
-    const usuario = await User.findByIdAndUpdate(
-      req.usuario._id,
-      { $set: update },
-      { new: true, runValidators: true }
-    ).select("-password");
-
-    if (!usuario) return res.status(404).json({ mensaje: "Usuario no encontrado" });
-
-    // Borra el asset anterior de Cloudinary después de guardar el nuevo.
-    const oldPublicId = campo === "avatar" ? viejo.avatarCloudinaryId : viejo.bannerCloudinaryId;
-    const oldResource = campo === "avatar" ? viejo.avatarCloudinaryResourceType : viejo.bannerCloudinaryResourceType;
-    if (oldPublicId && oldPublicId !== public_id) {
-      try {
-        await cloudinary.uploader.destroy(oldPublicId, {
-          resource_type: oldResource || "image",
-          type: "upload",
-          invalidate: true
-        });
-      } catch (e) {
-        console.warn("No se pudo borrar el media anterior de Cloudinary:", e.message);
-      }
-    } else {
-      // Compatibilidad con perfiles antiguos que todavía usan GridFS.
-      const oldUrl = campo === "avatar" ? viejo.avatar : viejo.banner;
-      if (oldUrl?.startsWith("/api/images/")) {
-        try { await deleteFile(oldUrl); } catch (_) {}
-      }
-    }
-
-    res.json({
-      usuario: {
-        _id: usuario._id,
-        nombre: usuario.nombre,
-        handle: usuario.handle,
-        avatar: usuario.avatar,
-        avatarTipo: usuario.avatarTipo,
-        banner: usuario.banner || "",
-        bannerTipo: usuario.bannerTipo || "imagen",
-        bio: usuario.bio,
-        personalizacion: usuario.personalizacion
-      }
-    });
-  } catch (err) {
-    console.error("Cloudinary profile media error:", err);
-    res.status(500).json({ mensaje: "No se pudo guardar el archivo" });
-  }
-});
-
-router.post("/perfil/media-cleanup", auth, async (req, res) => {
-  try {
-    const publicId = String(req.body?.public_id || "");
-    const resourceType = req.body?.resource_type === "video" ? "video" : "image";
-    const expectedPrefix = `foro-ubre/perfiles/${req.usuario._id}/`;
-    if (!publicId || !publicId.startsWith(expectedPrefix)) {
-      return res.status(403).json({ mensaje: "No autorizado" });
-    }
-    await cloudinary.uploader.destroy(publicId, {
-      resource_type: resourceType,
-      type: "upload",
-      invalidate: true
-    });
-    res.json({ ok: true });
-  } catch (err) {
-    console.error("Cloudinary profile cleanup error:", err);
-    res.status(500).json({ ok: false });
   }
 });
 
