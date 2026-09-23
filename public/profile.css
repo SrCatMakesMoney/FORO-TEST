@@ -700,3 +700,16 @@ body::after{content:"";position:fixed;inset:0;z-index:-9;pointer-events:none;opa
   .sidebar nav .nav-icon{width:32px;height:32px;font-size:18px;border-radius:11px}
   .notification-badge{right:calc(50% - 17px);top:1px}
 }
+
+/* ============================================================
+   CLOUDINARY — PREVIEWS DE MEDIA DE PERFIL
+   ============================================================ */
+.banner-upload-preview img,
+.banner-upload-preview video {
+  width:100%;
+  height:100%;
+  min-height:88px;
+  object-fit:cover;
+  display:block;
+}
+
