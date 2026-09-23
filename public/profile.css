@@ -730,3 +730,76 @@ body.deep-space-page .modal-content{background:rgba(3,8,16,.85)!important;border
 .profile-advanced-depth{margin-top:12px;border:1px solid rgba(255,255,255,.07);border-radius:15px;background:rgba(255,255,255,.025);overflow:hidden}.profile-advanced-depth summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 13px;color:var(--text-2);font-size:.78rem;font-weight:800}.profile-advanced-depth summary::-webkit-details-marker{display:none}.profile-advanced-depth summary i{color:var(--green)}.profile-advanced-depth summary small{margin-left:auto;color:var(--text-3);font-size:.62rem}.profile-depth-secret{padding:0 13px 14px}.profile-depth-secret-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.profile-depth-secret-head span{display:flex;flex-direction:column;gap:2px}.profile-depth-secret-head strong{font-size:.8rem}.profile-depth-secret-head small{font-size:.62rem;color:var(--text-3)}.profile-depth-secret output{min-width:38px;text-align:center;padding:6px 8px;border-radius:9px;background:rgba(255,255,255,.05);font:800 .78rem ui-monospace,monospace}.profile-depth-range{width:100%;accent-color:var(--green);cursor:pointer}.profile-depth-secret p{margin:7px 0 0;color:var(--text-3);font-size:.64rem;line-height:1.45}
 @media(max-width:700px){body.deep-space-page .profile-premium-shell{transform:none!important}body.deep-space-page .deep-space-hud{right:12px;top:12px}.deep-space-stars-front{opacity:.1}}
 @media(prefers-reduced-motion:reduce){body.deep-space-page .profile-premium-shell{transform:none!important}}
+
+/* ============================================================
+   DEEP SPACE V5 — cinematic presentation / low-cost canvas
+   ============================================================ */
+html:has(body.deep-space-page),
+body.deep-space-page{
+  background:#010208!important;
+}
+body.deep-space-page::before{
+  background:
+    radial-gradient(ellipse at 74% 38%, color-mix(in srgb,var(--deep-accent,#5cdb6f) 9%,transparent), transparent 34%),
+    radial-gradient(ellipse at 18% 76%, rgba(92,72,255,.07), transparent 38%),
+    linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.34))!important;
+  z-index:1!important;
+}
+body.deep-space-page .deep-space-world-canvas{
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100vh!important;
+  z-index:0!important;
+  display:block!important;
+  pointer-events:none!important;
+  opacity:1!important;
+}
+body.deep-space-page .app-layout,
+body.deep-space-page .profile-premium-shell,
+body.deep-space-page .profile-feed,
+body.deep-space-page .profile-tabs{
+  position:relative!important;
+  z-index:2!important;
+}
+body.deep-space-page .profile-premium-shell{
+  transform:translate3d(calc(var(--deep-px,0)*-3px),calc(var(--deep-py,0)*-2px),0);
+  transition:transform .7s cubic-bezier(.2,.8,.2,1),box-shadow .7s ease;
+}
+body.deep-space-page .profile-premium-shell::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  border-radius:inherit;
+  pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,255,255,.11),transparent 28%,transparent 68%,color-mix(in srgb,var(--deep-accent,#5cdb6f) 14%,transparent));
+  opacity:.72;
+  mix-blend-mode:screen;
+}
+body.deep-space-page .profile-ambient-layer{opacity:.18!important;filter:blur(52px)!important;}
+body.deep-space-page .profile-deep-world{display:none!important;}
+body.deep-space-page .deep-space-stars-front{
+  position:fixed!important;inset:0!important;z-index:1!important;pointer-events:none!important;opacity:.18!important;
+  background-image:radial-gradient(circle,rgba(255,255,255,.7) 0 1px,transparent 1.5px);
+  background-size:137px 137px;
+  transform:translate3d(calc(var(--deep-px,0)*8px),calc(var(--deep-py,0)*8px),0);
+  transition:transform .8s ease;
+}
+body.deep-space-page .sidebar,
+body.deep-space-page .trends,
+body.deep-space-page .topbar,
+body.deep-space-page .bottom-nav{
+  backdrop-filter:blur(24px) saturate(125%)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(125%)!important;
+  background:rgba(3,7,13,.56)!important;
+  border-color:rgba(255,255,255,.075)!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.045)!important;
+}
+@media(max-width:700px){
+  body.deep-space-page .profile-premium-shell{transform:translate3d(calc(var(--deep-px,0)*-1px),calc(var(--deep-py,0)*-1px),0);}
+  body.deep-space-page .deep-space-stars-front{opacity:.12!important;background-size:103px 103px;}
+}
+@media(prefers-reduced-motion:reduce){
+  body.deep-space-page .profile-premium-shell{transform:none!important;}
+  body.deep-space-page .deep-space-stars-front{transform:none!important;}
+}
