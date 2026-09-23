@@ -453,7 +453,7 @@ router.put("/personalizacion", auth, async (req, res) => {
       "bannerPreset", "bannerColor1", "bannerColor2",
       "nombreEfecto", "nombreGradiente", "nombreColor", "gradColor1", "gradColor2",
       "badge", "temaColor",
-      "bannerEstilo", "avatarEstilo", "profundidad", "reflejo", "brillo"
+      "bannerEstilo", "avatarEstilo", "profundidad", "profundidadNivel", "reflejo", "brillo"
     ];
 
     const setUpdate = {};
